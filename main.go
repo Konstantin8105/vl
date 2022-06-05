@@ -16,16 +16,24 @@ var StyleInput = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
 
-type Widget struct {
-	id     uint16
-	height uint16
+const MaxWidth = 50
+
+type VerticalScroll struct {
+	position int16
+	ws       []Widget
+}
+
+type Widget interface {
+	GetId() (id uint16)
+	GetRect() (width, height uint16)
 }
 
 var (
-	idstart uint16
-	widgets []Widget
-	screen  tcell.Screen
-	line    int
+	idstart    uint16
+	widgets    []Widget
+	screen     tcell.Screen
+	line       int
+	offsetLine int
 )
 
 func getId() uint16 {
@@ -40,9 +48,10 @@ func Text(str string) {
 	defer func() {
 		line++
 	}()
+	posLine := line - offsetLine
 	c := 0 // counter
 	for _, r := range str {
-		screen.SetCell(c, line, StyleDefault, r)
+		screen.SetCell(c, posLine, StyleDefault, r)
 		c++
 	}
 }
@@ -53,18 +62,19 @@ func Input(str []rune) {
 		line++
 	}()
 	width, _ := screen.Size()
+	posLine := line - offsetLine
 	c := 0 // counter
 	for _, r := range str {
-		screen.SetCell(c, line, StyleInput, r)
+		screen.SetCell(c, posLine, StyleInput, r)
 		c++
 	}
 
 	blink := StyleInput.Reverse(true) // Blink(true)
-	screen.SetCell(c, line, blink, '|')
+	screen.SetCell(c, posLine, blink, '|')
 	c++
 
 	for ; c < width; c++ {
-		screen.SetCell(c, line, StyleInput, ' ')
+		screen.SetCell(c, posLine, StyleInput, ' ')
 	}
 }
 
@@ -127,6 +137,9 @@ func main() {
 				case tcell.KeyRune:
 					inp1 = append(inp1, ev.Rune())
 					inp2 = append(inp2, ev.Rune())
+				// case tcell.KeyDown:
+				// TODO: long vertical widgets
+				// case tcell.KeyUp:
 				case tcell.KeyBackspace, tcell.KeyBackspace2:
 					if 0 < len(inp1) {
 						inp1 = inp1[:len(inp1)-1]
@@ -137,10 +150,15 @@ func main() {
 				}
 			case *tcell.EventMouse:
 				switch ev.Buttons() {
-				// case tcell.WheelUp:
-				// 	t--
-				// case tcell.WheelDown:
-				// 	t++
+				case tcell.WheelUp:
+					offsetLine--
+					if offsetLine < 0 {
+						offsetLine = 0
+					}
+					// t--
+				case tcell.WheelDown:
+					offsetLine++
+					// t++
 				}
 			case *tcell.EventResize:
 				screen.Sync()
@@ -161,9 +179,12 @@ loop:
 		if w, h := screen.Size(); 0 < w && 0 < h {
 			Text("Пример текста. Hello world")
 			Input(inp1)
-			Input(inp2)
-			// InputUint(&is)
-			// InputFloat(&fl)
+			for l := 0; l < 50; l++ {
+				Text(fmt.Sprintf("Input fields: %d", l))
+				Input(inp2)
+				// InputUint(&is)
+				// InputFloat(&fl)
+			}
 		}
 
 		screen.Show()
