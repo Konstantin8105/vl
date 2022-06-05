@@ -16,10 +16,24 @@ var StyleInput = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
 
+type Widget struct {
+	id     uint16
+	height uint16
+}
+
 var (
-	screen tcell.Screen
-	line int
+	idstart uint16
+	widgets []Widget
+	screen  tcell.Screen
+	line    int
 )
+
+func getId() uint16 {
+	defer func() {
+		idstart++
+	}()
+	return idstart
+}
 
 // Text("...")
 func Text(str string) {
@@ -34,13 +48,13 @@ func Text(str string) {
 }
 
 // Input(&str)
-func Input(str *string) {
+func Input(str []rune) {
 	defer func() {
 		line++
 	}()
 	width, _ := screen.Size()
 	c := 0 // counter
-	for _, r := range *str {
+	for _, r := range str {
 		screen.SetCell(c, line, StyleInput, r)
 		c++
 	}
@@ -50,41 +64,26 @@ func Input(str *string) {
 }
 
 // InputUint(&is)
-func InputUint(is *uint32) {
-	var s string = fmt.Sprintf("%d", *is)
-	Input(&s)
-}
-
+// func InputUint(is *uint32) {
+// 	var s string = fmt.Sprintf("%d", *is)
+// 	Input(&s)
+// }
+//
 // InputFloat(&x)
-func InputFloat(fl *float32) {
-	var s string = fmt.Sprintf("%f", *fl)
-	Input(&s)
-}
-
-func box(screen tcell.Screen) {
-
-	// var x float32
-	//
-	// var cb uint16
-	// ComboBox(&cb, []widgets{...})
-	//
-	// var but bool
-	// Button(&but, &str)
-
-	w, h := screen.Size()
-
-	if w == 0 || h == 0 {
-		return
-	}
-
-	Text("Пример текста. Hello world")
-	Input(&inp)
-	InputUint(&is)
-	InputFloat(&fl)
-}
+// func InputFloat(fl *float32) {
+// 	var s string = fmt.Sprintf("%f", *fl)
+// 	Input(&s)
+// }
+//
+// var cb uint16
+// ComboBox(&cb, []widgets{...})
+//
+// var but bool
+// Button(&but, &str)
 
 var (
-	inp string  = "input"
+	inp1 []rune
+	inp2 []rune = []rune("Hello")
 	is  uint32  = 233
 	fl  float32 = 0.444
 )
@@ -120,6 +119,9 @@ func main() {
 					return
 				case tcell.KeyCtrlL:
 					screen.Sync()
+				case tcell.KeyRune:
+					inp1 = append(inp1, ev.Rune())
+					inp2 = append(inp2, ev.Rune())
 				}
 			case *tcell.EventMouse:
 				switch ev.Buttons() {
@@ -143,9 +145,17 @@ loop:
 		}
 		// action
 		screen.Clear()
-		box(screen)
+
+		if w, h := screen.Size(); 0 < w && 0 < h {
+			Text("Пример текста. Hello world")
+			Input(inp1)
+			Input(inp2)
+			// InputUint(&is)
+			// InputFloat(&fl)
+		}
+
 		screen.Show()
-		line = 0 
+		line = 0
 	}
 
 	screen.Fini()
