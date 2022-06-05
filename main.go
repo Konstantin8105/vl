@@ -58,6 +58,11 @@ func Input(str []rune) {
 		screen.SetCell(c, line, StyleInput, r)
 		c++
 	}
+
+	blink := StyleInput.Reverse(true) // Blink(true)
+	screen.SetCell(c, line, blink, '|')
+	c++
+
 	for ; c < width; c++ {
 		screen.SetCell(c, line, StyleInput, ' ')
 	}
