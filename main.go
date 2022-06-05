@@ -24,8 +24,10 @@ type VerticalScroll struct {
 }
 
 type Widget interface {
-	GetId() (id uint16)
-	GetRect() (width, height uint16)
+	GetId() uint16
+	SetWidth() uint16
+	GetHeight() uint16
+	GetContent(x, y int) (mainc rune, combc []rune, style Style, width int)
 }
 
 var (
