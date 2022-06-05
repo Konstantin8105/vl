@@ -83,9 +83,9 @@ func Input(str []rune) {
 
 var (
 	inp1 []rune
-	inp2 []rune = []rune("Hello")
-	is  uint32  = 233
-	fl  float32 = 0.444
+	inp2 []rune  = []rune("Hello")
+	is   uint32  = 233
+	fl   float32 = 0.444
 )
 
 func main() {
@@ -122,6 +122,13 @@ func main() {
 				case tcell.KeyRune:
 					inp1 = append(inp1, ev.Rune())
 					inp2 = append(inp2, ev.Rune())
+				case tcell.KeyBackspace, tcell.KeyBackspace2:
+					if 0 < len(inp1) {
+						inp1 = inp1[:len(inp1)-1]
+					}
+					if 0 < len(inp2) {
+						inp2 = inp2[:len(inp2)-1]
+					}
 				}
 			case *tcell.EventMouse:
 				switch ev.Buttons() {
