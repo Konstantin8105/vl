@@ -31,11 +31,12 @@ type Widget interface {
 }
 
 var (
-	idstart    uint16
-	widgets    []Widget
-	screen     tcell.Screen
-	line       int
-	offsetLine int
+	idstart uint16
+	widgets []Widget
+	screen  tcell.Screen
+	line    int
+
+// 	offsetLine int
 )
 
 func getId() uint16 {
@@ -119,26 +120,26 @@ func (t *Text) Draw(width int, draw drawer) (height int) {
 }
 
 // Input(&str)
-func Input(str []rune) {
-	defer func() {
-		line++
-	}()
-	width, _ := screen.Size()
-	posLine := line - offsetLine
-	c := 0 // counter
-	for _, r := range str {
-		screen.SetCell(c, posLine, StyleInput, r)
-		c++
-	}
-
-	blink := StyleInput.Reverse(true) // Blink(true)
-	screen.SetCell(c, posLine, blink, '|')
-	c++
-
-	for ; c < width; c++ {
-		screen.SetCell(c, posLine, StyleInput, ' ')
-	}
-}
+// func Input(str []rune) {
+// 	defer func() {
+// 		line++
+// 	}()
+// 	width, _ := screen.Size()
+// 	posLine := line - offsetLine
+// 	c := 0 // counter
+// 	for _, r := range str {
+// 		screen.SetCell(c, posLine, StyleInput, r)
+// 		c++
+// 	}
+//
+// 	blink := StyleInput.Reverse(true) // Blink(true)
+// 	screen.SetCell(c, posLine, blink, '|')
+// 	c++
+//
+// 	for ; c < width; c++ {
+// 		screen.SetCell(c, posLine, StyleInput, ' ')
+// 	}
+// }
 
 // InputUint(&is)
 // func InputUint(is *uint32) {
@@ -183,6 +184,8 @@ func main() {
 
 	screen.SetStyle(StyleDefault)
 	screen.Clear()
+
+	offsetLine := 0
 
 	quit := make(chan struct{})
 	go func() {
@@ -232,7 +235,7 @@ func main() {
 	dur := time.Duration(0)
 
 	draw := func(row, col int, st tcell.Style, r rune) {
-		row += line
+		row += line - offsetLine
 		screen.SetCell(col, row, st, r)
 	}
 
@@ -243,6 +246,9 @@ loop:
 		case <-quit:
 			break loop
 		case <-time.After(time.Millisecond * 50):
+			// 50 ms :  20 fps
+			//  5 ms : 150 fps
+			//  1 ms : 500 fps
 		}
 
 		// action
@@ -262,10 +268,11 @@ loop:
 				line += h
 			}
 
-			fps := fmt.Sprintf("FPS : %.1f\n", (float64(cnt) / dur.Seconds()))
-			h3 := NewText([]rune(fps)).Draw(width, draw)
-			line += h3
-
+			for i := 0; i < 50; i++ {
+				fps := fmt.Sprintf("FPS : %.3f\n", (float64(cnt) / dur.Seconds()))
+				h3 := NewText([]rune(fps)).Draw(width, draw)
+				line += h3
+			}
 			//Text("Пример текста. Hello world")
 			// 			Input(inp1)
 			// 			for l := 0; l < 50; l++ {
