@@ -16,7 +16,7 @@ var StyleInput = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
 
-const MaxWidth = 50
+const MinWidth = 50
 
 type VerticalScroll struct {
 	position int16
@@ -45,7 +45,6 @@ func getId() uint16 {
 	return idstart
 }
 
-
 // Widget : Button
 // Design : [ Ok ] [ Cancel ]
 
@@ -73,16 +72,50 @@ func getId() uint16 {
 // Widget : CollapsingHeader
 
 // Text("...")
-func Text(str string) {
-	defer func() {
-		line++
-	}()
-	posLine := line - offsetLine
-	c := 0 // counter
-	for _, r := range str {
-		screen.SetCell(c, posLine, StyleDefault, r)
-		c++
+// func Text(str string) {
+// 	defer func() {
+// 		line++
+// 	}()
+// 	posLine := line - offsetLine
+// 	c := 0 // counter
+// 	for _, r := range str {
+// 		screen.SetCell(c, posLine, StyleDefault, r)
+// 		c++
+// 	}
+// }
+
+type Text struct {
+	label []rune
+}
+
+func NewText(label []rune) *Text {
+	return &(Text{label: label})
+}
+
+type drawer = func(row, col int, st tcell.Style, r rune)
+
+func (t *Text) Draw(width int, draw drawer) (height int) {
+	pos := 0
+	row := 0
+	for {
+		if len(t.label) <= pos {
+			break
+		}
+		col := 0
+		for ; pos < len(t.label); pos++ {
+			if t.label[pos] == '\n' {
+				pos++
+				break
+			}
+			if col == width {
+				break
+			}
+			draw(row, col, StyleDefault, t.label[pos])
+			col++
+		}
+		row++
 	}
+	return row
 }
 
 // Input(&str)
@@ -126,7 +159,7 @@ func Input(str []rune) {
 // Button(&but, &str)
 
 var (
-	inp1 []rune
+	inp1 []rune  = []rune("Not onwqd jkhd kljahdfkljashd flkjsdhf klajsdhf aklsjdh flkasjdh lkasdjhf kjasdhf lkjasdh flkasjdh falksdjh falksdh fads fads fasd fa\nNew line\nSecond")
 	inp2 []rune  = []rune("Hello")
 	is   uint32  = 233
 	fl   float32 = 0.444
@@ -198,30 +231,50 @@ func main() {
 	cnt := 0
 	dur := time.Duration(0)
 
+	draw := func(row, col int, st tcell.Style, r rune) {
+		row += line
+		screen.SetCell(col, row, st, r)
+	}
+
 loop:
 	for {
+		start := time.Now()
 		select {
 		case <-quit:
 			break loop
 		case <-time.After(time.Millisecond * 50):
 		}
-		start := time.Now()
 
 		// action
 		screen.Clear()
 
-
-		if w, h := screen.Size(); 0 < w && 0 < h {
-			Text("Пример текста. Hello world")
-			Input(inp1)
-			for l := 0; l < 50; l++ {
-				Text(fmt.Sprintf("Input fields: %d", l))
-				Input(inp2)
-				// InputUint(&is)
-				// InputFloat(&fl)
+		if width, h := screen.Size(); 0 < width && 0 < h {
+			for _, w := range []interface {
+				Draw(width int, dr drawer) (h int)
+			}{
+				NewText(inp1),
+				NewText(inp2),
+			} {
+				if width < MinWidth {
+					width = MinWidth
+				}
+				h := w.Draw(width, draw)
+				line += h
 			}
-		}
 
+			fps := fmt.Sprintf("FPS : %.1f\n", (float64(cnt) / dur.Seconds()))
+			h3 := NewText([]rune(fps)).Draw(width, draw)
+			line += h3
+
+			//Text("Пример текста. Hello world")
+			// 			Input(inp1)
+			// 			for l := 0; l < 50; l++ {
+			// 				//	Text(fmt.Sprintf("Input fields: %d", l))
+			// 				Input(inp2)
+			// 				// InputUint(&is)
+			// 				// InputFloat(&fl)
+			// 			}
+		}
 
 		screen.Show()
 		line = 0
