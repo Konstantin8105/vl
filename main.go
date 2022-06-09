@@ -12,6 +12,10 @@ var StyleDefault = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorWhite)
 
+var StyleFocus = tcell.StyleDefault.
+	Foreground(tcell.ColorBlack).
+	Background(tcell.ColorYellow)
+
 var StyleInput = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
@@ -35,6 +39,8 @@ var (
 	widgets []Widget
 	screen  tcell.Screen
 	line    int
+
+	focusId int
 
 // 	offsetLine int
 )
@@ -86,11 +92,12 @@ func getId() uint16 {
 // }
 
 type Text struct {
-	label []rune
+	id    int
+	label *[]rune
 }
 
-func NewText(label []rune) *Text {
-	return &(Text{label: label})
+func NewText(label *[]rune, id int) *Text {
+	return &(Text{label: label, id: id})
 }
 
 type drawer = func(row, col int, st tcell.Style, r rune)
@@ -98,20 +105,24 @@ type drawer = func(row, col int, st tcell.Style, r rune)
 func (t *Text) Draw(width int, draw drawer) (height int) {
 	pos := 0
 	row := 0
+	var st tcell.Style = StyleDefault
+	if t.id == focusId {
+		st = StyleFocus
+	}
 	for {
-		if len(t.label) <= pos {
+		if len(*t.label) <= pos {
 			break
 		}
 		col := 0
-		for ; pos < len(t.label); pos++ {
-			if t.label[pos] == '\n' {
+		for ; pos < len(*t.label); pos++ {
+			if (*t.label)[pos] == '\n' {
 				pos++
 				break
 			}
 			if col == width {
 				break
 			}
-			draw(row, col, StyleDefault, t.label[pos])
+			draw(row, col, st, (*t.label)[pos])
 			col++
 		}
 		row++
@@ -187,6 +198,10 @@ func main() {
 
 	offsetLine := 0
 
+	var mouse struct {
+		x, y int
+	}
+
 	quit := make(chan struct{})
 	go func() {
 		for {
@@ -224,6 +239,13 @@ func main() {
 				case tcell.WheelDown:
 					offsetLine++
 					// t++
+				case tcell.Button1: // Left mouse
+					mouse.x, mouse.y = ev.Position()
+					mouse.y += offsetLine
+					focusId++
+					if 2 < focusId {
+						focusId = 0
+					}
 				}
 			case *tcell.EventResize:
 				screen.Sync()
@@ -236,8 +258,22 @@ func main() {
 
 	draw := func(row, col int, st tcell.Style, r rune) {
 		row += line - offsetLine
+		// 		if mouse.y == row{
+		// 			focusId=2
+		// 		}
+		//
 		screen.SetCell(col, row, st, r)
 	}
+
+	id := 0
+
+	GetId := func() int {
+		id++
+		return id
+	}
+
+	t1 := NewText(&inp1, GetId())
+	t2 := NewText(&inp2, GetId())
 
 loop:
 	for {
@@ -258,8 +294,7 @@ loop:
 			for _, w := range []interface {
 				Draw(width int, dr drawer) (h int)
 			}{
-				NewText(inp1),
-				NewText(inp2),
+				t1, t2,
 			} {
 				if width < MinWidth {
 					width = MinWidth
@@ -269,8 +304,8 @@ loop:
 			}
 
 			for i := 0; i < 50; i++ {
-				fps := fmt.Sprintf("FPS : %.3f\n", (float64(cnt) / dur.Seconds()))
-				h3 := NewText([]rune(fps)).Draw(width, draw)
+				fps := []rune(fmt.Sprintf("FPS : %.3f\n", (float64(cnt) / dur.Seconds())))
+				h3 := NewText(&fps, 0).Draw(width, draw)
 				line += h3
 			}
 			//Text("Пример текста. Hello world")
