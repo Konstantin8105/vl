@@ -45,6 +45,33 @@ func getId() uint16 {
 	return idstart
 }
 
+
+// Widget : Button
+// Design : [ Ok ] [ Cancel ]
+
+// Widget : Radiobutton
+// Design : (0) choose one
+
+// Widget : CheckBox
+// Design : [V] Option
+
+// Widget : Frame
+// Design :
+// +- Name ------------+
+// |                   |
+// +-------------------+
+
+// Widget : Combobox
+// Design :
+// +-------------------+
+// |                   |
+// |                   |
+// +-------------------+
+
+// Widget : Scrollbar
+
+// Widget : CollapsingHeader
+
 // Text("...")
 func Text(str string) {
 	defer func() {
