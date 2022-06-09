@@ -27,7 +27,7 @@ type Widget interface {
 	GetId() uint16
 	SetWidth() uint16
 	GetHeight() uint16
-	GetContent(x, y int) (mainc rune, combc []rune, style Style, width int)
+	GetContent(x, y int) (mainc rune, combc []rune, style tcell.Style, width int)
 }
 
 var (
@@ -168,6 +168,9 @@ func main() {
 		}
 	}()
 
+	cnt := 0
+	dur := time.Duration(0)
+
 loop:
 	for {
 		select {
@@ -175,8 +178,11 @@ loop:
 			break loop
 		case <-time.After(time.Millisecond * 50):
 		}
+		start := time.Now()
+
 		// action
 		screen.Clear()
+
 
 		if w, h := screen.Size(); 0 < w && 0 < h {
 			Text("Пример текста. Hello world")
@@ -189,9 +195,16 @@ loop:
 			}
 		}
 
+
 		screen.Show()
 		line = 0
+
+		dur += time.Now().Sub(start)
+		cnt++
 	}
 
 	screen.Fini()
+	fmt.Printf("Amount frames: %d frames\n", cnt)
+	fmt.Printf("Duration     : %.5f second\n", dur.Seconds())
+	fmt.Printf("FPS          : %.1f\n", (float64(cnt) / dur.Seconds()))
 }
