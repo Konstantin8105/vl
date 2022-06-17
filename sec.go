@@ -14,11 +14,11 @@ var StyleDefault = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorWhite)
 
-var StyleFocus = tcell.StyleDefault.
-	Foreground(tcell.ColorBlack).
-	Background(tcell.ColorYellow)
+// var StyleFocus = tcell.StyleDefault.
+// 	Foreground(tcell.ColorBlack).
+// 	Background(tcell.ColorYellow)
 
-var StyleInput = tcell.StyleDefault.
+var StyleButton = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
 
@@ -28,6 +28,71 @@ type Widget interface {
 	Draw(Width int, dr Drawer) (Height int)
 	Event(Ev tcell.Event)
 	Focus(focus bool)
+}
+
+type Button struct {
+	text    Text
+	OnClick func()
+}
+
+// ignore any actions
+func (b *Button) Focus(focus bool) {}
+
+func (b *Button) Draw(width int, dr Drawer) (height int) {
+	// default style
+	st := StyleButton
+	// show button row
+	var br []int
+	showRow := func(row int) {
+		found := false
+		for i := range br {
+			if br[i] == row {
+				found = true
+			}
+		}
+		if found {
+			return
+		}
+		// draw empty button
+		for i := 0; i < width; i++ {
+			dr(row, i, st, ' ')
+		}
+		br = append(br, row)
+	}
+	// draw runes
+	draw := func(row, col int, s tcell.Style, r rune) {
+		showRow(row + 1)
+		s = st
+		dr(row+1, col+1, s, r)
+	}
+	height = b.text.Draw(width-2, draw)
+	// borders
+	for i := 0; i < width; i++ {
+		dr(0, i, st, '─')
+		dr(height+1, i, st, '─')
+	}
+	height += 2
+	for i := 0; i < height; i++ {
+		dr(i, 0, st, '│')
+		dr(i, width, st, '│')
+	}
+	dr(0, 0, st, '┌')
+	dr(height-1, 0, st, '└')
+	dr(height-1, width, st, '┘')
+	dr(0, width, st, '┐')
+	return
+}
+
+func (b *Button) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		switch ev.Buttons() {
+		case tcell.Button1: // Left mouse
+			if f := b.OnClick; f != nil {
+				f()
+			}
+		}
+	}
 }
 
 type Text struct {
@@ -187,7 +252,7 @@ func (app *App) Init() (err error) {
 					}
 				}
 			}
-			if ev != nil {
+			if ev != nil && app.root != nil {
 				app.mu.Lock()
 				app.root.Event(ev)
 				app.mu.Unlock()
@@ -227,8 +292,9 @@ func (app *App) Run() (err error) {
 		app.mu.Lock()
 		// draw root widget
 		if width, height := app.screen.Size(); 0 < width && 0 < height {
+			const widthOffset = 1 // for avoid terminal collisions
 			// root wigdets
-			rootH := app.root.Draw(width, func(row, col int, st tcell.Style, r rune) {
+			rootH := app.root.Draw(width-widthOffset, func(row, col int, st tcell.Style, r rune) {
 				// zero initial offset
 				offset := Coordinate{Row: 0, Col: 0}
 				row += offset.Row
@@ -274,6 +340,20 @@ func main() {
 	{
 		for i := 0; i < 50; i++ {
 			root.Add(TextStatic("Hello world\nMy dear friend"))
+			{
+				i := i
+				var counter int
+				one := func() {
+					counter ++
+				}
+				var b Button
+				b.text.SetText(fmt.Sprintf("Button:%d %v", i,&counter))
+				b.OnClick = func() {
+					one()
+					b.text.SetText(fmt.Sprintf("Counter %d = %d %v", i, counter, &counter))
+				}
+				root.Add(&b)
+			}
 			{
 				var dt Text
 				go func(i int) {
