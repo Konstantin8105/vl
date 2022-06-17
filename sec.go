@@ -22,6 +22,10 @@ var StyleButton = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorBlue)
 
+var StyleButtonFocus = tcell.StyleDefault.
+	Foreground(tcell.ColorBlack).
+	Background(tcell.ColorRed)
+
 const MinWidth = 50
 
 type Widget interface {
@@ -32,6 +36,7 @@ type Widget interface {
 
 type Button struct {
 	text    Text
+	focus bool
 	OnClick func()
 }
 
@@ -40,11 +45,18 @@ func (b *Button) Focus(focus bool) {
 	if f := b.OnClick; f != nil && focus {
 		f()
 	}
+	b.focus = focus
 }
 
 func (b *Button) Draw(width int, dr Drawer) (height int) {
 	// default style
 	st := StyleButton
+	if b.focus {
+		st = StyleButtonFocus
+		defer func() {
+			b.focus = false
+		}()
+	}
 	// show button row
 	var br []int
 	showRow := func(row int) {
