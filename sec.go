@@ -338,19 +338,17 @@ func main() {
 	var root Scroll
 	// add widgets
 	{
+		var counter [50]int
 		for i := 0; i < 50; i++ {
 			root.Add(TextStatic("Hello world\nMy dear friend"))
 			{
 				i := i
-				var counter int
-				one := func() {
-					counter ++
-				}
 				var b Button
-				b.text.SetText(fmt.Sprintf("Button:%d %v", i,&counter))
+				b.text.SetText(fmt.Sprintf("Button:%d %v", i,&counter[i]))
 				b.OnClick = func() {
-					one()
-					b.text.SetText(fmt.Sprintf("Counter %d = %d %v", i, counter, &counter))
+					counter[i]++
+					b.text.SetText(fmt.Sprintf("Counter %d = %d %v but:%d",
+					i, counter[i], &counter[i], &b))
 				}
 				root.Add(&b)
 			}
