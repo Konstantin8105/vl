@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Konstantin8105/tf"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -30,40 +31,40 @@ type Widget interface {
 }
 
 type Text struct {
-	Label []rune
-	focus bool
+	text tf.TextField
+}
+
+func TextStatic(str string) *Text {
+	t := new(Text)
+	t.text.Text = []rune(str)
+	return t
+}
+
+func (t *Text) SetText(str string) {
+	t.text.Text = []rune(str)
+	t.text.NoUpdate = false
 }
 
 func (t *Text) Focus(focus bool) {
-	t.focus = focus
+	// ignore any actions
 }
 
 func (t *Text) Draw(width int, dr Drawer) (height int) {
-	pos := 0
-	row := 0
 	var st tcell.Style = StyleDefault
-	if t.focus {
-		st = StyleFocus
-	}
-	for {
-		if len(t.Label) <= pos {
-			break
+	he := func(row int) {
+		if height < row {
+			height = row
 		}
-		col := 0
-		for ; pos < len(t.Label); pos++ {
-			if (t.Label)[pos] == '\n' {
-				pos++
-				break
-			}
-			if col == width {
-				break
-			}
-			dr(row, col, st, (t.Label)[pos])
-			col++
-		}
-		row++
 	}
-	height = row
+	draw := func(row, col uint, r rune) {
+		dr(int(row), int(col), st, r)
+		he(int(row))
+	}
+	if !t.text.NoUpdate {
+		t.text.SetWidth(uint(width))
+	}
+	t.text.Render(draw, nil)
+	height++
 	return
 }
 
@@ -257,10 +258,6 @@ func (app *App) Stop() (err error) {
 	return
 }
 
-var debug struct {
-	info []rune
-}
-
 func main() {
 	var app App
 	if err := app.Init(); err != nil {
@@ -278,21 +275,14 @@ func main() {
 	// add widgets
 	{
 		for i := 0; i < 50; i++ {
-			txt := Text{Label: []rune("Hello world\nMy dear friend")}
-			go func(i int) {
-				for {
-					<-time.After(time.Millisecond * 10)
-					txt.Label = []rune(fmt.Sprintf("%03d: %016d", 2*i,
-						time.Now().Nanosecond()))
-				}
-			}(i)
-			root.Add(&txt)
+			root.Add(TextStatic("Hello world\nMy dear friend"))
 			{
-				dt := Text{Label: []rune("Debug")}
+				var dt Text
 				go func(i int) {
 					for {
 						<-time.After(time.Millisecond * 10)
-						dt.Label = []rune(fmt.Sprintf("%03d: %s", 2*i+1, string(debug.info)))
+						dt.SetText(fmt.Sprintf("%03d: %016d", 2*i,
+							time.Now().Nanosecond()))
 					}
 				}(i)
 				root.Add(&dt)
@@ -305,13 +295,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+
+		if err := app.Stop(); err != nil {
+			fmt.Fprintf(os.Stderr, "Stop: %v", err)
+			os.Exit(1)
+		}
+	}()
+
 	if err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Run: %v", err)
-		os.Exit(1)
-	}
-
-	if err := app.Stop(); err != nil {
-		fmt.Fprintf(os.Stderr, "Stop: %v", err)
 		os.Exit(1)
 	}
 }
