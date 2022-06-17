@@ -26,12 +26,100 @@ var StyleButtonFocus = tcell.StyleDefault.
 	Foreground(tcell.ColorBlack).
 	Background(tcell.ColorRed)
 
+var StyleInput = tcell.StyleDefault.
+	Foreground(tcell.ColorBlack).
+	Background(tcell.ColorYellow)
+
+var StyleInputFocus = tcell.StyleDefault.
+	Foreground(tcell.ColorBlack).
+	Background(tcell.ColorRed)
+
 const MinWidth = 50
 
 type Widget interface {
 	Draw(Width int, dr Drawer) (Height int)
 	Event(Ev tcell.Event)
 	Focus(focus bool)
+}
+
+type Input struct {
+	text  tf.TextField
+	focus bool
+}
+
+func (i *Input) Focus(focus bool) {
+	i.focus = focus
+}
+
+func (i *Input) Draw(width int, dr Drawer) (height int) {
+	// default style
+	st := StyleInput
+	if i.focus {
+		st = StyleInputFocus
+	}
+	// default line
+	var br []int
+	showRow := func(row int) {
+		found := false
+		for i := range br {
+			if br[i] == row {
+				found = true
+			}
+		}
+		if found {
+			return
+		}
+		// draw empty button
+		for i := 0; i < width; i++ {
+			dr(row, i, st, ' ')
+		}
+		br = append(br, row)
+	}
+	showRow(0)
+	// draw
+	draw := func(row, col uint, r rune) {
+		for i := 0; i <= int(row); i++ {
+			showRow(i)
+		}
+		dr(int(row), int(col), st, r)
+	}
+	cur := func(row, col uint) {
+		for i := 0; i <= int(row); i++ {
+			showRow(i)
+		}
+		dr(int(row), int(col), st, '*')
+	}
+	if !i.text.NoUpdate {
+		i.text.SetWidth(uint(width))
+	}
+	height = int(i.text.Render(draw, cur))
+	return
+}
+
+// ignore any actions
+func (i *Input) Event(ev tcell.Event) {
+	if !i.focus {
+		return
+	}
+	switch ev.(type) {
+	case *tcell.EventKey:
+		switch ev.(*tcell.EventKey).Key() {
+		case tcell.KeyUp:
+			i.text.CursorMoveUp()
+		case tcell.KeyDown:
+			i.text.CursorMoveDown()
+		case tcell.KeyLeft:
+			i.text.CursorMoveLeft()
+		case tcell.KeyRight:
+			i.text.CursorMoveRight()
+		case tcell.KeyEnter:
+			i.text.Insert('\n')
+		case tcell.KeyBackspace:
+			i.text.KeyBackspace()
+		default:
+			i.text.Insert(ev.(*tcell.EventKey).Rune())
+		}
+	}
 }
 
 type Line struct{}
@@ -55,7 +143,6 @@ type Button struct {
 	OnClick func()
 }
 
-// ignore any actions
 func (b *Button) Focus(focus bool) {
 	if f := b.OnClick; f != nil && focus {
 		f()
@@ -89,10 +176,15 @@ func (b *Button) Draw(width int, dr Drawer) (height int) {
 			dr(row, i, st, ' ')
 		}
 		br = append(br, row)
+
 	}
 	// draw runes
 	draw := func(row, col int, s tcell.Style, r rune) {
-		showRow(row + 1)
+		// draw empty lines
+		for i := 0; i <= row+1; i++ {
+			showRow(i)
+		}
+		// draw symbol
 		s = st
 		dr(row+1, col+1, s, r)
 	}
@@ -137,20 +229,13 @@ func (t *Text) Focus(focus bool) {}
 
 func (t *Text) Draw(width int, dr Drawer) (height int) {
 	var st tcell.Style = StyleDefault
-	he := func(row int) {
-		if height < row {
-			height = row
-		}
-	}
 	draw := func(row, col uint, r rune) {
 		dr(int(row), int(col), st, r)
-		he(int(row))
 	}
 	if !t.text.NoUpdate {
 		t.text.SetWidth(uint(width))
 	}
-	t.text.Render(draw, nil)
-	height++
+	height = int(t.text.Render(draw, nil))
 	return
 }
 
@@ -371,6 +456,11 @@ func main() {
 					b.text.SetText(fmt.Sprintf("Counter:%d", counter))
 				}
 				root.Add(&b)
+			}
+			{
+				var inp Input
+				//inp.text.SetText(fmt.Sprintf("Input:%d", i))
+				root.Add(&inp)
 			}
 			{
 				var dt Text
