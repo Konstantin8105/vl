@@ -36,7 +36,11 @@ type Button struct {
 }
 
 // ignore any actions
-func (b *Button) Focus(focus bool) {}
+func (b *Button) Focus(focus bool) {
+	if f := b.OnClick; f != nil && focus {
+		f()
+	}
+}
 
 func (b *Button) Draw(width int, dr Drawer) (height int) {
 	// default style
@@ -83,17 +87,8 @@ func (b *Button) Draw(width int, dr Drawer) (height int) {
 	return
 }
 
-func (b *Button) Event(ev tcell.Event) {
-	switch ev := ev.(type) {
-	case *tcell.EventMouse:
-		switch ev.Buttons() {
-		case tcell.Button1: // Left mouse
-			if f := b.OnClick; f != nil {
-				f()
-			}
-		}
-	}
-}
+// ignore any actions
+func (b *Button) Event(ev tcell.Event) {}
 
 type Text struct {
 	text tf.TextField
@@ -338,17 +333,15 @@ func main() {
 	var root Scroll
 	// add widgets
 	{
-		var counter [50]int
 		for i := 0; i < 50; i++ {
 			root.Add(TextStatic("Hello world\nMy dear friend"))
 			{
-				i := i
+				var counter int
 				var b Button
-				b.text.SetText(fmt.Sprintf("Button:%d %v", i,&counter[i]))
+				b.text.SetText(fmt.Sprintf("Button:%d", i))
 				b.OnClick = func() {
-					counter[i]++
-					b.text.SetText(fmt.Sprintf("Counter %d = %d %v but:%d",
-					i, counter[i], &counter[i], &b))
+					counter++
+					b.text.SetText(fmt.Sprintf("Counter:%d", counter))
 				}
 				root.Add(&b)
 			}
