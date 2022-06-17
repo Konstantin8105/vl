@@ -34,9 +34,24 @@ type Widget interface {
 	Focus(focus bool)
 }
 
+type Line struct{}
+
+// ignore any actions
+func (l *Line) Focus(focus bool) {}
+
+func (l *Line) Draw(width int, dr Drawer) (height int) {
+	for i := 0; i < width; i++ {
+		dr(0, i, StyleDefault, '─')
+	}
+	return 1
+}
+
+// ignore any actions
+func (l *Line) Event(ev tcell.Event) {}
+
 type Button struct {
 	text    Text
-	focus bool
+	focus   bool
 	OnClick func()
 }
 
@@ -368,6 +383,7 @@ func main() {
 				}(i)
 				root.Add(&dt)
 			}
+			root.Add(new(Line))
 		}
 	}
 
