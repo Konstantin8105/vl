@@ -45,9 +45,8 @@ func (t *Text) SetText(str string) {
 	t.text.NoUpdate = false
 }
 
-func (t *Text) Focus(focus bool) {
-	// ignore any actions
-}
+// ignore any actions
+func (t *Text) Focus(focus bool) {}
 
 func (t *Text) Draw(width int, dr Drawer) (height int) {
 	var st tcell.Style = StyleDefault
@@ -68,9 +67,8 @@ func (t *Text) Draw(width int, dr Drawer) (height int) {
 	return
 }
 
-func (t *Text) Event(ev tcell.Event) {
-	// ignore any actions
-}
+// ignore any actions
+func (t *Text) Event(ev tcell.Event) {}
 
 type Scroll struct {
 	offset int
