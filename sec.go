@@ -114,8 +114,10 @@ func (i *Input) Event(ev tcell.Event) {
 			i.text.CursorMoveRight()
 		case tcell.KeyEnter:
 			i.text.Insert('\n')
-		case tcell.KeyBackspace:
+		case tcell.KeyBackspace, tcell.KeyBackspace2:
 			i.text.KeyBackspace()
+		case tcell.KeyDelete:
+			i.text.KeyDel()
 		default:
 			i.text.Insert(ev.(*tcell.EventKey).Rune())
 		}
