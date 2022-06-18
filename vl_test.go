@@ -33,12 +33,14 @@ var roots = []Root{
 
 func init() {
 	for ti := range texts {
+		ti := ti
 		roots = append(roots, Root{
 			name:     fmt.Sprintf("justtext%03d", ti),
 			generate: func() Widget { return TextStatic(texts[ti]) },
 		})
 	}
 	for ti := range texts {
+		ti := ti
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithText%03d", ti),
 			generate: func() Widget {
@@ -51,6 +53,7 @@ func init() {
 		})
 	}
 	for ti := range texts {
+		ti := ti
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
 			generate: func() Widget {
@@ -71,7 +74,7 @@ func init() {
 func Test(t *testing.T) {
 	for si := range sizes {
 		for ri := range roots {
-			name := fmt.Sprintf("%03d-%s", sizes[si], roots[ri].name)
+			name := fmt.Sprintf("%03d-%03d-%s", sizes[si],ri, roots[ri].name)
 			t.Run(name, func(t *testing.T) {
 				check(t, name, si, roots[ri].generate())
 			})
