@@ -43,7 +43,9 @@ func init() {
 			name: fmt.Sprintf("ScrollWithText%03d", ti),
 			w: func() Widget {
 				var r Scroll
-				r.Add(TextStatic(texts[ti]))
+				var l List
+				l.Add(TextStatic(texts[ti]))
+				r.Root = &l
 				return &r
 			}(),
 		})
@@ -53,10 +55,13 @@ func init() {
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
 			w: func() Widget {
 				var r Scroll
-				r.Add(TextStatic(texts[ti]))
-				r.Add(TextStatic(texts[ti]))
-				r.Add(TextStatic(texts[ti]))
-				r.Add(TextStatic(texts[ti]))
+				var l List
+				l.Add(TextStatic(texts[ti]))
+				l.Add(nil)
+				l.Add(TextStatic(texts[ti]))
+				l.Add(TextStatic(texts[ti]))
+				l.Add(TextStatic(texts[ti]))
+				r.Root = &l
 				return &r
 			}(),
 		})
@@ -118,10 +123,11 @@ func check(t *testing.T, name string, si int, root Widget) {
 
 	var db Buffer
 
-	var move = []struct {
+	type Event struct {
 		name string
 		ev   tcell.Event
-	}{
+	}
+	var move = []Event{
 		{ // 0
 			name: "none",
 			ev:   nil,
@@ -163,6 +169,14 @@ func check(t *testing.T, name string, si int, root Widget) {
 	}
 	for i := 0; i < 2; i++ {
 		move = append(move, move[5], move[6])
+	}
+	for i := 0; i < 10; i++ {
+		for j := 0; j < 10; j++ {
+			move = append(move, Event{
+				name: fmt.Sprintf("Click%02d-%02d", i, j),
+				ev:   tcell.NewEventMouse(i, j, tcell.Button1, tcell.ModNone),
+			})
+		}
 	}
 
 	for i := range move {

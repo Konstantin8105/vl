@@ -108,45 +108,27 @@ func (t *Text) Event(ev tcell.Event) {}
 ///////////////////////////////////////////////////////////////////////////////
 
 type Scroll struct {
-	size struct {
-		heights []uint
-		width   uint
-	}
 	offset uint
-	ws     []Widget
-	focus  bool
-}
+	Root   Widget
 
-func (sc Scroll) heightSumm() uint {
-	var s uint = 0
-	for _, h := range sc.size.heights {
-		s += h
+	size struct {
+		height uint
+		width  uint
 	}
-	return s
 }
 
 func (sc *Scroll) Focus(focus bool) {
-	sc.focus = focus
+	if sc.Root != nil {
+		sc.Root.Focus(focus)
+	}
 }
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
-	draw := func(row, col uint, st tcell.Style, r rune) {
-		rowI := int(row) + int(height) - int(sc.offset)
-		if rowI < 0 {
-			return
-		}
-		dr(uint(rowI), col, st, r)
-	}
-	if len(sc.size.heights) != len(sc.ws) {
-		sc.size.heights = make([]uint, len(sc.ws)+1)
-	}
-	sc.size.heights[0] = 0
-	for i := range sc.ws {
-		if sc.ws[i] == nil {
-			continue
-		}
-		height += sc.ws[i].Render(width, draw)
-		sc.size.heights[i+1] = height
+	defer func() {
+		sc.size.height = height
+	}()
+	if sc.Root != nil {
+		height = sc.Root.Render(width, dr)
 	}
 	return
 }
@@ -164,7 +146,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 			const minViewLines uint = 2 // constant
-			h := sc.heightSumm()
+			h := sc.size.height
 			if h < minViewLines {
 				break
 			}
@@ -172,7 +154,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if maxOffset < sc.offset {
 				sc.offset = maxOffset
 			}
-			return
 		default:
 			col, row := ev.Position()
 			if col < 0 {
@@ -185,43 +166,109 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if row < 0 {
 				return
 			}
-			// unfocus
-			for i := range sc.ws {
-				if w := sc.ws[i]; w != nil {
-					w.Focus(false)
-				}
+			if sc.Root == nil {
+				return
 			}
-			// find focus widget
-			for i := range sc.size.heights {
-				if i == 0 {
-					continue
+			sc.Focus(true)
+			sc.Root.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+		}
+	case *tcell.EventKey:
+		if sc.Root != nil {
+			return
+		}
+		sc.Root.Event(ev)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type List struct {
+	size struct {
+		heights []uint
+		width   uint
+	}
+	ws    []Widget
+	focus bool
+}
+
+func (l *List) Focus(focus bool) {
+	l.focus = focus
+}
+
+func (l *List) Render(width uint, dr Drawer) (height uint) {
+	draw := func(row, col uint, st tcell.Style, r rune) {
+		row += height
+		dr(row, col, st, r)
+	}
+	if len(l.size.heights) != len(l.ws) {
+		l.size.heights = make([]uint, len(l.ws)+1)
+	}
+	l.size.heights[0] = 0
+	for i := range l.ws {
+		if l.ws[i] == nil {
+			l.size.heights[i+1] = height
+			continue
+		}
+		height += l.ws[i].Render(width, draw)
+		l.size.heights[i+1] = height
+	}
+	return
+}
+
+func (l *List) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		col, row := ev.Position()
+		if col < 0 {
+			return
+		}
+		if col < int(l.size.width) {
+			return
+		}
+		if row < 0 {
+			return
+		}
+		// unfocus
+		l.Focus(false)
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Focus(false)
+			}
+		}
+		// find focus widget
+		for i := range l.size.heights {
+			if i == 0 {
+				continue
+			}
+			if l.size.heights[i-1] <= uint(row) &&
+				uint(row) < l.size.heights[i] {
+				row -= int(l.size.heights[i-1])
+				i--
+				l.Focus(true)
+				if l.ws[i] != nil {
+					l.ws[i].Focus(true)
+					l.ws[i].Event(tcell.NewEventMouse(
+						col, row,
+						ev.Buttons(),
+						ev.Modifiers()))
 				}
-				if sc.size.heights[i-1] <= uint(row) && uint(row) < sc.size.heights[i] {
-					row -= int(sc.size.heights[i-1])
-					i--
-					sc.Focus(true)
-					if sc.ws[i] != nil {
-						sc.ws[i].Focus(true)
-						sc.ws[i].Event(tcell.NewEventMouse(
-							col, row,
-							ev.Buttons(),
-							ev.Modifiers()))
-					}
-					return
-				}
+				return
 			}
 		}
 	case *tcell.EventKey:
-		for i := range sc.ws {
-			if w := sc.ws[i]; w != nil {
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
 				w.Event(ev)
 			}
 		}
 	}
 }
 
-func (sc *Scroll) Add(w Widget) {
-	sc.ws = append(sc.ws, w)
+func (l *List) Add(w Widget) {
+	l.ws = append(l.ws, w)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
