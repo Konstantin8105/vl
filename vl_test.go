@@ -23,37 +23,37 @@ var (
 )
 
 type Root struct {
-	name string
-	w    Widget
+	name     string
+	generate func() Widget
 }
 
 var roots = []Root{
-	{"nil", nil},
+	{"nil", func() Widget { return nil }},
 }
 
 func init() {
 	for ti := range texts {
 		roots = append(roots, Root{
-			name: fmt.Sprintf("justtext%03d", ti),
-			w:    TextStatic(texts[ti]),
+			name:     fmt.Sprintf("justtext%03d", ti),
+			generate: func() Widget { return TextStatic(texts[ti]) },
 		})
 	}
 	for ti := range texts {
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithText%03d", ti),
-			w: func() Widget {
+			generate: func() Widget {
 				var r Scroll
 				var l List
 				l.Add(TextStatic(texts[ti]))
 				r.Root = &l
 				return &r
-			}(),
+			},
 		})
 	}
 	for ti := range texts {
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
-			w: func() Widget {
+			generate: func() Widget {
 				var r Scroll
 				var l List
 				l.Add(TextStatic(texts[ti]))
@@ -63,7 +63,7 @@ func init() {
 				l.Add(TextStatic(texts[ti]))
 				r.Root = &l
 				return &r
-			}(),
+			},
 		})
 	}
 }
@@ -73,7 +73,7 @@ func Test(t *testing.T) {
 		for ri := range roots {
 			name := fmt.Sprintf("%03d-%s", sizes[si], roots[ri].name)
 			t.Run(name, func(t *testing.T) {
-				check(t, name, si, roots[ri].w)
+				check(t, name, si, roots[ri].generate())
 			})
 		}
 	}
@@ -181,7 +181,9 @@ func check(t *testing.T, name string, si int, root Widget) {
 
 	for i := range move {
 		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
-		b.Event(move[i].ev)
+		if e := move[i].ev; e != nil {
+			b.Event(e)
+		}
 		b.Render(b.Width, db.Drawer)
 		if db.ErrorRune() {
 			t.Errorf("error rune")

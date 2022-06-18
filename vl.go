@@ -93,6 +93,9 @@ func (t *Text) Focus(focus bool) {}
 
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	draw := func(row, col uint, r rune) {
+		if width < col {
+			panic("Text width")
+		}
 		dr(row, col, TextStyle, r)
 	}
 	if !t.content.NoUpdate {
@@ -118,18 +121,31 @@ type Scroll struct {
 }
 
 func (sc *Scroll) Focus(focus bool) {
-	if sc.Root != nil {
-		sc.Root.Focus(focus)
+	if sc.Root == nil {
+		return
 	}
+	sc.Root.Focus(focus)
 }
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		sc.size.height = height
+		sc.size.width = width
 	}()
-	if sc.Root != nil {
-		height = sc.Root.Render(width, dr)
+	if sc.Root == nil {
+		return
 	}
+	draw := func(row, col uint, st tcell.Style, r rune) {
+		if width < col {
+			return
+		}
+		if row < sc.offset {
+			return
+		}
+		row -= sc.offset
+		dr(row, col, st, r)
+	}
+	height = sc.Root.Render(width, draw)
 	return
 }
 
@@ -142,7 +158,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				break
 			}
 			sc.offset--
-			return
 		case tcell.WheelDown:
 			sc.offset++
 			const minViewLines uint = 2 // constant
@@ -162,7 +177,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if col < int(sc.size.width) {
 				return
 			}
-			row += int(sc.offset)
+			row = row + int(sc.offset)
 			if row < 0 {
 				return
 			}
@@ -199,14 +214,20 @@ func (l *List) Focus(focus bool) {
 }
 
 func (l *List) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		l.size.width = width
+	}()
 	draw := func(row, col uint, st tcell.Style, r rune) {
+		if width < col {
+			return
+		}
 		row += height
 		dr(row, col, st, r)
 	}
 	if len(l.size.heights) != len(l.ws) {
 		l.size.heights = make([]uint, len(l.ws)+1)
 	}
-	l.size.heights[0] = 0
+	l.size.heights[0] = height
 	for i := range l.ws {
 		if l.ws[i] == nil {
 			l.size.heights[i+1] = height
