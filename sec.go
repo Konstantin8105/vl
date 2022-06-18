@@ -42,6 +42,98 @@ type Widget interface {
 	Focus(focus bool)
 }
 
+// Template for widgets:
+//
+//	func (...) Focus(focus bool) {}
+//	func (...) Draw(width int, dr Drawer) (height int) {}
+//	func (...) Event(ev tcell.Event) {}
+
+type HorizontalBox struct {
+	// distance from left side to border
+	// between left and right widgets
+	Border uint
+
+	// widgets
+	Left, Right Widget
+}
+
+func (hb *HorizontalBox) Focus(focus bool) {}
+func (hb *HorizontalBox) Draw(width int, dr Drawer) (height int) {
+	if 0 < hb.Border && hb.Left != nil {
+		height = hb.Left.Draw(int(hb.Border), dr)
+	}
+	if hb.Right != nil && int(hb.Border) < width {
+		draw := func(row, col int, s tcell.Style, r rune) {
+			dr(row, col+int(hb.Border), s, r)
+		}
+		h2 := hb.Right.Draw(width-int(hb.Border), draw)
+		if height < h2 {
+			height = h2
+		}
+	}
+	return
+}
+func (hb *HorizontalBox) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventKey:
+	case *tcell.EventMouse:
+		col, row := ev.Position()
+		if int(hb.Border) < col && hb.Right != nil {
+			// to right
+			col -= int(hb.Border)
+			nev := tcell.NewEventMouse(col, row, ev.Buttons(), ev.Modifiers())
+			hb.Right.Event(nev)
+			DebugInfo = fmt.Sprintf("right: %d  %d", col, hb.Border)
+			return
+		}
+		if col < int(hb.Border) && hb.Right != nil {
+			// to left
+			nev := tcell.NewEventMouse(col, row, ev.Buttons(), ev.Modifiers())
+			hb.Left.Event(nev)
+			DebugInfo = "left"
+			return
+		}
+	}
+}
+
+type CollapsingHeader struct {
+	b    Button
+	open bool
+	ws   []Widget
+}
+
+func (ch *CollapsingHeader) SetText(str string) {
+	ch.b.SetText(str)
+}
+
+func (ch *CollapsingHeader) Add(w Widget) {
+	ch.ws = append(ch.ws, w)
+}
+
+// ignore any actions
+func (ch *CollapsingHeader) Focus(focus bool) {}
+
+func (ch *CollapsingHeader) Draw(width int, dr Drawer) (height int) {
+	// TODO : const (
+	// TODO : 	OpenIndicator  = "Open"
+	// TODO : 	CloseIndicator = "Close"
+	// TODO : )
+	// header
+	height += ch.b.Draw(width, dr)
+	// draw other widgets
+	if !ch.open { // is close?
+		return
+	}
+	// open collapsing header
+	for i := range ch.ws {
+		height += ch.ws[i].Draw(width, dr)
+	}
+	return
+}
+
+// ignore any actions
+func (ch *CollapsingHeader) Event(ev tcell.Event) {}
+
 type Input struct {
 	text  tf.TextField
 	focus bool
@@ -101,9 +193,16 @@ func (i *Input) Event(ev tcell.Event) {
 	if !i.focus {
 		return
 	}
-	switch ev.(type) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		switch ev.Buttons() {
+		case tcell.Button1: // Left mouse
+			col, row := ev.Position()
+			DebugInfo = fmt.Sprintf("INP %d %d", col, row)
+			i.Focus(true)
+		}
 	case *tcell.EventKey:
-		switch ev.(*tcell.EventKey).Key() {
+		switch ev.Key() {
 		case tcell.KeyUp:
 			i.text.CursorMoveUp()
 		case tcell.KeyDown:
@@ -119,7 +218,7 @@ func (i *Input) Event(ev tcell.Event) {
 		case tcell.KeyDelete:
 			i.text.KeyDel()
 		default:
-			i.text.Insert(ev.(*tcell.EventKey).Rune())
+			i.text.Insert(ev.Rune())
 		}
 	}
 }
@@ -140,6 +239,8 @@ func (l *Line) Draw(width int, dr Drawer) (height int) {
 func (l *Line) Event(ev tcell.Event) {}
 
 type Button struct {
+	height uint // templorary data
+
 	text    Text
 	focus   bool
 	OnClick func()
@@ -149,7 +250,14 @@ func (b *Button) Focus(focus bool) {
 	b.focus = focus
 }
 
+func (b *Button) SetText(str string) {
+	b.text.SetText(str)
+}
+
 func (b *Button) Draw(width int, dr Drawer) (height int) {
+	defer func() {
+		b.height = uint(height)
+	}()
 	// default style
 	st := StyleButton
 	if b.focus {
@@ -205,8 +313,32 @@ func (b *Button) Draw(width int, dr Drawer) (height int) {
 	return
 }
 
-// ignore any actions
-func (b *Button) Event(ev tcell.Event) {}
+func (b *Button) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		switch ev.Buttons() {
+		case tcell.Button1: // Left mouse
+			//  click on button
+			col, row := ev.Position()
+			DebugInfo = fmt.Sprintf("Button1: row=%d col=%d height=%d", row, col, b.height)
+			if col < 0 {
+				return
+			}
+			if row < 0 {
+				return
+			}
+			if int(b.height) < row {
+				return
+			}
+			// on click
+			DebugInfo = fmt.Sprintf("Before OnClick %v", b)
+			if f := b.OnClick; f != nil {
+				DebugInfo = fmt.Sprintf("OnClick %v", b)
+				f()
+			}
+		}
+	}
+}
 
 type Text struct {
 	text tf.TextField
@@ -242,14 +374,18 @@ func (t *Text) Draw(width int, dr Drawer) (height int) {
 func (t *Text) Event(ev tcell.Event) {}
 
 type Scroll struct {
-	offset int
-	height int
-	ws     []Widget
-	focus  bool
-	mouse  struct {
-		coord Coordinate
-		check bool
+	offset  int
+	heights []uint
+	ws      []Widget
+	focus   bool
+}
+
+func (sc Scroll) heightSumm() uint {
+	var s uint = 0
+	for _, h := range sc.heights {
+		s += h
 	}
+	return s
 }
 
 func (sc *Scroll) Focus(focus bool) {
@@ -260,30 +396,14 @@ func (sc *Scroll) Draw(width int, dr Drawer) (height int) {
 	draw := func(Row, Col int, Style tcell.Style, Rune rune) {
 		dr(Row+height-sc.offset, Col, Style, Rune)
 	}
+	if len(sc.heights) != len(sc.ws) {
+		sc.heights = make([]uint, len(sc.ws))
+	}
 	for i := range sc.ws {
-		height += sc.ws[i].Draw(width, draw)
-		if sc.mouse.check {
-			if 0 <= sc.mouse.coord.Row+sc.offset &&
-				sc.mouse.coord.Row+sc.offset < height &&
-				0 <= sc.mouse.coord.Col &&
-				sc.mouse.coord.Col <= width {
-				sc.Focus(true)
-				switch v := sc.ws[i].(type) {
-				case *Button:
-					if f := v.OnClick; f != nil {
-						f()
-					}
-				default:
-					sc.ws[i].Focus(true)
-				}
-				sc.mouse.check = false
-			}
-		}
+		h := sc.ws[i].Draw(width, draw)
+		height += h
+		sc.heights[i] = uint(h)
 	}
-	if sc.mouse.check {
-		sc.mouse.check = false
-	}
-	sc.height = height
 	return
 }
 
@@ -299,15 +419,25 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 			const minViewLines = 2 // constant
-			if maxOffset := sc.height - minViewLines; maxOffset < sc.offset {
+			if maxOffset := int(sc.heightSumm()) - minViewLines; maxOffset < sc.offset {
 				sc.offset = maxOffset
 			}
 		case tcell.Button1: // Left mouse
-			sc.mouse.coord.Col, sc.mouse.coord.Row = ev.Position()
-			sc.mouse.check = true
-			sc.Focus(false)
-			for i := range sc.ws {
-				sc.ws[i].Focus(false)
+			col, row := ev.Position() // TODO compare col
+			var hlast, hnew int
+			hlast += sc.offset
+			for i := range sc.heights {
+				hlast = hnew
+				hnew += int(sc.heights[i])
+				if hlast < row && row < hnew {
+					sc.Focus(true)
+					if sc.ws[i] != nil {
+						sc.ws[i].Focus(true)
+						sc.ws[i].Event(tcell.NewEventMouse(
+							col, row-hlast, ev.Buttons(), ev.Modifiers()))
+					}
+					return
+				}
 			}
 		}
 	}
@@ -347,7 +477,7 @@ func (app *App) Init() (err error) {
 	}()
 
 	screen.EnableMouse(tcell.MouseButtonEvents) // Click event only
-	screen.EnablePaste() // ?
+	screen.EnablePaste()                        // ?
 
 	screen.SetStyle(StyleDefault)
 	screen.Clear()
@@ -435,6 +565,8 @@ func (app *App) Stop() (err error) {
 	return
 }
 
+var DebugInfo string
+
 func main() {
 	var app App
 	if err := app.Init(); err != nil {
@@ -451,15 +583,49 @@ func main() {
 	var root Scroll
 	// add widgets
 	{
+		// for debug only
+		{
+			var dt Text
+			go func() {
+				for {
+					<-time.After(time.Millisecond * 10)
+					dt.SetText(DebugInfo)
+				}
+			}()
+			root.Add(&dt)
+		}
 		for i := 0; i < 50; i++ {
 			root.Add(TextStatic("Hello world\nMy dear friend"))
+			{
+				hb := HorizontalBox{
+					Border: 20,
+					Left:   TextStatic("Some think"),
+					Right:  TextStatic("New part"),
+				}
+				root.Add(&hb)
+			}
 			{
 				var counter int
 				var b Button
 				b.text.SetText(fmt.Sprintf("Button:%d", i))
 				b.OnClick = func() {
 					counter++
-					b.text.SetText(fmt.Sprintf("Counter:%d", counter))
+					b.SetText(fmt.Sprintf("Counter:%d", counter))
+				}
+				hb := HorizontalBox{
+					Border: 15,
+					Left:   TextStatic("Very very very long text"),
+					Right:  &b,
+				}
+				root.Add(&hb)
+			}
+			{
+				var counter int
+				var b Button
+				b.text.SetText(fmt.Sprintf("Button:%d", i))
+				b.OnClick = func() {
+					counter++
+					b.SetText(fmt.Sprintf("Counter:%d", counter))
 				}
 				root.Add(&b)
 			}
