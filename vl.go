@@ -108,15 +108,18 @@ func (t *Text) Event(ev tcell.Event) {}
 ///////////////////////////////////////////////////////////////////////////////
 
 type Scroll struct {
-	offset  uint
-	heights []uint
-	ws      []Widget
-	focus   bool
+	size struct {
+		heights []uint
+		width   uint
+	}
+	offset uint
+	ws     []Widget
+	focus  bool
 }
 
 func (sc Scroll) heightSumm() uint {
 	var s uint = 0
-	for _, h := range sc.heights {
+	for _, h := range sc.size.heights {
 		s += h
 	}
 	return s
@@ -128,18 +131,22 @@ func (sc *Scroll) Focus(focus bool) {
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	draw := func(row, col uint, st tcell.Style, r rune) {
-		dr(row+height-sc.offset, col, st, r)
+		rowI := int(row) + int(height) - int(sc.offset)
+		if rowI < 0 {
+			return
+		}
+		dr(uint(rowI), col, st, r)
 	}
-	if len(sc.heights) != len(sc.ws) {
-		sc.heights = make([]uint, len(sc.ws))
+	if len(sc.size.heights) != len(sc.ws) {
+		sc.size.heights = make([]uint, len(sc.ws)+1)
 	}
+	sc.size.heights[0] = 0
 	for i := range sc.ws {
 		if sc.ws[i] == nil {
 			continue
 		}
-		h := sc.ws[i].Render(width, draw)
-		height += h
-		sc.heights[i] = uint(h)
+		height += sc.ws[i].Render(width, draw)
+		sc.size.heights[i+1] = height
 	}
 	return
 }
@@ -153,6 +160,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				break
 			}
 			sc.offset--
+			return
 		case tcell.WheelDown:
 			sc.offset++
 			const minViewLines uint = 2 // constant
@@ -164,27 +172,51 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if maxOffset < sc.offset {
 				sc.offset = maxOffset
 			}
-		case tcell.Button1: // Left mouse
-			col, row := ev.Position() // TODO compare col
-			var hlast, hnew uint
-			hlast += sc.offset
-			for i := range sc.heights {
-				hlast = hnew
-				hnew += sc.heights[i]
-				if int(hlast) < row && row < int(hnew) {
+			return
+		default:
+			col, row := ev.Position()
+			if col < 0 {
+				return
+			}
+			if col < int(sc.size.width) {
+				return
+			}
+			row += int(sc.offset)
+			if row < 0 {
+				return
+			}
+			// unfocus
+			for i := range sc.ws {
+				if w := sc.ws[i]; w != nil {
+					w.Focus(false)
+				}
+			}
+			// find focus widget
+			for i := range sc.size.heights {
+				if i == 0 {
+					continue
+				}
+				if sc.size.heights[i-1] <= uint(row) && uint(row) < sc.size.heights[i] {
+					row -= int(sc.size.heights[i-1])
+					i--
 					sc.Focus(true)
 					if sc.ws[i] != nil {
 						sc.ws[i].Focus(true)
 						sc.ws[i].Event(tcell.NewEventMouse(
-							col, row-int(hlast), ev.Buttons(), ev.Modifiers()))
+							col, row,
+							ev.Buttons(),
+							ev.Modifiers()))
 					}
 					return
 				}
 			}
 		}
-	}
-	for i := range sc.ws {
-		sc.ws[i].Event(ev)
+	case *tcell.EventKey:
+		for i := range sc.ws {
+			if w := sc.ws[i]; w != nil {
+				w.Event(ev)
+			}
+		}
 	}
 }
 

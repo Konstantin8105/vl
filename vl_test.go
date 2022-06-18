@@ -18,7 +18,7 @@ const (
 
 var (
 	sizes = []uint{0, 1, 2, 5, 7, 10, 30}
-	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.",`Название языка, выбранное компанией Google, практически совпадает с названием языка программирования Go!, созданного Ф. Джи. МакКейбом и К. Л. Кларком в 2003 году[9]. Обсуждение названия ведётся на странице, посвящённой Go[9].
+	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.", `Название языка, выбранное компанией Google, практически совпадает с названием языка программирования Go!, созданного Ф. Джи. МакКейбом и К. Л. Кларком в 2003 году[9]. Обсуждение названия ведётся на странице, посвящённой Go[9].
 На домашней странице языка и вообще в Интернет-публикациях часто используется альтернативное название — «golang»`}
 )
 
@@ -134,13 +134,35 @@ func check(t *testing.T, name string, si int, root Widget) {
 			name: "WheelDown",
 			ev:   tcell.NewEventMouse(0, 0, tcell.WheelDown, tcell.ModNone),
 		},
+		{ // 3
+			name: "Click",
+			ev:   tcell.NewEventMouse(1, 1, tcell.Button1, tcell.ModNone),
+		},
+		{ // 4
+			name: "InputRune",
+			ev:   tcell.NewEventKey(0, 'W', tcell.ModNone),
+		},
+		{ // 5
+			name: "Right",
+			ev:   tcell.NewEventKey(tcell.KeyRight, ' ', tcell.ModNone),
+		},
+		{ // 6
+			name: "Left",
+			ev:   tcell.NewEventKey(tcell.KeyLeft, ' ', tcell.ModNone),
+		},
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 6; i++ {
 		move = append(move, move[2])
 	}
-	for i := 0; i < 12; i++ {
+	for i := 0; i < 8; i++ {
 		move = append(move, move[1])
+	}
+	for i := 0; i < 2; i++ {
+		move = append(move, move[3], move[4], move[4], move[2])
+	}
+	for i := 0; i < 2; i++ {
+		move = append(move, move[5], move[6])
 	}
 
 	for i := range move {
