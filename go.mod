@@ -5,7 +5,7 @@ go 1.18
 require github.com/gdamore/tcell/v2 v2.5.1
 
 require (
-	github.com/Konstantin8105/tf v0.0.0-20220617145853-553675e94d56 // indirect
+	github.com/Konstantin8105/tf v0.0.0-20220618100312-442ac19c5895 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell v1.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
