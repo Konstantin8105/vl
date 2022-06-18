@@ -144,9 +144,6 @@ type Button struct {
 }
 
 func (b *Button) Focus(focus bool) {
-	if f := b.OnClick; f != nil && focus {
-		f()
-	}
 	b.focus = focus
 }
 
@@ -269,7 +266,14 @@ func (sc *Scroll) Draw(width int, dr Drawer) (height int) {
 				0 <= sc.mouse.coord.Col &&
 				sc.mouse.coord.Col <= width {
 				sc.Focus(true)
-				sc.ws[i].Focus(true)
+				switch v := sc.ws[i].(type) {
+				case *Button:
+					if f := v.OnClick; f != nil {
+						f()
+					}
+				default:
+					sc.ws[i].Focus(true)
+				}
 				sc.mouse.check = false
 			}
 		}
@@ -340,7 +344,7 @@ func (app *App) Init() (err error) {
 		app.screen = screen
 	}()
 
-	screen.EnableMouse()
+	screen.EnableMouse(tcell.MouseButtonEvents) // Click event only
 	screen.EnablePaste() // ?
 
 	screen.SetStyle(StyleDefault)
