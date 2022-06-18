@@ -18,26 +18,57 @@ const (
 
 var (
 	sizes = []uint{0, 1, 2, 5, 7, 10, 30}
-	texts = []string{"", "Lorem", `Название языка, выбранное компанией Google, практически совпадает с названием языка программирования Go!, созданного Ф. Джи. МакКейбом и К. Л. Кларком в 2003 году[9]. Обсуждение названия ведётся на странице, посвящённой Go[9].
+	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.",`Название языка, выбранное компанией Google, практически совпадает с названием языка программирования Go!, созданного Ф. Джи. МакКейбом и К. Л. Кларком в 2003 году[9]. Обсуждение названия ведётся на странице, посвящённой Go[9].
 На домашней странице языка и вообще в Интернет-публикациях часто используется альтернативное название — «golang»`}
 )
 
-var roots = []Widget{
-	nil,
+type Root struct {
+	name string
+	w    Widget
+}
+
+var roots = []Root{
+	{"nil", nil},
 }
 
 func init() {
 	for ti := range texts {
-		roots = append(roots, TextStatic(texts[ti]))
+		roots = append(roots, Root{
+			name: fmt.Sprintf("justtext%03d", ti),
+			w:    TextStatic(texts[ti]),
+		})
+	}
+	for ti := range texts {
+		roots = append(roots, Root{
+			name: fmt.Sprintf("ScrollWithText%03d", ti),
+			w: func() Widget {
+				var r Scroll
+				r.Add(TextStatic(texts[ti]))
+				return &r
+			}(),
+		})
+	}
+	for ti := range texts {
+		roots = append(roots, Root{
+			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
+			w: func() Widget {
+				var r Scroll
+				r.Add(TextStatic(texts[ti]))
+				r.Add(TextStatic(texts[ti]))
+				r.Add(TextStatic(texts[ti]))
+				r.Add(TextStatic(texts[ti]))
+				return &r
+			}(),
+		})
 	}
 }
 
 func Test(t *testing.T) {
 	for si := range sizes {
 		for ri := range roots {
-			name := fmt.Sprintf("%03d-%03d", sizes[si], ri)
+			name := fmt.Sprintf("%03d-%s", sizes[si], roots[ri].name)
 			t.Run(name, func(t *testing.T) {
-				check(t, name, si, roots[ri])
+				check(t, name, si, roots[ri].w)
 			})
 		}
 	}
@@ -50,20 +81,6 @@ func check(t *testing.T, name string, si int, root Widget) {
 		Root:   root,
 	}
 	t.Logf("Screen size: width=%d height=%d", b.Width, b.Height)
-
-	var db Buffer
-	b.Render(b.Width, db.Drawer)
-	if db.ErrorRune() {
-		t.Errorf("error rune")
-	}
-	if len(db.m) != int(b.Height) {
-		t.Errorf("height is not valid: %d %d", len(db.m), int(b.Height))
-	}
-	for r := range db.m {
-		if len(db.m[r]) != int(b.Width) {
-			t.Errorf("width is not valid: %d %d", len(db.m[r]), int(b.Width))
-		}
-	}
 
 	var buf bytes.Buffer
 
@@ -99,7 +116,50 @@ func check(t *testing.T, name string, si int, root Widget) {
 		}
 	}()
 
-	fmt.Fprintf(&buf, "%s", db)
+	var db Buffer
+
+	var move = []struct {
+		name string
+		ev   tcell.Event
+	}{
+		{ // 0
+			name: "none",
+			ev:   nil,
+		},
+		{ // 1
+			name: "WheelUp",
+			ev:   tcell.NewEventMouse(0, 0, tcell.WheelUp, tcell.ModNone),
+		},
+		{ // 2
+			name: "WheelDown",
+			ev:   tcell.NewEventMouse(0, 0, tcell.WheelDown, tcell.ModNone),
+		},
+	}
+
+	for i := 0; i < 10; i++ {
+		move = append(move, move[2])
+	}
+	for i := 0; i < 12; i++ {
+		move = append(move, move[1])
+	}
+
+	for i := range move {
+		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
+		b.Event(move[i].ev)
+		b.Render(b.Width, db.Drawer)
+		if db.ErrorRune() {
+			t.Errorf("error rune")
+		}
+		if len(db.m) != int(b.Height) {
+			t.Errorf("height is not valid: %d %d", len(db.m), int(b.Height))
+		}
+		for r := range db.m {
+			if len(db.m[r]) != int(b.Width) {
+				t.Errorf("width is not valid: %d %d", len(db.m[r]), int(b.Width))
+			}
+		}
+		fmt.Fprintf(&buf, "%s", db)
+	}
 }
 
 type Buffer struct {
