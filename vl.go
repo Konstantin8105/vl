@@ -662,7 +662,9 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 
 func (ch *CheckBox) Event(ev tcell.Event) {
 	ch.Frame.Event(ev)
-	ch.Checked = ch.Frame.focus
+	if ch.Frame.focus {
+		ch.Checked = !ch.Checked
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
