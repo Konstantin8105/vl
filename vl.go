@@ -32,8 +32,6 @@ type Widget interface {
 //	func (...) Render(width uint, dr Drawer) (height uint) {}
 //	func (...) Event(ev tcell.Event) {}
 
-type Coordinate struct{ Row, Col int }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 type Screen struct {
