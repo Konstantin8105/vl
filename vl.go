@@ -6,8 +6,10 @@ import (
 )
 
 var (
-	ScreenStyle tcell.Style
-	TextStyle   tcell.Style
+	ScreenStyle      tcell.Style
+	TextStyle        tcell.Style
+	ButtonStyle      tcell.Style
+	ButtonFocusStyle tcell.Style
 )
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
@@ -99,7 +101,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		dr(row, col, TextStyle, r)
 	}
 	if !t.content.NoUpdate {
-		t.content.SetWidth(uint(width))
+		t.content.SetWidth(width)
 	}
 	height = t.content.Render(draw, nil)
 	return
@@ -293,3 +295,111 @@ func (l *List) Add(w Widget) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// Button examples:
+// Minimal width:
+//	[  ]
+// Single text:
+//	[ Text ] Button
+// Long text:
+//	[ Text                ] Button
+// Multiline text:
+//	[ Line 1              ] Button
+//	[ Line 2              ]
+type Button struct {
+	size struct {
+		height uint
+		width  uint
+	}
+
+	content tf.TextField
+	focus   bool
+	OnClick func()
+}
+
+func (b *Button) Focus(focus bool) {
+	b.focus = focus
+}
+
+func (b *Button) SetText(str string) {
+	b.content.Text = []rune(str)
+	b.content.NoUpdate = false
+}
+
+func (b *Button) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		b.size.height = height
+		b.size.width = width
+	}()
+	// default style
+	st := ButtonStyle
+	if b.focus {
+		st = ButtonFocusStyle
+	}
+	// show button row
+	var emptyLines int = -1
+	showRow := func(row uint) {
+		if int(row) <= emptyLines {
+			return
+		}
+		// draw empty button
+		var i uint
+		for i = 0; i < width; i++ {
+			dr(row, i, st, ' ')
+		}
+		dr(row, 0, st, '[')
+		dr(row, width-1, st, ']')
+		emptyLines = int(row)
+	}
+	// constant
+	const buttonOffset = 2
+	if width < 2*buttonOffset {
+		width = 2 * buttonOffset
+	}
+	// draw runes
+	draw := func(row, col uint, r rune) {
+		if width < col {
+			return
+		}
+		// draw empty lines
+		var i uint
+		for i = 0; i <= row; i++ {
+			showRow(i)
+		}
+		// draw symbol
+		dr(row, col+buttonOffset, st, r)
+	}
+	// update content
+	if !b.content.NoUpdate {
+		b.content.SetWidth(width - 2*buttonOffset)
+	}
+	height = b.content.Render(draw, nil)
+	return
+}
+
+func (b *Button) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		switch ev.Buttons() {
+		case tcell.Button1: // Left mouse
+			//  click on button
+			col, row := ev.Position()
+			if col < 0 {
+				return
+			}
+			if int(b.size.width) < col {
+				return
+			}
+			if row < 0 {
+				return
+			}
+			if int(b.size.height) < row {
+				return
+			}
+			// on click
+			if f := b.OnClick; f != nil {
+				f()
+			}
+		}
+	}
+}

@@ -57,13 +57,18 @@ func init() {
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
 			generate: func() Widget {
-				var r Scroll
-				var l List
+				var (
+					r Scroll
+					l List
+					b Button
+				)
+				b.SetText(texts[ti])
+				b.OnClick = func() {}
+				l.Add(&b)
 				l.Add(TextStatic(texts[ti]))
 				l.Add(nil)
 				l.Add(TextStatic(texts[ti]))
-				l.Add(TextStatic(texts[ti]))
-				l.Add(TextStatic(texts[ti]))
+				l.Add(&b)
 				r.Root = &l
 				return &r
 			},
@@ -74,7 +79,7 @@ func init() {
 func Test(t *testing.T) {
 	for si := range sizes {
 		for ri := range roots {
-			name := fmt.Sprintf("%03d-%03d-%s", sizes[si],ri, roots[ri].name)
+			name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 			t.Run(name, func(t *testing.T) {
 				check(t, name, si, roots[ri].generate())
 			})
