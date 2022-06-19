@@ -80,6 +80,16 @@ func init() {
 				rg.SetText([]string{"one", "two", "three"})
 				l.Add(&rg)
 
+				var ch CheckBox
+				ch.SetText("checkbox 1")
+				ch.Checked = true
+				l.Add(&ch)
+
+				var ch2 CheckBox
+				ch2.SetText("checkbox 2")
+				ch2.Checked = false
+				l.Add(&ch2)
+
 				r.Root = &l
 				return &r
 			},

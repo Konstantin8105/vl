@@ -433,6 +433,10 @@ func (f *Frame) SetText(str string) {
 }
 
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		f.size.width = width
+		f.size.height = height
+	}()
 	if width < 4 {
 		return 1
 	}
@@ -622,6 +626,54 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 
 // Widget : CheckBox
 // Design : [V] Option
+
+type CheckBox struct {
+	Checked bool
+	Frame
+}
+
+func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		ch.Frame.size.width = width
+		ch.Frame.size.height = height
+	}()
+	if width < 6 {
+		return 1
+	}
+	var col uint = 0
+	dr(0, col, TextStyle, ' ')
+	col++
+	dr(0, col, TextStyle, '[')
+	col++
+	if ch.Checked {
+		dr(0, col, TextStyle, 'v')
+	} else {
+		dr(0, col, TextStyle, ' ')
+	}
+	col++
+	dr(0, col, TextStyle, ']')
+	col++
+	dr(0, col, TextStyle, ' ')
+	if !ch.Frame.content.NoUpdate {
+		ch.Frame.content.SetWidth(width - col)
+	}
+	draw := func(row, col uint, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row, col+6, TextStyle, r)
+	}
+	height = ch.Frame.content.Render(draw, nil)
+	if height < 2 {
+		height = 1
+	}
+	return
+}
+
+func (ch *CheckBox) Event(ev tcell.Event) {
+	ch.Frame.Event(ev)
+	ch.Checked = ch.Frame.focus
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
