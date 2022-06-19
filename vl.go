@@ -14,6 +14,12 @@ var (
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
 
+func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
+	for i := range rs {
+		dr(row, col+uint(i), s, rs[i])
+	}
+}
+
 type Widget interface {
 	Focus(focus bool)
 	Render(width uint, dr Drawer) (height uint)
@@ -535,28 +541,20 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	var col uint = 0
-	dr(0, col, TextStyle, ' ')
-	col++
-	dr(0, col, TextStyle, '(')
-	col++
+	const banner = 5
 	if r.choosed {
-		dr(0, col, TextStyle, '*')
+		PrintDrawer(0, 0, TextStyle, dr, []rune(" (*) "))
 	} else {
-		dr(0, col, TextStyle, ' ')
+		PrintDrawer(0, 0, TextStyle, dr, []rune(" ( ) "))
 	}
-	col++
-	dr(0, col, TextStyle, ')')
-	col++
-	dr(0, col, TextStyle, ' ')
 	if !r.content.NoUpdate {
-		r.content.SetWidth(width - col)
+		r.content.SetWidth(width - banner)
 	}
 	draw := func(row, col uint, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col+6, TextStyle, r)
+		dr(row, col+banner, TextStyle, r)
 	}
 	height = r.content.Render(draw, nil)
 	if height < 2 {
@@ -640,28 +638,20 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	var col uint = 0
-	dr(0, col, TextStyle, ' ')
-	col++
-	dr(0, col, TextStyle, '[')
-	col++
+	const banner = 5
 	if ch.Checked {
-		dr(0, col, TextStyle, 'v')
+		PrintDrawer(0, 0, TextStyle, dr, []rune(" [v] "))
 	} else {
-		dr(0, col, TextStyle, ' ')
+		PrintDrawer(0, 0, TextStyle, dr, []rune(" [ ] "))
 	}
-	col++
-	dr(0, col, TextStyle, ']')
-	col++
-	dr(0, col, TextStyle, ' ')
 	if !ch.Frame.content.NoUpdate {
-		ch.Frame.content.SetWidth(width - col)
+		ch.Frame.content.SetWidth(width - banner)
 	}
 	draw := func(row, col uint, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col+6, TextStyle, r)
+		dr(row, col+banner, TextStyle, r)
 	}
 	height = ch.Frame.content.Render(draw, nil)
 	if height < 2 {
@@ -677,6 +667,10 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Widget: Inputbox
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Widget : Combobox
 // Design :
 // +-------------------+
@@ -687,10 +681,6 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Widget : CollapsingHeader
-
-///////////////////////////////////////////////////////////////////////////////
-
-// Widget: Inputbox
 
 ///////////////////////////////////////////////////////////////////////////////
 
