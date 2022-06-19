@@ -23,7 +23,7 @@ type Widget interface {
 // Template for widgets:
 //
 //	func (...) Focus(focus bool) {}
-//	func (...) Render(width uint, dr Drawer) (height int) {}
+//	func (...) Render(width uint, dr Drawer) (height uint) {}
 //	func (...) Event(ev tcell.Event) {}
 
 type Coordinate struct{ Row, Col int }
@@ -172,6 +172,8 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				sc.offset = maxOffset
 			}
 		default:
+			// unfocus
+			sc.Focus(false)
 			col, row := ev.Position()
 			if col < 0 {
 				return
@@ -244,6 +246,13 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 func (l *List) Event(ev tcell.Event) {
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
+		// unfocus
+		l.Focus(false)
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Focus(false)
+			}
+		}
 		col, row := ev.Position()
 		if col < 0 {
 			return
@@ -253,13 +262,6 @@ func (l *List) Event(ev tcell.Event) {
 		}
 		if row < 0 {
 			return
-		}
-		// unfocus
-		l.Focus(false)
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
-				w.Focus(false)
-			}
 		}
 		// find focus widget
 		for i := range l.size.heights {
@@ -406,18 +408,112 @@ func (b *Button) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 // Frame examples:
 //	+- Name ---------+
 //	|                |
 //	+----------------+
 type Frame struct {
+	content tf.TextField
+	focus   bool
+	Root    Widget
+
+	size struct {
+		height uint
+		width  uint
+	}
 }
 
-func (...) Focus(focus bool) {}
-func (...) Render(width uint, dr Drawer) (height int) {}
-func (...) Event(ev tcell.Event) {}
+func (f *Frame) Focus(focus bool) {
+	f.focus = focus
+}
 
+func (f *Frame) SetText(str string) {
+	f.content.Text = []rune(str)
+	f.content.NoUpdate = false
+}
+
+func (f *Frame) Render(width uint, dr Drawer) (height uint) {
+	if width < 4 {
+		return 1
+	}
+	// draw frame
+	drawRow := func(row uint) {
+		var i uint
+		for i = 0; i < width; i++ {
+			if f.focus {
+				dr(row, i, TextStyle, '-')
+			} else {
+				dr(row, i, TextStyle, '=')
+			}
+		}
+	}
+	drawRow(0)
+	defer func() {
+		drawRow(height)
+		var r uint
+		for r = 0; r < height; r++ {
+			dr(r, 0, TextStyle, '|')
+			dr(r, width-1, TextStyle, '|')
+		}
+		dr(0, 0, TextStyle, '+')
+		dr(0, width-1, TextStyle, '+')
+		dr(height, 0, TextStyle, '+')
+		dr(height, width-1, TextStyle, '+')
+		height++
+	}()
+	// draw text
+	draw := func(row, col uint, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row, col+2, TextStyle, r)
+	}
+	if !f.content.NoUpdate {
+		f.content.SetWidth(width - 4)
+	}
+	height = f.content.Render(draw, nil)
+	// draw root widget
+	droot := func(row, col uint, s tcell.Style, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row+height, col+1, s, r)
+	}
+	height += f.Root.Render(width-2, droot)
+	return
+}
+
+func (f *Frame) Event(ev tcell.Event) {
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		// unfocus
+		f.Focus(false)
+		col, row := ev.Position()
+		if col < 0 {
+			return
+		}
+		if col < int(f.size.width) {
+			return
+		}
+		if row < 0 {
+			return
+		}
+		if f.Root == nil {
+			return
+		}
+		// focus
+		f.Focus(true)
+		f.Root.Event(tcell.NewEventMouse(
+			col, row,
+			ev.Buttons(),
+			ev.Modifiers()))
+	case *tcell.EventKey:
+		if f.Root != nil {
+			return
+		}
+		f.Root.Event(ev)
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
