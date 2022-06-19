@@ -75,6 +75,11 @@ func init() {
 				fr.Root = &secFr
 				l.Add(&fr)
 				l.Add(&b)
+
+				var rg RadioGroup
+				rg.SetText([]string{"one", "two", "three"})
+				l.Add(&rg)
+
 				r.Root = &l
 				return &r
 			},

@@ -517,8 +517,106 @@ func (f *Frame) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Widget : Radiobutton
-// Design : (0) choose one
+type radio struct {
+	choosed bool
+	focus   bool
+	content tf.TextField
+}
+
+func (r *radio) Focus(focus bool) {
+	r.focus = focus
+}
+
+func (r *radio) Render(width uint, dr Drawer) (height uint) {
+	if width < 6 {
+		return 1
+	}
+	var col uint = 0
+	dr(0, col, TextStyle, ' ')
+	col++
+	dr(0, col, TextStyle, '(')
+	col++
+	if r.choosed {
+		dr(0, col, TextStyle, '*')
+	} else {
+		dr(0, col, TextStyle, ' ')
+	}
+	col++
+	dr(0, col, TextStyle, ')')
+	col++
+	dr(0, col, TextStyle, ' ')
+	if !r.content.NoUpdate {
+		r.content.SetWidth(width - col)
+	}
+	draw := func(row, col uint, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row, col+6, TextStyle, r)
+	}
+	height = r.content.Render(draw, nil)
+	if height < 2 {
+		height = 1
+	}
+	return
+}
+
+func (r *radio) Event(ev tcell.Event) {
+	// ignore
+}
+
+// Radio - button with single choose
+// Example:
+//	(0) choose one
+//	( ) choose two
+type RadioGroup struct {
+	list List
+	pos  uint
+}
+
+func (rg *RadioGroup) SetText(ts []string) {
+	for i := range ts {
+		var r radio
+		r.content.Text = []rune(ts[i])
+		r.content.NoUpdate = false
+		rg.list.Add(&r)
+	}
+}
+
+func (rg *RadioGroup) GetPos() uint {
+	return rg.pos
+}
+
+func (rg *RadioGroup) Focus(focus bool) {
+	// ignore
+}
+
+func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
+	if len(rg.list.ws) <= int(rg.pos) {
+		rg.pos = 0
+	}
+	for i := range rg.list.ws {
+		if uint(i) == rg.pos {
+			rg.list.ws[i].(*radio).choosed = true
+			continue
+		}
+		rg.list.ws[i].(*radio).choosed = false
+	}
+	height = rg.list.Render(width, dr)
+	return
+}
+
+func (rg *RadioGroup) Event(ev tcell.Event) {
+	rg.list.Event(ev)
+	if rg.list.focus {
+		// change radio position
+		for i := range rg.list.ws {
+			if rg.list.ws[i].(*radio).focus {
+				rg.pos = uint(i)
+			}
+		}
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
