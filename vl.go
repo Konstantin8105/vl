@@ -383,14 +383,11 @@ func (b *Button) Event(ev tcell.Event) {
 //	|                |
 //	+----------------+
 type Frame struct {
+	container
+
 	content tf.TextField
 	Root    Widget
-
-	focus bool
-	size  struct {
-		height uint
-		width  uint
-	}
+	offset  uint // vertical root offset
 }
 
 func (f *Frame) Focus(focus bool) {
@@ -404,8 +401,7 @@ func (f *Frame) SetText(str string) {
 
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		f.size.width = width
-		f.size.height = height
+		f.set(width, height)
 	}()
 	if width < 4 {
 		return 1
@@ -458,34 +454,27 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (f *Frame) Event(ev tcell.Event) {
-	switch ev := ev.(type) {
-	case *tcell.EventMouse:
-		// unfocus
-		f.Focus(false)
-		col, row := ev.Position()
-		if col < 0 {
-			return
+	focus, _ := f.onFocus(ev)
+	f.Focus(focus)
+	if focus && f.Root != nil {
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			// recalculate position of mouse
+			col, row := ev.Position()
+			col -= 2
+			if row <= int(f.offset) {
+				// not on root
+				return
+			}
+			row -= int(f.offset)
+			f.Root.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			f.Root.Event(ev)
 		}
-		if col < int(f.size.width) {
-			return
-		}
-		if row < 0 {
-			return
-		}
-		if f.Root == nil {
-			return
-		}
-		// focus
-		f.Focus(true)
-		f.Root.Event(tcell.NewEventMouse(
-			col, row,
-			ev.Buttons(),
-			ev.Modifiers()))
-	case *tcell.EventKey:
-		if f.Root != nil {
-			return
-		}
-		f.Root.Event(ev)
 	}
 }
 
@@ -596,8 +585,8 @@ type CheckBox struct {
 
 func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		ch.Frame.size.width = width
-		ch.Frame.size.height = height
+		ch.width = width
+		ch.height = height
 	}()
 	if width < 6 {
 		return 1
