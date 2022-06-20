@@ -80,6 +80,7 @@ func (b *Screen) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type Text struct {
+	container
 	content tf.TextField
 }
 
@@ -94,10 +95,10 @@ func (t *Text) SetText(str string) {
 	t.content.NoUpdate = false
 }
 
-// ignore any actions
-func (t *Text) Focus(focus bool) {}
-
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		t.container.set(width, height)
+	}()
 	draw := func(row, col uint, r rune) {
 		if width < col {
 			panic("Text width")
@@ -110,9 +111,6 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	height = t.content.Render(draw, nil)
 	return
 }
-
-// ignore any actions
-func (t *Text) Event(ev tcell.Event) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -375,9 +373,9 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (b *Button) Event(ev tcell.Event) {
-	focus, leftClick := b.container.onFocus(ev)
+	focus, mouse := b.container.onFocus(ev)
 	b.container.Focus(focus)
-	if leftClick && b.OnClick != nil {
+	if mouse[0] && b.OnClick != nil {
 		b.OnClick()
 	}
 }
@@ -390,10 +388,10 @@ func (b *Button) Event(ev tcell.Event) {
 //	+----------------+
 type Frame struct {
 	content tf.TextField
-	focus   bool
 	Root    Widget
 
-	size struct {
+	focus bool
+	size  struct {
 		height uint
 		width  uint
 	}
@@ -701,7 +699,12 @@ func (c *container) set(width, height uint) {
 	c.height = height
 }
 
-func (c *container) onFocus(ev tcell.Event) (focus, clickLeftButton bool) {
+func (c *container) Event(ev tcell.Event) {
+	focus, _ := c.onFocus(ev)
+	c.Focus(focus)
+}
+
+func (c *container) onFocus(ev tcell.Event) (focus bool, button [3]bool) {
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		// check on focus
@@ -715,13 +718,17 @@ func (c *container) onFocus(ev tcell.Event) (focus, clickLeftButton bool) {
 		if row < 0 {
 			break
 		}
-		// focus
-		focus = true
-		// onClick
-		if ev.Buttons() == tcell.Button1 {
-			clickLeftButton = true
+		switch ev.Buttons() {
+		case tcell.Button1:
+			button[0] = true // Left mouse button
+			focus = true     // focus
+		case tcell.Button3:
+			button[1] = true // Middle mouse button
+			focus = true     // focus
+		case tcell.Button2:
+			button[2] = true // Right mouse button
+			focus = true     // focus
 		}
-		return
 	}
 	return
 }
