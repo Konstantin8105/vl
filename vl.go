@@ -377,12 +377,13 @@ func (b *Button) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Frame examples:
-//	+- Name ---------+
-//	|                |
-//	+----------------+
+//	+- Header ---------+
+//	|      Root        |
+//	+------------------+
 type Frame struct {
-	Text
+	container
 
+	Header Widget
 	Root   Widget
 	offset struct {
 		row uint // vertical root offset
@@ -423,16 +424,17 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		height++
 	}()
 	// draw text
-	draw := func(row, col uint, r rune) {
-		if width < col {
-			panic("Text width")
+	if f.Header != nil {
+		draw := func(row, col uint, st tcell.Style, r rune) {
+			if width < col {
+				panic("Text width")
+			}
+			dr(row, col+2, st, r)
 		}
-		dr(row, col+2, TextStyle, r)
+		height = f.Header.Render(width-4, draw)
+	} else {
+		height = 1
 	}
-	if !f.content.NoUpdate {
-		f.content.SetWidth(width - 4)
-	}
-	height = f.content.Render(draw, nil)
 	f.offset.row = height
 	f.offset.col = 1
 	// draw root widget
@@ -442,7 +444,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row+height, col+1, s, r)
 	}
-	height += f.Root.Render(width-2, droot)
+	if f.Root != nil {
+		height += f.Root.Render(width-2, droot)
+	}
 	return
 }
 

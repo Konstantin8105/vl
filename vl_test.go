@@ -68,9 +68,9 @@ func init() {
 				l.Add(TextStatic(texts[ti]))
 				l.Add(nil)
 				var fr Frame
-				fr.SetText("Frame header")
+				fr.Header = TextStatic("Frame header")
 				var secFr Frame
-				secFr.SetText("Second header with long multiline\nNo addition options")
+				secFr.Header = TextStatic("Second header with long multiline\nNo addition options")
 				secFr.Root = TextStatic(texts[ti])
 				fr.Root = &secFr
 				l.Add(&fr)
