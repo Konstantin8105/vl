@@ -104,7 +104,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if !t.content.NoUpdate {
 		t.content.SetWidth(width)
 	}
-	height = t.content.Render(draw, nil)
+	height = t.content.Render(draw, nil) // nil - not view cursor
 	return
 }
 
@@ -608,7 +608,34 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Widget: Inputbox
+type Inputbox struct {
+	Text
+}
+
+var Cursor rune = '█'
+
+func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		in.set(width, height)
+	}()
+	draw := func(row, col uint, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row, col, TextStyle, r)
+	}
+	cur := func(row, col uint) {
+		if width < col {
+			panic("Text width")
+		}
+		dr(row, col, TextStyle, Cursor)
+	}
+	if !in.content.NoUpdate {
+		in.content.SetWidth(width)
+	}
+	height = in.content.Render(draw, cur)
+	return
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

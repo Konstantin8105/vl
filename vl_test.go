@@ -90,6 +90,10 @@ func init() {
 				ch2.Checked = false
 				l.Add(&ch2)
 
+				var in Inputbox
+				in.SetText("Some inputbox text")
+				l.Add(&in)
+
 				r.Root = &l
 				return &r
 			},
