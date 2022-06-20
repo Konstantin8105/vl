@@ -93,7 +93,7 @@ func (t *Text) SetText(str string) {
 
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		t.container.set(width, height)
+		t.set(width, height)
 	}()
 	draw := func(row, col uint, r rune) {
 		if width < col {
@@ -320,7 +320,7 @@ func (b *Button) SetText(str string) {
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		b.container.set(width, height)
+		b.set(width, height)
 	}()
 	// default style
 	st := ButtonStyle
@@ -369,8 +369,8 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (b *Button) Event(ev tcell.Event) {
-	focus, mouse := b.container.onFocus(ev)
-	b.container.Focus(focus)
+	focus, mouse := b.onFocus(ev)
+	b.Focus(focus)
 	if mouse[0] && b.OnClick != nil {
 		b.OnClick()
 	}
