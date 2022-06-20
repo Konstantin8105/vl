@@ -379,7 +379,10 @@ type Frame struct {
 	Text
 
 	Root   Widget
-	offset uint // vertical root offset
+	offset struct {
+		row uint // vertical root offset
+		col uint // horizontal root offset
+	}
 }
 
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
@@ -425,7 +428,8 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		f.content.SetWidth(width - 4)
 	}
 	height = f.content.Render(draw, nil)
-	f.offset = height
+	f.offset.row = height
+	f.offset.col = 1
 	// draw root widget
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
@@ -445,12 +449,14 @@ func (f *Frame) Event(ev tcell.Event) {
 		case *tcell.EventMouse:
 			// recalculate position of mouse
 			col, row := ev.Position()
-			col -= 2
-			if row <= int(f.offset) {
-				// not on root
+			if col <= int(f.offset.col) {
 				return
 			}
-			row -= int(f.offset)
+			col -= int(f.offset.col)
+			if row <= int(f.offset.row) {
+				return
+			}
+			row -= int(f.offset.row)
 			f.Root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
