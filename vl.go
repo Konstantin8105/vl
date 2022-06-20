@@ -646,7 +646,7 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	if !in.content.NoUpdate {
 		in.content.SetWidth(width)
 	}
-	if !st.focus {
+	if !in.focus {
 		cur = nil // hide cursor for not-focus inputbox
 	}
 	height = in.content.Render(draw, cur)
