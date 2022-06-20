@@ -733,7 +733,25 @@ func (in *Inputbox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Widget: Tree
+// Tree examples:
+//	Main
+//	|
+//	+-+ Node 0
+//	| |
+//	| +- Node 01
+//	| |
+//	| +- Node 02
+//	|
+//	+-+ Node 1
+//	  |
+//	  +- Node 01
+//	  |
+//	  +- Node 02
+// type Tree struct {
+// 	open  bool
+// 	Name  Widget
+// 	Nodes []Tree
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 
