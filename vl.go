@@ -307,15 +307,8 @@ func (l *List) Add(w Widget) {
 //	[ Line 1              ] Button
 //	[ Line 2              ]
 type Button struct {
-	container
-
-	content tf.TextField
+	Text
 	OnClick func()
-}
-
-func (b *Button) SetText(str string) {
-	b.content.Text = []rune(str)
-	b.content.NoUpdate = false
 }
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
@@ -383,20 +376,10 @@ func (b *Button) Event(ev tcell.Event) {
 //	|                |
 //	+----------------+
 type Frame struct {
-	container
+	Text
 
-	content tf.TextField
-	Root    Widget
-	offset  uint // vertical root offset
-}
-
-func (f *Frame) Focus(focus bool) {
-	f.focus = focus
-}
-
-func (f *Frame) SetText(str string) {
-	f.content.Text = []rune(str)
-	f.content.NoUpdate = false
+	Root   Widget
+	offset uint // vertical root offset
 }
 
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
@@ -442,6 +425,7 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		f.content.SetWidth(width - 4)
 	}
 	height = f.content.Render(draw, nil)
+	f.offset = height
 	// draw root widget
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
@@ -481,13 +465,8 @@ func (f *Frame) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type radio struct {
+	Text
 	choosed bool
-	focus   bool
-	content tf.TextField
-}
-
-func (r *radio) Focus(focus bool) {
-	r.focus = focus
 }
 
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
