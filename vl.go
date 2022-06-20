@@ -176,7 +176,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if col < 0 {
 				return
 			}
-			if col < int(sc.size.width) {
+			if int(sc.size.width) < col {
 				return
 			}
 			row = row + int(sc.offset)
@@ -193,7 +193,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
-		if sc.Root != nil {
+		if sc.Root == nil {
 			return
 		}
 		sc.Root.Event(ev)
@@ -255,7 +255,7 @@ func (l *List) Event(ev tcell.Event) {
 		if col < 0 {
 			return
 		}
-		if col < int(l.size.width) {
+		if int(l.size.width) < col {
 			return
 		}
 		if row < 0 {
@@ -271,13 +271,14 @@ func (l *List) Event(ev tcell.Event) {
 				row -= int(l.size.heights[i-1])
 				i--
 				l.Focus(true)
-				if l.ws[i] != nil {
-					l.ws[i].Focus(true)
-					l.ws[i].Event(tcell.NewEventMouse(
-						col, row,
-						ev.Buttons(),
-						ev.Modifiers()))
+				if l.ws[i] == nil {
+					continue
 				}
+				l.ws[i].Focus(true)
+				l.ws[i].Event(tcell.NewEventMouse(
+					col, row,
+					ev.Buttons(),
+					ev.Modifiers()))
 				return
 			}
 		}
@@ -362,8 +363,10 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (b *Button) Event(ev tcell.Event) {
-	focus, mouse := b.onFocus(ev)
-	b.Focus(focus)
+	focus, mouse, ok := b.onFocus(ev)
+	if ok {
+		b.Focus(focus)
+	}
 	if b.focus && mouse[0] && b.OnClick != nil {
 		b.OnClick()
 	}
@@ -442,8 +445,10 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (f *Frame) Event(ev tcell.Event) {
-	focus, _ := f.onFocus(ev)
-	f.Focus(focus)
+	focus, _, ok := f.onFocus(ev)
+	if ok {
+		f.Focus(focus)
+	}
 	if focus && f.Root != nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
@@ -599,8 +604,10 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (ch *CheckBox) Event(ev tcell.Event) {
-	focus, mouse := ch.onFocus(ev)
-	ch.Focus(focus)
+	focus, mouse, ok := ch.onFocus(ev)
+	if !ok {
+		ch.Focus(focus)
+	}
 	if ch.focus && mouse[0] {
 		ch.Checked = !ch.Checked
 	}
@@ -635,6 +642,51 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	}
 	height = in.content.Render(draw, cur)
 	return
+}
+
+func (in *Inputbox) Event(ev tcell.Event) {
+	focus, _, ok := in.onFocus(ev)
+	if ok {
+		in.Focus(focus)
+	}
+	if !focus {
+		return
+	}
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		// recalculate position of mouse
+		col, row := ev.Position()
+		if col < 0 {
+			return
+		}
+		if int(in.width) < col {
+			return
+		}
+		if row < 0 {
+			return
+		}
+		in.content.CursorPosition(uint(row), uint(col))
+		return
+	case *tcell.EventKey:
+		switch ev.Key() {
+		case tcell.KeyUp:
+			in.content.CursorMoveUp()
+		case tcell.KeyDown:
+			in.content.CursorMoveDown()
+		case tcell.KeyLeft:
+			in.content.CursorMoveLeft()
+		case tcell.KeyRight:
+			in.content.CursorMoveRight()
+		case tcell.KeyEnter:
+			in.content.Insert('\n')
+		case tcell.KeyBackspace, tcell.KeyBackspace2:
+			in.content.KeyBackspace()
+		case tcell.KeyDelete:
+			in.content.KeyDel()
+		default:
+			in.content.Insert(ev.Rune())
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -698,11 +750,13 @@ func (c *container) set(width, height uint) {
 }
 
 func (c *container) Event(ev tcell.Event) {
-	focus, _ := c.onFocus(ev)
-	c.Focus(focus)
+	focus, _, ok := c.onFocus(ev)
+	if ok {
+		c.Focus(focus)
+	}
 }
 
-func (c *container) onFocus(ev tcell.Event) (focus bool, button [3]bool) {
+func (c *container) onFocus(ev tcell.Event) (focus bool, button [3]bool, ok bool) {
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		// check on focus
@@ -727,6 +781,7 @@ func (c *container) onFocus(ev tcell.Event) (focus bool, button [3]bool) {
 			button[2] = true // Right mouse button
 			focus = true     // focus
 		}
+		ok = true
 	}
 	return
 }

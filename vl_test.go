@@ -203,8 +203,8 @@ func check(t *testing.T, name string, si int, root Widget) {
 	for i := 0; i < 2; i++ {
 		move = append(move, move[5], move[6])
 	}
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 10; j++ {
+	for i := 0; i < 18; i++ {
+		for j := 0; j < 18; j++ {
 			move = append(move, Event{
 				name: fmt.Sprintf("Click%02d-%02d", i, j),
 				ev:   tcell.NewEventMouse(i, j, tcell.Button1, tcell.ModNone),
