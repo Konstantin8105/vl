@@ -764,7 +764,7 @@ func (c *container) onFocus(ev tcell.Event) (focus bool, button [3]bool, ok bool
 		if col < 0 {
 			break
 		}
-		if col < int(c.width) {
+		if int(c.width) < col {
 			break
 		}
 		if row < 0 {
