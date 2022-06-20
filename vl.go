@@ -40,40 +40,36 @@ type Screen struct {
 	Root   Widget
 }
 
-// ignore
-func (b *Screen) Focus(focus bool) {}
-
-func (b *Screen) Render(width uint, dr Drawer) (height uint) {
+func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	if width == 0 {
 		return
 	}
 	// draw default spaces
 	var col, row uint
-	for col = 0; col < b.Width; col++ {
-		for row = 0; row < b.Height; row++ {
+	for col = 0; col < screen.Width; col++ {
+		for row = 0; row < screen.Height; row++ {
 			dr(row, col, ScreenStyle, ' ')
 		}
 	}
 	// draw root widget
 	draw := func(row, col uint, s tcell.Style, r rune) {
-		if b.Height <= row {
+		if screen.Height <= row {
 			return
 		}
-		if b.Width <= col {
+		if screen.Width <= col {
 			return
 		}
 		dr(row, col, s, r)
 	}
-	if b.Root != nil {
-		_ = b.Root.Render(width, draw) // ignore height
+	if screen.Root != nil {
+		_ = screen.Root.Render(width, draw) // ignore height
 	}
-	return b.Height
+	return screen.Height
 }
 
-// ignore
-func (b *Screen) Event(ev tcell.Event) {
-	if b.Root != nil {
-		b.Root.Event(ev)
+func (screen *Screen) Event(ev tcell.Event) {
+	if screen.Root != nil {
+		screen.Root.Event(ev)
 	}
 }
 
