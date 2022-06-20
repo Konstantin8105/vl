@@ -6,10 +6,12 @@ import (
 )
 
 var (
-	ScreenStyle      tcell.Style
-	TextStyle        tcell.Style
-	ButtonStyle      tcell.Style
-	ButtonFocusStyle tcell.Style
+	ScreenStyle        tcell.Style
+	TextStyle          tcell.Style
+	ButtonStyle        tcell.Style
+	ButtonFocusStyle   tcell.Style
+	InputboxStyle      tcell.Style
+	InputboxFocusStyle tcell.Style
 )
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
@@ -625,17 +627,21 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		in.set(width, height)
 	}()
+	st := InputboxStyle
+	if in.focus {
+		st = InputboxFocusStyle
+	}
 	draw := func(row, col uint, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col, TextStyle, r)
+		dr(row, col, st, r)
 	}
 	cur := func(row, col uint) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col, TextStyle, Cursor)
+		dr(row, col, st, Cursor)
 	}
 	if !in.content.NoUpdate {
 		in.content.SetWidth(width)
