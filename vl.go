@@ -364,7 +364,7 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 func (b *Button) Event(ev tcell.Event) {
 	focus, mouse := b.onFocus(ev)
 	b.Focus(focus)
-	if mouse[0] && b.OnClick != nil {
+	if b.focus && mouse[0] && b.OnClick != nil {
 		b.OnClick()
 	}
 }
@@ -559,7 +559,7 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 
 type CheckBox struct {
 	Checked bool
-	Frame
+	Text
 }
 
 func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
@@ -576,8 +576,8 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		PrintDrawer(0, 0, TextStyle, dr, []rune(" [ ] "))
 	}
-	if !ch.Frame.content.NoUpdate {
-		ch.Frame.content.SetWidth(width - banner)
+	if !ch.content.NoUpdate {
+		ch.content.SetWidth(width - banner)
 	}
 	draw := func(row, col uint, r rune) {
 		if width < col {
@@ -585,7 +585,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col+banner, TextStyle, r)
 	}
-	height = ch.Frame.content.Render(draw, nil)
+	height = ch.content.Render(draw, nil)
 	if height < 2 {
 		height = 1
 	}
@@ -593,8 +593,9 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (ch *CheckBox) Event(ev tcell.Event) {
-	ch.Frame.Event(ev)
-	if ch.Frame.focus {
+	focus, mouse := ch.onFocus(ev)
+	ch.Focus(focus)
+	if ch.focus && mouse[0] {
 		ch.Checked = !ch.Checked
 	}
 }
