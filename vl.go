@@ -865,6 +865,60 @@ func (in *Inputbox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+func Demo() (root Widget) {
+	var (
+		scroll Scroll
+		list   List
+	)
+
+	scroll.Root = &list
+
+	{
+		var frame Frame
+		list.Add(&frame)
+		frame.Header = TextStatic("Checkbox test")
+		var list List
+		frame.Root = &list
+		size := 5
+		option := make([]*bool, size)
+
+		list.Add(TextStatic("Welcome to package `vl`"))
+		for i := 0; i < size; i++ {
+			var ch CheckBox
+			option[i] = &ch.Checked
+			ch.SetText(fmt.Sprintf("Option %01d", i))
+			list.Add(&ch)
+		}
+
+		var optionInfo Text
+		list.Add(&optionInfo)
+		go func() {
+			for {
+				<-time.After(time.Millisecond * 100)
+				var str string = "Result:\n"
+				for i := range option {
+					str += fmt.Sprintf("Option %01d is ", i)
+					if *option[i] {
+						str += "ON"
+					} else {
+						str += "OFF"
+					}
+					if i != len(option)-1 {
+						str += "\n"
+					}
+				}
+				optionInfo.SetText(str)
+			}
+		}()
+	}
+
+	// TODO : demo for radio
+	// TODO : demo for button
+	// TODO : demo for inputbox
+
+	return &scroll
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 type container struct {
@@ -933,7 +987,7 @@ func init() {
 	}
 }
 
-func Run(root Widget, channelStop <-chan bool, quitKeys ...tcell.Key) (err error) {
+func Run(root Widget, quitKeys ...tcell.Key) (err error) {
 	if root == nil {
 		err = fmt.Errorf("root widget is nil")
 		return
@@ -997,12 +1051,6 @@ func Run(root Widget, channelStop <-chan bool, quitKeys ...tcell.Key) (err error
 		// time sleep beween frames
 		case <-time.After(TimeFrameSleep):
 			// do nothing
-
-		// stop actions
-		case stop := <-channelStop:
-			if stop {
-				return
-			}
 		}
 		// render
 
