@@ -18,7 +18,7 @@ var (
 	TextStyle          tcell.Style = ScreenStyle
 	ButtonStyle        tcell.Style = ScreenStyle
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
-	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorBlue)
+	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 )
 
@@ -1003,39 +1003,38 @@ func Run(root Widget, channelStop <-chan bool, quitKeys ...tcell.Key) (err error
 			if stop {
 				return
 			}
-
-		// render
-		default:
-			// clear screen
-			mu.Lock()
-			screen.Clear()
-			// draw root widget
-			if width, height := screen.Size(); 0 < width && 0 < height {
-				const widthOffset uint = 1 // for avoid terminal collisions
-				// root wigdets
-				rootH := root.Render(uint(width)-widthOffset,
-					func(row, col uint, st tcell.Style, r rune) {
-						if height < 0 {
-							return
-						}
-						if width < 0 {
-							return
-						}
-						if row < 0 || uint(height) < row {
-							return
-						}
-						if col < 0 || uint(width) < col {
-							return
-						}
-						screen.SetCell(int(col), int(row), st, r)
-					})
-				// ignore height of root widget height
-				_ = rootH
-			}
-			// show screen result
-			screen.Show()
-			mu.Unlock()
 		}
+		// render
+
+		// clear screen
+		mu.Lock()
+		screen.Clear()
+		// draw root widget
+		if width, height := screen.Size(); 0 < width && 0 < height {
+			const widthOffset uint = 1 // for avoid terminal collisions
+			// root wigdets
+			rootH := root.Render(uint(width)-widthOffset,
+				func(row, col uint, st tcell.Style, r rune) {
+					if height < 0 {
+						return
+					}
+					if width < 0 {
+						return
+					}
+					if row < 0 || uint(height) < row {
+						return
+					}
+					if col < 0 || uint(width) < col {
+						return
+					}
+					screen.SetCell(int(col), int(row), st, r)
+				})
+			// ignore height of root widget height
+			_ = rootH
+		}
+		// show screen result
+		screen.Show()
+		mu.Unlock()
 	}
 	return
 }
