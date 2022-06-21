@@ -369,7 +369,7 @@ func (b *Button) Event(ev tcell.Event) {
 	if ok {
 		b.Focus(focus)
 	}
-	if b.focus && mouse[0] && b.OnClick != nil {
+	if mouse[0] && b.OnClick != nil {
 		b.OnClick()
 	}
 }
