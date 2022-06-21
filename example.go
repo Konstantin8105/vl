@@ -46,7 +46,7 @@ func main() {
 	l.Add(&ch2)
 
 	var in vl.Inputbox
-	in.SetText("Some inputbox text")
+	in.SetText("Some inputbox\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ntext")
 	l.Add(&in)
 	l.Add(&b)
 

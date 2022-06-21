@@ -122,6 +122,10 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		t.content.SetWidth(width)
 	}
 	height = t.content.Render(draw, nil) // nil - not view cursor
+	h := t.content.GetRenderHeight()
+	if height < h {
+		height = h
+	}
 	return
 }
 
