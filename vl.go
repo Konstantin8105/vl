@@ -22,6 +22,11 @@ func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
 	}
 }
 
+type Offset struct {
+	row uint // vertical root offset
+	col uint // horizontal root offset
+}
+
 type Widget interface {
 	Focus(focus bool)
 	Render(width uint, dr Drawer) (height uint)
@@ -383,12 +388,10 @@ func (b *Button) Event(ev tcell.Event) {
 type Frame struct {
 	container
 
-	Header Widget
-	Root   Widget
-	offset struct {
-		row uint // vertical root offset
-		col uint // horizontal root offset
-	}
+	Header       Widget
+	offsetHeader Offset
+	Root         Widget
+	offsetRoot   Offset
 }
 
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
@@ -435,8 +438,8 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		height = 1
 	}
-	f.offset.row = height
-	f.offset.col = 1
+	f.offsetHeader.row = height
+	f.offsetHeader.col = 1
 	// draw root widget
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
@@ -460,14 +463,14 @@ func (f *Frame) Event(ev tcell.Event) {
 		case *tcell.EventMouse:
 			// recalculate position of mouse
 			col, row := ev.Position()
-			if col <= int(f.offset.col) {
+			if col <= int(f.offsetHeader.col) {
 				return
 			}
-			col -= int(f.offset.col)
-			if row <= int(f.offset.row) {
+			col -= int(f.offsetHeader.col)
+			if row <= int(f.offsetHeader.row) {
 				return
 			}
-			row -= int(f.offset.row)
+			row -= int(f.offsetHeader.row)
 			f.Root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
@@ -614,7 +617,7 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 	if !ok {
 		ch.Focus(focus)
 	}
-	if ch.focus && mouse[0] {
+	if mouse[0] {
 		ch.Checked = !ch.Checked
 	}
 }
