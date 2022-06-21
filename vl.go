@@ -647,11 +647,15 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	const banner = 5
+	const banner = 4
+	st := InputboxStyle
+	if ch.focus {
+		st = InputboxFocusStyle
+	}
 	if ch.Checked {
-		PrintDrawer(0, 0, TextStyle, dr, []rune(" [v] "))
+		PrintDrawer(0, 0, st, dr, []rune("[v]"))
 	} else {
-		PrintDrawer(0, 0, TextStyle, dr, []rune(" [ ] "))
+		PrintDrawer(0, 0, st, dr, []rune("[ ]"))
 	}
 	if !ch.content.NoUpdate {
 		ch.content.SetWidth(width - banner)

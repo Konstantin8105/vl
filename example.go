@@ -30,7 +30,6 @@ func main() {
 	secFr.Root = vl.TextStatic(texts)
 	fr.Root = &secFr
 	l.Add(&fr)
-	l.Add(&b)
 
 	var rg vl.RadioGroup
 	rg.SetText([]string{"one", "two", "three"})
