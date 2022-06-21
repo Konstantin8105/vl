@@ -497,13 +497,7 @@ func (f *Frame) Event(ev tcell.Event) {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			if col <= int(f.offsetRoot.col) {
-				return
-			}
 			col -= int(f.offsetRoot.col)
-			if row <= int(f.offsetRoot.row) {
-				return
-			}
 			row -= int(f.offsetRoot.row)
 			f.Root.Event(tcell.NewEventMouse(
 				col, row,
@@ -518,13 +512,7 @@ func (f *Frame) Event(ev tcell.Event) {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			if col <= int(f.offsetHeader.col) {
-				return
-			}
 			col -= int(f.offsetHeader.col)
-			if row <= int(f.offsetHeader.row) {
-				return
-			}
 			row -= int(f.offsetHeader.row)
 			f.Header.Event(tcell.NewEventMouse(
 				col, row,
@@ -889,6 +877,9 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 			break
 		}
 		if row < 0 {
+			break
+		}
+		if int(c.height) <= row {
 			break
 		}
 		switch ev.Buttons() {
