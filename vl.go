@@ -548,11 +548,15 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	const banner = 5
+	const banner = 4
+	st := InputboxStyle
+	if r.focus {
+		st = InputboxFocusStyle
+	}
 	if r.choosed {
-		PrintDrawer(0, 0, TextStyle, dr, []rune(" (*) "))
+		PrintDrawer(0, 0, st, dr, []rune("(*)"))
 	} else {
-		PrintDrawer(0, 0, TextStyle, dr, []rune(" ( ) "))
+		PrintDrawer(0, 0, st, dr, []rune("( )"))
 	}
 	if !r.content.NoUpdate {
 		r.content.SetWidth(width - banner)
