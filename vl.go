@@ -294,12 +294,16 @@ func (l *List) Event(ev tcell.Event) {
 			}
 			if l.heights[i-1] <= uint(row) &&
 				uint(row) < l.heights[i] {
+				// row correction
 				row -= int(l.heights[i-1])
+				// index correction
 				i--
+				// focus
 				l.Focus(true)
 				if l.ws[i] == nil {
 					continue
 				}
+				//l.ws[i].Focus(true)
 				l.ws[i].Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
@@ -533,6 +537,9 @@ type radio struct {
 }
 
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		r.Set(width, height)
+	}()
 	if width < 6 {
 		return 1
 	}
@@ -560,6 +567,19 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 		height = 1
 	}
 	return
+}
+
+func (r *radio) Event(ev tcell.Event) {
+	mouse, ok := r.onFocus(ev)
+	if ok {
+		r.Focus(true)
+	}
+	if !r.focus {
+		return
+	}
+	if mouse[0] {
+		r.Focus(true)
+	}
 }
 
 // Radio - button with single choose
