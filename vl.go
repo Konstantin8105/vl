@@ -138,6 +138,7 @@ func (sc *Scroll) Focus(focus bool) {
 	if sc.Root == nil {
 		return
 	}
+	sc.container.Focus(focus)
 	sc.Root.Focus(focus)
 }
 
@@ -164,6 +165,15 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 
 func (sc *Scroll) Event(ev tcell.Event) {
 	if sc.Root == nil {
+		return
+	}
+
+	_, ok := sc.onFocus(ev)
+	if ok {
+		sc.Focus(true)
+	}
+
+	if !sc.focus {
 		return
 	}
 	switch ev := ev.(type) {
@@ -207,9 +217,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
-		if !sc.focus {
-			return
-		}
 		sc.Root.Event(ev)
 	}
 }
