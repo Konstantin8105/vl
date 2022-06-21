@@ -1,17 +1,25 @@
 package vl
 
 import (
+	"fmt"
+	"sync"
+	"time"
+
 	"github.com/Konstantin8105/tf"
 	"github.com/gdamore/tcell/v2"
 )
 
+func style(fd, bd tcell.Color) tcell.Style {
+	return tcell.StyleDefault.Foreground(fd).Background(bd)
+}
+
 var (
-	ScreenStyle        tcell.Style
-	TextStyle          tcell.Style
-	ButtonStyle        tcell.Style
-	ButtonFocusStyle   tcell.Style
-	InputboxStyle      tcell.Style
-	InputboxFocusStyle tcell.Style
+	ScreenStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorWhite)
+	TextStyle          tcell.Style = ScreenStyle
+	ButtonStyle        tcell.Style = ScreenStyle
+	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
+	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorBlue)
+	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 )
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
@@ -690,7 +698,26 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	if in.focus {
 		st = InputboxFocusStyle
 	}
+	// default line
+	var br int = -1
+	showRow := func(row uint) {
+		if int(row) < br {
+			return
+		}
+		// draw empty button
+		var col uint
+		for col = 0; col < width; col++ {
+			dr(row, col, st, ' ')
+		}
+		br = int(row)
+	}
+	showRow(0)
+	// draw
 	draw := func(row, col uint, r rune) {
+		var a uint
+		for a = 0; a < row; a++ {
+			showRow(a)
+		}
 		if width < col {
 			panic("Text width")
 		}
@@ -865,6 +892,127 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 			button[2] = true // Right mouse button
 		}
 		ok = true
+	}
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+var TimeFrameSleep time.Duration
+
+func init() {
+	// Sleep between frames updates
+	// 50 ms :  20 fps
+	//  5 ms : 150 fps
+	//  1 ms : 500 fps
+	if TimeFrameSleep <= 0 {
+		TimeFrameSleep = time.Millisecond * 50
+	}
+}
+
+func Run(root Widget, channelStop <-chan bool, quitKeys ...tcell.Key) (err error) {
+	if root == nil {
+		err = fmt.Errorf("root widget is nil")
+		return
+	}
+
+	var screen tcell.Screen
+
+	tcell.SetEncodingFallback(tcell.EncodingFallbackUTF8)
+	if screen, err = tcell.NewScreen(); err != nil {
+		return
+	}
+	if err = screen.Init(); err != nil {
+		return
+	}
+
+	screen.EnableMouse(tcell.MouseButtonEvents) // Click event only
+	screen.EnablePaste()                        // ?
+	screen.SetStyle(ScreenStyle)
+	screen.Clear()
+
+	defer func() {
+		screen.Fini()
+	}()
+
+	var mu sync.Mutex
+	var quit bool
+
+	// event actions
+	go func() {
+		for {
+			ev := screen.PollEvent()
+			switch ev.(type) {
+			case *tcell.EventResize:
+				screen.Sync()
+			case *tcell.EventKey:
+				for i := range quitKeys {
+					if quitKeys[i] == ev.(*tcell.EventKey).Key() {
+						quit = true
+						return
+					}
+				}
+			}
+			if ev == nil {
+				return
+			}
+			if root == nil {
+				return
+			}
+			mu.Lock()
+			root.Event(ev)
+			mu.Unlock()
+		}
+	}()
+
+	for {
+		if quit {
+			break
+		}
+
+		select {
+		// time sleep beween frames
+		case <-time.After(TimeFrameSleep):
+			// do nothing
+
+		// stop actions
+		case stop := <-channelStop:
+			if stop {
+				return
+			}
+
+		// render
+		default:
+			// clear screen
+			mu.Lock()
+			screen.Clear()
+			// draw root widget
+			if width, height := screen.Size(); 0 < width && 0 < height {
+				const widthOffset uint = 1 // for avoid terminal collisions
+				// root wigdets
+				rootH := root.Render(uint(width)-widthOffset,
+					func(row, col uint, st tcell.Style, r rune) {
+						if height < 0 {
+							return
+						}
+						if width < 0 {
+							return
+						}
+						if row < 0 || uint(height) < row {
+							return
+						}
+						if col < 0 || uint(width) < col {
+							return
+						}
+						screen.SetCell(int(col), int(row), st, r)
+					})
+				// ignore height of root widget height
+				_ = rootH
+			}
+			// show screen result
+			screen.Show()
+			mu.Unlock()
+		}
 	}
 	return
 }
