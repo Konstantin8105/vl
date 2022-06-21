@@ -721,26 +721,16 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	if in.focus {
 		st = InputboxFocusStyle
 	}
-	// default line
-	var br int = -1
-	showRow := func(row uint) {
-		if int(row) < br {
-			return
+	// default line color
+	h := in.content.GetRenderHeight()
+	for row := uint(0); row < h; row++ {
+		// draw empty line
+		for i := uint(0); i < width; i++ {
+			dr(row, i, st, ' ')
 		}
-		// draw empty button
-		var col uint
-		for col = 0; col < width; col++ {
-			dr(row, col, st, ' ')
-		}
-		br = int(row)
 	}
-	showRow(0)
 	// draw
 	draw := func(row, col uint, r rune) {
-		var a uint
-		for a = 0; a < row; a++ {
-			showRow(a)
-		}
 		if width < col {
 			panic("Text width")
 		}
@@ -759,6 +749,9 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 		cur = nil // hide cursor for not-focus inputbox
 	}
 	height = in.content.Render(draw, cur)
+	if height < h {
+		height = h
+	}
 	return
 }
 

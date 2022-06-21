@@ -48,6 +48,7 @@ func main() {
 	var in vl.Inputbox
 	in.SetText("Some inputbox text")
 	l.Add(&in)
+	l.Add(&b)
 
 	r.Root = &l
 
