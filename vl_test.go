@@ -148,6 +148,13 @@ func check(t *testing.T, name string, si int, root Widget) {
 			if err := ioutil.WriteFile(f2, actual, 0644); err != nil {
 				t.Fatalf("Cannot write snapshot to file new: %v", err)
 			}
+			size := 1000
+			if size < len(actual) {
+				actual = actual[:size]
+			}
+			if size < len(expect) {
+				expect = expect[:size]
+			}
 			t.Errorf("Snapshots is not same:\nActual:\n%s\nExpect:\n%s\nmeld %s %s",
 				actual,
 				expect,
@@ -213,6 +220,8 @@ func check(t *testing.T, name string, si int, root Widget) {
 			})
 		}
 	}
+
+	// move = move[:1] // TODO remove
 
 	for i := range move {
 		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)

@@ -30,6 +30,7 @@ type Offset struct {
 type Widget interface {
 	Focus(focus bool)
 	Render(width uint, dr Drawer) (height uint)
+	Set(width, height uint)
 	Event(ev tcell.Event)
 }
 
@@ -75,9 +76,10 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (screen *Screen) Event(ev tcell.Event) {
-	if screen.Root != nil {
-		screen.Root.Event(ev)
+	if screen.Root == nil {
+		return
 	}
+	screen.Root.Event(ev)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +102,7 @@ func (t *Text) SetText(str string) {
 
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		t.set(width, height)
+		t.Set(width, height)
 	}()
 	draw := func(row, col uint, r rune) {
 		if width < col {
@@ -118,13 +120,10 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type Scroll struct {
+	container
+
 	offset uint
 	Root   Widget
-
-	size struct {
-		height uint
-		width  uint
-	}
 }
 
 func (sc *Scroll) Focus(focus bool) {
@@ -136,8 +135,7 @@ func (sc *Scroll) Focus(focus bool) {
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		sc.size.height = height
-		sc.size.width = width
+		sc.Set(width, height)
 	}()
 	if sc.Root == nil {
 		return
@@ -157,6 +155,9 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (sc *Scroll) Event(ev tcell.Event) {
+	if sc.Root == nil {
+		return
+	}
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		switch ev.Buttons() {
@@ -168,7 +169,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 			const minViewLines uint = 2 // constant
-			h := sc.size.height
+			h := sc.height
 			if h < minViewLines {
 				break
 			}
@@ -179,18 +180,16 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		default:
 			// unfocus
 			sc.Focus(false)
+			sc.Root.Focus(false)
 			col, row := ev.Position()
 			if col < 0 {
 				return
 			}
-			if int(sc.size.width) < col {
+			if int(sc.width) < col {
 				return
 			}
 			row = row + int(sc.offset)
 			if row < 0 {
-				return
-			}
-			if sc.Root == nil {
 				return
 			}
 			sc.Focus(true)
@@ -200,7 +199,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
-		if sc.Root == nil {
+		if !sc.focus {
 			return
 		}
 		sc.Root.Event(ev)
@@ -210,21 +209,26 @@ func (sc *Scroll) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type List struct {
-	size struct {
-		heights []uint
-		width   uint
-	}
-	ws    []Widget
-	focus bool
+	container
+
+	heights []uint
+	ws      []Widget
 }
 
 func (l *List) Focus(focus bool) {
+	if !focus {
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Focus(focus)
+			}
+		}
+	}
 	l.focus = focus
 }
 
 func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		l.size.width = width
+		l.Set(width, height)
 	}()
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
@@ -233,22 +237,29 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		row += height
 		dr(row, col, st, r)
 	}
-	if len(l.size.heights) != len(l.ws) {
-		l.size.heights = make([]uint, len(l.ws)+1)
+	if len(l.heights) != len(l.ws) {
+		l.heights = make([]uint, len(l.ws)+1)
 	}
-	l.size.heights[0] = height
+	l.heights[0] = height
 	for i := range l.ws {
 		if l.ws[i] == nil {
-			l.size.heights[i+1] = height
+			l.heights[i+1] = height
 			continue
 		}
 		height += l.ws[i].Render(width, draw)
-		l.size.heights[i+1] = height
+		l.heights[i+1] = height
 	}
 	return
 }
 
 func (l *List) Event(ev tcell.Event) {
+	_, ok := l.onFocus(ev)
+	if ok {
+		l.Focus(true)
+	}
+	if !l.focus {
+		return
+	}
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		// unfocus
@@ -262,26 +273,25 @@ func (l *List) Event(ev tcell.Event) {
 		if col < 0 {
 			return
 		}
-		if int(l.size.width) < col {
+		if int(l.width) < col {
 			return
 		}
 		if row < 0 {
 			return
 		}
 		// find focus widget
-		for i := range l.size.heights {
+		for i := range l.heights {
 			if i == 0 {
 				continue
 			}
-			if l.size.heights[i-1] <= uint(row) &&
-				uint(row) < l.size.heights[i] {
-				row -= int(l.size.heights[i-1])
+			if l.heights[i-1] <= uint(row) &&
+				uint(row) < l.heights[i] {
+				row -= int(l.heights[i-1])
 				i--
 				l.Focus(true)
 				if l.ws[i] == nil {
 					continue
 				}
-				l.ws[i].Focus(true)
 				l.ws[i].Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
@@ -321,7 +331,7 @@ type Button struct {
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		b.set(width, height)
+		b.Set(width, height)
 	}()
 	// default style
 	st := ButtonStyle
@@ -394,9 +404,21 @@ type Frame struct {
 	offsetRoot   Offset
 }
 
+func (f *Frame) Focus(focus bool) {
+	if !focus {
+		if w := f.Header; w != nil {
+			w.Focus(focus)
+		}
+		if w := f.Root; w != nil {
+			w.Focus(focus)
+		}
+	}
+	f.container.Focus(focus)
+}
+
 func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		f.set(width, height)
+		f.Set(width, height)
 	}()
 	if width < 4 {
 		return 1
@@ -406,9 +428,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		var i uint
 		for i = 0; i < width; i++ {
 			if f.focus {
-				dr(row, i, TextStyle, '-')
-			} else {
 				dr(row, i, TextStyle, '=')
+			} else {
+				dr(row, i, TextStyle, '-')
 			}
 		}
 	}
@@ -540,15 +562,13 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
-func (r *radio) Event(ev tcell.Event) {
-	// ignore
-}
-
 // Radio - button with single choose
 // Example:
 //	(0) choose one
 //	( ) choose two
 type RadioGroup struct {
+	container
+
 	list List
 	pos  uint
 }
@@ -567,10 +587,14 @@ func (rg *RadioGroup) GetPos() uint {
 }
 
 func (rg *RadioGroup) Focus(focus bool) {
-	// ignore
+	rg.container.Focus(focus)
+	rg.list.Focus(focus)
 }
 
 func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		rg.Set(width, height)
+	}()
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
 	}
@@ -660,7 +684,7 @@ var Cursor rune = '█'
 
 func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		in.set(width, height)
+		in.Set(width, height)
 	}()
 	st := InputboxStyle
 	if in.focus {
@@ -806,7 +830,7 @@ func (c *container) Focus(focus bool) {
 	c.focus = focus
 }
 
-func (c *container) set(width, height uint) {
+func (c *container) Set(width, height uint) {
 	c.width = width
 	c.height = height
 }
