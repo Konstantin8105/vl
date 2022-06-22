@@ -113,6 +113,14 @@ func (t *Text) SetText(str string) {
 	t.content.NoUpdate = false
 }
 
+func (t *Text) GetText() string {
+	return string(t.content.Text)
+}
+
+func (t *Text) Filter(f func(r rune) (insert bool)) {
+	t.content.Filter = f
+}
+
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		t.Set(width, height)
@@ -1138,6 +1146,60 @@ func Demo() (root Widget, action chan func()) {
 			b.SetText(view())
 		}
 		list.Add(&b)
+	}
+
+	{
+		var frame Frame
+		list.Add(&frame)
+		frame.Header = TextStatic("Inputbox test")
+		var list List
+		frame.Root = &list
+
+		var ibs = []struct {
+			name   string
+			filter func(rune) bool
+			text   func() string
+		}{
+			{
+				name:   "String input box:",
+				filter: nil,
+			},
+			{
+				name:   "Unsigned integer input box:",
+				filter: tf.UnsignedInteger,
+			},
+			{
+				name:   "Integer input box:",
+				filter: tf.Integer,
+			},
+			{
+				name:   "Float input box:",
+				filter: tf.Float,
+			},
+		}
+		for i := range ibs {
+			list.Add(TextStatic(ibs[i].name))
+			var text Inputbox
+			text.Filter(ibs[i].filter)
+			list.Add(&text)
+			ibs[i].text = text.GetText
+		}
+		var b Button
+		b.SetText("Click for read result")
+		list.Add(&b)
+
+		var res Text
+		list.Add(&res)
+
+		b.OnClick = func() {
+			var str string
+			for i := range ibs {
+				if t := ibs[i].text; t != nil {
+					str += t() + "\n"
+				}
+			}
+			res.SetText("Result:\n" + str)
+		}
 	}
 
 	// TODO : demo for inputbox
