@@ -889,9 +889,9 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
 		c.b.OnClick = func() {
 			if c.open {
-				c.b.SetText("Open  >| " + c.content )
+				c.b.SetText("Open  >| " + c.content)
 			} else {
-				c.b.SetText("Close V| " + c.content )
+				c.b.SetText("Close V| " + c.content)
 			}
 			c.open = !c.open
 		}
@@ -1341,6 +1341,11 @@ func init() {
 
 var debugs []string
 
+var (
+	screen     tcell.Screen
+	simulation bool
+)
+
 func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i := range debugs {
@@ -1353,11 +1358,13 @@ func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
 		return
 	}
 
-	var screen tcell.Screen
-
 	tcell.SetEncodingFallback(tcell.EncodingFallbackUTF8)
-	if screen, err = tcell.NewScreen(); err != nil {
-		return
+	if simulation {
+		screen = tcell.NewSimulationScreen("")
+	} else {
+		if screen, err = tcell.NewScreen(); err != nil {
+			return
+		}
 	}
 	if err = screen.Init(); err != nil {
 		return

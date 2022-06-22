@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -17,7 +18,7 @@ const (
 )
 
 var (
-	sizes = []uint{0, 1, 2,  7, 40}
+	sizes = []uint{0, 1, 2, 7, 40}
 	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt."}
 )
 
@@ -31,12 +32,12 @@ var roots = []Root{
 }
 
 func init() {
-	roots = append(roots, Root{
-		name: "Demo",
-		generate: func() (Widget, chan func()) {
-			return Demo()
-		},
-	})
+	// 	roots = append(roots, Root{
+	// 		name: "Demo",
+	// 		generate: func() (Widget, chan func()) {
+	// 			return Demo()
+	// 		},
+	// 	})
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
@@ -298,4 +299,20 @@ func (b Buffer) ErrorRune() bool {
 		}
 	}
 	return false
+}
+
+func TestRun(t *testing.T) {
+	simulation = true
+	defer func() {
+		simulation = false
+	}()
+	root, action := Demo()
+	go func() {
+		<-time.After(time.Millisecond * 200)
+		screen.(tcell.SimulationScreen).InjectKey(tcell.KeyCtrlC, ' ', tcell.ModNone)
+	}()
+	err := Run(root, action, tcell.KeyCtrlC)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 }
