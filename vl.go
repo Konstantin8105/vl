@@ -1202,8 +1202,6 @@ func Demo() (root Widget, action chan func()) {
 		}
 	}
 
-	// TODO : demo for inputbox
-
 	return &scroll, action
 }
 
