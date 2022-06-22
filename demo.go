@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	err := vl.Run(vl.Demo(), tcell.KeyCtrlC)
+	root, action := vl.Demo()
+	err := vl.Run(root, action, tcell.KeyCtrlC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)

@@ -301,6 +301,9 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.Set(width, height)
 	}()
+	if len(l.ws) == 0 {
+		return
+	}
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
 			return
@@ -308,7 +311,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		row += height
 		dr(row, col, st, r)
 	}
-	if len(l.heights) != len(l.ws) {
+	if len(l.heights)+1 != len(l.ws) || len(l.heights) == 0 {
 		l.heights = make([]uint, len(l.ws)+1)
 	}
 	l.heights[0] = height
@@ -872,6 +875,118 @@ func (in *Inputbox) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Widget: Horizontal list
+type ListH struct {
+	container
+
+	widths []uint
+	ws     []Widget
+}
+
+func (l *ListH) Focus(focus bool) {
+	if !focus {
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Focus(focus)
+			}
+		}
+	}
+	l.focus = focus
+}
+
+func (l *ListH) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		l.Set(width, height)
+	}()
+	if len(l.ws) == 0 {
+		return
+	}
+	if len(l.widths) != len(l.ws) {
+		// width of each element
+		w := uint(float32(width) / float32(len(l.ws)))
+		// calculate widths
+		l.widths = make([]uint, len(l.ws)+1)
+		l.widths[0] = 0
+		for i := range l.ws {
+			l.widths[i+1] = l.widths[i] + w
+		}
+		l.widths[len(l.widths)-1] = width
+	}
+	for i := range l.ws {
+		draw := func(row, col uint, st tcell.Style, r rune) {
+			col += l.widths[i]
+			dr(row, col, st, r)
+		}
+		h := l.ws[i].Render(l.widths[i+1]-l.widths[i], draw)
+		if height < h {
+			height = h
+		}
+	}
+	return
+}
+
+func (l *ListH) Event(ev tcell.Event) {
+	_, ok := l.onFocus(ev)
+	if ok {
+		l.Focus(true)
+	}
+	if !l.focus {
+		return
+	}
+	switch ev := ev.(type) {
+	case *tcell.EventMouse:
+		// unfocus
+		l.Focus(false)
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Focus(false)
+			}
+		}
+		col, row := ev.Position()
+		if col < 0 {
+			return
+		}
+		if int(l.width) < col {
+			return
+		}
+		if row < 0 {
+			return
+		}
+		// find focus widget
+		for i := range l.widths {
+			if i == 0 {
+				continue
+			}
+			if l.widths[i-1] <= uint(col) &&
+				uint(col) < l.widths[i] {
+				// row correction
+				col -= int(l.widths[i-1])
+				// index correction
+				i--
+				// focus
+				l.Focus(true)
+				if l.ws[i] == nil {
+					continue
+				}
+				//l.ws[i].Focus(true)
+				l.ws[i].Event(tcell.NewEventMouse(
+					col, row,
+					ev.Buttons(),
+					ev.Modifiers()))
+				return
+			}
+		}
+	case *tcell.EventKey:
+		for i := range l.ws {
+			if w := l.ws[i]; w != nil {
+				w.Event(ev)
+			}
+		}
+	}
+}
+
+func (l *ListH) Add(w Widget) {
+	l.ws = append(l.ws, w)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -917,11 +1032,13 @@ func (in *Inputbox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func Demo() (root Widget) {
+func Demo() (root Widget, action chan func()) {
 	var (
 		scroll Scroll
-		list   List
+		list   ListH
 	)
+
+	action = make(chan func())
 
 	scroll.Root = &list
 
@@ -947,19 +1064,52 @@ func Demo() (root Widget) {
 		go func() {
 			for {
 				<-time.After(time.Millisecond * 100)
-				var str string = "Result:\n"
-				for i := range option {
-					str += fmt.Sprintf("Option %01d is ", i)
-					if *option[i] {
-						str += "ON"
-					} else {
-						str += "OFF"
+				action <- func() {
+					var str string = "Result:\n"
+					for i := range option {
+						str += fmt.Sprintf("Option %01d is ", i)
+						if *option[i] {
+							str += "ON"
+						} else {
+							str += "OFF"
+						}
+						if i != len(option)-1 {
+							str += "\n"
+						}
 					}
-					if i != len(option)-1 {
-						str += "\n"
-					}
+					optionInfo.SetText(str)
 				}
-				optionInfo.SetText(str)
+			}
+		}()
+	}
+
+	{
+		var frame Frame
+		list.Add(&frame)
+		frame.Header = TextStatic("Radio button test")
+		var list List
+		frame.Root = &list
+
+		size := 5
+		var names []string
+		list.Add(TextStatic("Radio group:"))
+		for i := 0; i < size; i++ {
+			names = append(names, fmt.Sprintf("radiobutton%02d", i))
+		}
+		var rg RadioGroup
+		rg.SetText(names)
+		list.Add(&rg)
+
+		var optionInfo Text
+		list.Add(&optionInfo)
+		go func() {
+			for {
+				<-time.After(time.Millisecond * 100)
+				action <- func() {
+					var str string = "Result:\n"
+					str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
+					optionInfo.SetText(str)
+				}
 			}
 		}()
 	}
@@ -968,7 +1118,7 @@ func Demo() (root Widget) {
 	// TODO : demo for button
 	// TODO : demo for inputbox
 
-	return &scroll
+	return &scroll, action
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1052,7 +1202,7 @@ func init() {
 
 var debugs []string
 
-func Run(root Widget, quitKeys ...tcell.Key) (err error) {
+func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i := range debugs {
 			fmt.Println(i, ":", debugs[i])
@@ -1122,6 +1272,8 @@ func Run(root Widget, quitKeys ...tcell.Key) (err error) {
 		// time sleep beween frames
 		case <-time.After(TimeFrameSleep):
 			// do nothing
+		case f := <-action:
+			f()
 		}
 		// render
 
