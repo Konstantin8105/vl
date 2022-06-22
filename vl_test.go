@@ -33,8 +33,11 @@ var roots = []Root{
 
 func init() {
 	roots = append(roots, Root{
-		name:     "Demo",
-		generate: func() Widget { return Demo() },
+		name: "Demo",
+		generate: func() Widget {
+			r, _ := Demo()
+			return r
+		},
 	})
 	for ti := range texts {
 		ti := ti

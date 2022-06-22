@@ -1051,7 +1051,7 @@ func Demo() (root Widget, action chan func()) {
 		size := 5
 		option := make([]*bool, size)
 
-		list.Add(TextStatic("Welcome to package `vl`"))
+		list.Add(TextStatic("Choose oprion/options:"))
 		for i := 0; i < size; i++ {
 			var ch CheckBox
 			option[i] = &ch.Checked
@@ -1114,7 +1114,6 @@ func Demo() (root Widget, action chan func()) {
 		}()
 	}
 
-	// TODO : demo for radio
 	// TODO : demo for button
 	// TODO : demo for inputbox
 
