@@ -58,7 +58,7 @@ type Widget interface {
 
 type Screen struct {
 	containerVerticalFix
-	Root   Widget
+	Root Widget
 }
 
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
@@ -138,6 +138,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		t.content.SetWidth(width)
 	}
 	height = t.content.Render(draw, nil) // nil - not view cursor
+	// added for colorize unvisible lines too
 	h := t.content.GetRenderHeight()
 	if height < h {
 		height = h
@@ -413,7 +414,8 @@ func (l *List) Add(w Widget) {
 //	[ Line 2              ]
 type Button struct {
 	Text
-	OnClick func()
+	OnClick  func()
+	Compress bool
 }
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
@@ -461,6 +463,14 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	// update content
 	if !b.content.NoUpdate {
 		b.content.SetWidth(width - 2*buttonOffset)
+	}
+	if b.Compress {
+		// added for create buttons with minimal width
+		w := b.content.GetRenderWidth() + 2*buttonOffset + 2
+		if w < width {
+			width = w
+			b.content.SetWidth(width - 2*buttonOffset)
+		}
 	}
 	height = b.content.Render(draw, nil)
 	return
@@ -1184,11 +1194,19 @@ func Demo() (root Widget, action chan func()) {
 		list.Add(TextStatic("Counter button"))
 		var b Button
 		b.SetText(view())
-		b.OnClick = func() {
+
+		var short Button
+		short.Compress = true
+		short.SetText(view())
+		short.OnClick = func() {
 			counter++
+			short.SetText(view())
 			b.SetText(view())
+			short.SetText(view())
 		}
+		b.OnClick = short.OnClick
 		list.Add(&b)
+		list.Add(&short)
 	}
 
 	{
