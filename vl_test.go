@@ -17,53 +17,38 @@ const (
 )
 
 var (
-	sizes = []uint{0, 1, 2, 5, 7, 10, 30}
-	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.", `Название языка, выбранное компанией Google, практически совпадает с названием языка программирования Go!, созданного Ф. Джи. МакКейбом и К. Л. Кларком в 2003 году[9]. Обсуждение названия ведётся на странице, посвящённой Go[9].
-На домашней странице языка и вообще в Интернет-публикациях часто используется альтернативное название — «golang»`}
+	sizes = []uint{0, 1, 2,  7, 40}
+	texts = []string{"", "Lorem", "Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt."}
 )
 
 type Root struct {
 	name     string
-	generate func() Widget
+	generate func() (root Widget, action chan func())
 }
 
 var roots = []Root{
-	{"nil", func() Widget { return nil }},
+	{"nil", func() (Widget, chan func()) { return nil, nil }},
 }
 
 func init() {
 	roots = append(roots, Root{
 		name: "Demo",
-		generate: func() Widget {
-			r, _ := Demo()
-			return r
+		generate: func() (Widget, chan func()) {
+			return Demo()
 		},
 	})
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
 			name:     fmt.Sprintf("justtext%03d", ti),
-			generate: func() Widget { return TextStatic(texts[ti]) },
-		})
-	}
-	for ti := range texts {
-		ti := ti
-		roots = append(roots, Root{
-			name: fmt.Sprintf("ScrollWithText%03d", ti),
-			generate: func() Widget {
-				var r Scroll
-				var l List
-				l.Add(TextStatic(texts[ti]))
-				r.Root = &l
-				return &r
-			},
+			generate: func() (Widget, chan func()) { return TextStatic(texts[ti]), nil },
 		})
 	}
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
-			generate: func() Widget {
+			generate: func() (Widget, chan func()) {
 				var (
 					r Scroll
 					l List
@@ -104,7 +89,7 @@ func init() {
 				l.Add(&in)
 
 				r.Root = &l
-				return &r
+				return &r, nil
 			},
 		})
 	}
@@ -115,7 +100,16 @@ func Test(t *testing.T) {
 		for ri := range roots {
 			name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 			t.Run(name, func(t *testing.T) {
-				check(t, name, si, roots[ri].generate())
+				rt, ac := roots[ri].generate()
+				go func() {
+					for {
+						select {
+						case f := <-ac:
+							f()
+						}
+					}
+				}()
+				check(t, name, si, rt)
 			})
 		}
 	}
@@ -124,7 +118,7 @@ func Test(t *testing.T) {
 func check(t *testing.T, name string, si int, root Widget) {
 	b := Screen{
 		Width:  sizes[si],
-		Height: sizes[si] / 2,
+		Height: sizes[si],
 		Root:   root,
 	}
 	t.Logf("Screen size: width=%d height=%d", b.Width, b.Height)
@@ -219,12 +213,13 @@ func check(t *testing.T, name string, si int, root Widget) {
 	for i := 0; i < 2; i++ {
 		move = append(move, move[5], move[6])
 	}
-	for i := 0; i < 18; i++ {
-		for j := 0; j < 18; j++ {
+	for i := -2; i < int(sizes[si]+1); i++ {
+		for j := -2; j < int(sizes[si]+1); j += 5 {
 			move = append(move, Event{
 				name: fmt.Sprintf("Click%02d-%02d", i, j),
 				ev:   tcell.NewEventMouse(i, j, tcell.Button1, tcell.ModNone),
 			})
+			move = append(move, move[4], move[5], move[6])
 		}
 	}
 

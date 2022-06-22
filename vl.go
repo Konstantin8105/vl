@@ -16,7 +16,7 @@ func style(fd, bd tcell.Color) tcell.Style {
 var (
 	ScreenStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorWhite)
 	TextStyle          tcell.Style = ScreenStyle
-	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
+	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorLightYellow)
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
@@ -142,8 +142,6 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	}
 	return
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 
