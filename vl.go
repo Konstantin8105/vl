@@ -16,7 +16,7 @@ func style(fd, bd tcell.Color) tcell.Style {
 var (
 	ScreenStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorWhite)
 	TextStyle          tcell.Style = ScreenStyle
-	ButtonStyle        tcell.Style = ScreenStyle
+	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
@@ -1035,86 +1035,111 @@ func (l *ListH) Add(w Widget) {
 func Demo() (root Widget, action chan func()) {
 	var (
 		scroll Scroll
-		list   ListH
+		list   List
 	)
 
 	action = make(chan func())
 
 	scroll.Root = &list
-
 	{
-		var frame Frame
-		list.Add(&frame)
-		frame.Header = TextStatic("Checkbox test")
-		var list List
-		frame.Root = &list
-		size := 5
-		option := make([]*bool, size)
+		var listh ListH
+		list.Add(&listh)
 
-		list.Add(TextStatic("Choose oprion/options:"))
-		for i := 0; i < size; i++ {
-			var ch CheckBox
-			option[i] = &ch.Checked
-			ch.SetText(fmt.Sprintf("Option %01d", i))
-			list.Add(&ch)
-		}
+		{
+			var frame Frame
+			listh.Add(&frame)
+			frame.Header = TextStatic("Checkbox test")
+			var list List
+			frame.Root = &list
+			size := 5
+			option := make([]*bool, size)
 
-		var optionInfo Text
-		list.Add(&optionInfo)
-		go func() {
-			for {
-				<-time.After(time.Millisecond * 100)
-				action <- func() {
-					var str string = "Result:\n"
-					for i := range option {
-						str += fmt.Sprintf("Option %01d is ", i)
-						if *option[i] {
-							str += "ON"
-						} else {
-							str += "OFF"
+			list.Add(TextStatic("Choose oprion/options:"))
+			for i := 0; i < size; i++ {
+				var ch CheckBox
+				option[i] = &ch.Checked
+				ch.SetText(fmt.Sprintf("Option %01d", i))
+				list.Add(&ch)
+			}
+
+			var optionInfo Text
+			list.Add(&optionInfo)
+			go func() {
+				for {
+					<-time.After(time.Millisecond * 100)
+					action <- func() {
+						var str string = "Result:\n"
+						for i := range option {
+							str += fmt.Sprintf("Option %01d is ", i)
+							if *option[i] {
+								str += "ON"
+							} else {
+								str += "OFF"
+							}
+							if i != len(option)-1 {
+								str += "\n"
+							}
 						}
-						if i != len(option)-1 {
-							str += "\n"
-						}
+						optionInfo.SetText(str)
 					}
-					optionInfo.SetText(str)
 				}
+			}()
+		}
+
+		{
+			var frame Frame
+			listh.Add(&frame)
+			frame.Header = TextStatic("Radio button test")
+			var list List
+			frame.Root = &list
+
+			size := 5
+			var names []string
+			list.Add(TextStatic("Radio group:"))
+			for i := 0; i < size; i++ {
+				names = append(names, fmt.Sprintf("radiobutton%02d", i))
 			}
-		}()
+			var rg RadioGroup
+			rg.SetText(names)
+			list.Add(&rg)
+
+			var optionInfo Text
+			list.Add(&optionInfo)
+			go func() {
+				for {
+					<-time.After(time.Millisecond * 100)
+					action <- func() {
+						var str string = "Result:\n"
+						str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
+						optionInfo.SetText(str)
+					}
+				}
+			}()
+		}
 	}
 
 	{
 		var frame Frame
 		list.Add(&frame)
-		frame.Header = TextStatic("Radio button test")
+		frame.Header = TextStatic("Button test")
 		var list List
 		frame.Root = &list
 
-		size := 5
-		var names []string
-		list.Add(TextStatic("Radio group:"))
-		for i := 0; i < size; i++ {
-			names = append(names, fmt.Sprintf("radiobutton%02d", i))
+		var counter uint
+		view := func() string {
+			return fmt.Sprintf("Counter : %02d", counter)
 		}
-		var rg RadioGroup
-		rg.SetText(names)
-		list.Add(&rg)
 
-		var optionInfo Text
-		list.Add(&optionInfo)
-		go func() {
-			for {
-				<-time.After(time.Millisecond * 100)
-				action <- func() {
-					var str string = "Result:\n"
-					str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
-					optionInfo.SetText(str)
-				}
-			}
-		}()
+		list.Add(TextStatic("Counter button"))
+		var b Button
+		b.SetText(view())
+		b.OnClick = func() {
+			counter++
+			b.SetText(view())
+		}
+		list.Add(&b)
 	}
 
-	// TODO : demo for button
 	// TODO : demo for inputbox
 
 	return &scroll, action
