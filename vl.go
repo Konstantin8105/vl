@@ -51,6 +51,7 @@ type Widget interface {
 //
 //	func (...) Focus(focus bool) {}
 //	func (...) Render(width uint, dr Drawer) (height uint) {}
+//	func (...) Set(width, height uint) {}
 //	func (...) Event(ev tcell.Event) {}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -880,6 +881,54 @@ func (in *Inputbox) Event(ev tcell.Event) {
 
 // Widget : CollapsingHeader
 
+type CollapsingHeader struct {
+	frame   Frame
+	open    bool
+	b       Button
+	content string
+	Root    Widget
+	init    bool
+}
+
+func (c *CollapsingHeader) Focus(focus bool) {
+	c.frame.Focus(focus)
+}
+
+func (c *CollapsingHeader) SetText(str string) {
+	c.content = str
+}
+
+func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
+	if !c.init {
+		c.b.OnClick = func() {
+			if c.open {
+				c.b.SetText("Open  >| " + c.content )
+			} else {
+				c.b.SetText("Close V| " + c.content )
+			}
+			c.open = !c.open
+		}
+		c.b.OnClick()
+		c.b.OnClick() // two times for closed by default
+		c.frame.Header = &c.b
+		c.init = true
+	}
+	if c.open {
+		c.frame.Root = c.Root
+	} else {
+		c.frame.Root = nil
+	}
+	return c.frame.Render(width, dr)
+}
+
+func (c *CollapsingHeader) Set(width, height uint) {
+	c.frame.Set(width, height)
+}
+
+func (c *CollapsingHeader) Event(ev tcell.Event) {
+	c.frame.Event(ev)
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Widget: Horizontal list
@@ -1200,6 +1249,16 @@ func Demo() (root Widget, action chan func()) {
 			}
 			res.SetText("Result:\n" + str)
 		}
+	}
+	{
+		var ch CollapsingHeader
+		ch.SetText("Header of collapsing header test")
+		var il List
+		ch.Root = &il
+
+		il.Add(TextStatic("Hello world!"))
+
+		list.Add(&ch)
 	}
 
 	return &scroll, action
