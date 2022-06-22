@@ -117,12 +117,10 @@ func Test(t *testing.T) {
 }
 
 func check(t *testing.T, name string, si int, root Widget) {
-	b := Screen{
-		Width:  sizes[si],
-		Height: sizes[si],
-		Root:   root,
-	}
-	t.Logf("Screen size: width=%d height=%d", b.Width, b.Height)
+	var b Screen
+	width := sizes[si]
+	height := sizes[si]
+	b.Root = root
 
 	var buf bytes.Buffer
 
@@ -231,16 +229,17 @@ func check(t *testing.T, name string, si int, root Widget) {
 		if e := move[i].ev; e != nil {
 			b.Event(e)
 		}
-		b.Render(b.Width, db.Drawer)
+		b.SetHeight(height)
+		b.Render(width, db.Drawer)
 		if db.ErrorRune() {
 			t.Errorf("error rune")
 		}
-		if len(db.m) != int(b.Height) {
-			t.Errorf("height is not valid: %d %d", len(db.m), int(b.Height))
+		if len(db.m) != int(height) {
+			t.Errorf("height is not valid: %d %d", len(db.m), int(height))
 		}
 		for r := range db.m {
-			if len(db.m[r]) != int(b.Width) {
-				t.Errorf("width is not valid: %d %d", len(db.m[r]), int(b.Width))
+			if len(db.m[r]) != int(width) {
+				t.Errorf("width is not valid: %d %d", len(db.m[r]), int(width))
 			}
 		}
 		fmt.Fprintf(&buf, "%s", db)

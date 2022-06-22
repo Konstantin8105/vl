@@ -16,9 +16,9 @@ func style(fd, bd tcell.Color) tcell.Style {
 var (
 	ScreenStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorWhite)
 	TextStyle          tcell.Style = ScreenStyle
-	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorLightYellow)
+	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
-	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorLightGrey)
+	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 )
 
@@ -57,28 +57,30 @@ type Widget interface {
 ///////////////////////////////////////////////////////////////////////////////
 
 type Screen struct {
-	Width  uint
-	Height uint
+	containerVerticalFix
 	Root   Widget
 }
 
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		screen.Set(width, height)
+	}()
 	if width == 0 {
 		return
 	}
 	// draw default spaces
 	var col, row uint
-	for col = 0; col < screen.Width; col++ {
-		for row = 0; row < screen.Height; row++ {
+	for col = 0; col < width; col++ {
+		for row = 0; row < screen.hmax; row++ {
 			dr(row, col, ScreenStyle, ' ')
 		}
 	}
 	// draw root widget
 	draw := func(row, col uint, s tcell.Style, r rune) {
-		if screen.Height <= row {
+		if screen.hmax <= row {
 			return
 		}
-		if screen.Width <= col {
+		if width <= col {
 			return
 		}
 		dr(row, col, s, r)
@@ -86,7 +88,7 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	if screen.Root != nil {
 		_ = screen.Root.Render(width, draw) // ignore height
 	}
-	return screen.Height
+	return screen.hmax
 }
 
 func (screen *Screen) Event(ev tcell.Event) {
@@ -1078,10 +1080,6 @@ func (l *ListH) Add(w Widget) {
 // 	Name  Widget
 // 	Nodes []Tree
 // }
-
-///////////////////////////////////////////////////////////////////////////////
-
-// Widget: ModalDialog
 
 ///////////////////////////////////////////////////////////////////////////////
 
