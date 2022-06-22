@@ -35,6 +35,11 @@ type Offset struct {
 	col uint // horizontal root offset
 }
 
+// WidgetV is widget with vertical fix height
+type VerticalFix interface {
+	SetHeight(hmax uint)
+}
+
 type Widget interface {
 	Focus(focus bool)
 	Render(width uint, dr Drawer) (height uint)
@@ -131,8 +136,10 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+
 type Scroll struct {
-	container
+	containerVerticalFix
 
 	offset uint
 	Root   Widget
@@ -153,6 +160,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	if sc.Root == nil {
 		return
 	}
+	sc.fixOffset() // fix offset position
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
 			return
@@ -163,8 +171,61 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		row -= sc.offset
 		dr(row, col, st, r)
 	}
-	height = sc.Root.Render(width, draw)
+	if sc.hmax <= 0 {
+		height = sc.Root.Render(width, draw)
+	} else {
+		const scrollBarWidth uint = 1
+		height = sc.Root.Render(width-scrollBarWidth, draw)
+		// calculate location
+		if 2 < sc.hmax {
+			var value float32 // 0 ... 1
+			if sc.hmax <= height {
+				value = float32(sc.offset) / float32(height-sc.hmax)
+			} else {
+				value = 1.0
+			}
+			if 1 < value {
+				value = 1.0
+			}
+			if value < 0 {
+				value = 0.0
+			}
+			st := TextStyle
+			for r := uint(0); r < sc.hmax; r++ {
+				dr(r, width, st, '|')
+			}
+			dr(0, width, st, '▲')
+			dr(sc.hmax-1, width, st, '▼')
+			pos := uint(value * float32(sc.hmax-2))
+			if pos == 0 {
+				pos = 1
+			}
+			if pos == sc.hmax-1 {
+				pos = sc.hmax - 2
+			}
+			dr(pos, width, st, '*')
+		}
+	}
 	return
+}
+
+func (sc *Scroll) fixOffset() {
+	const minViewLines uint = 2 // constant
+	if sc.height < minViewLines {
+		return
+	}
+	var maxOffset uint = sc.height - minViewLines
+	if 0 < sc.hmax {
+		if sc.hmax < sc.height {
+			if sc.height < sc.hmax+sc.offset {
+				sc.offset = sc.height - sc.hmax
+			}
+		} else {
+			sc.offset = 0
+		}
+	} else if maxOffset < sc.offset {
+		sc.offset = maxOffset
+	}
 }
 
 func (sc *Scroll) Event(ev tcell.Event) {
@@ -190,15 +251,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			sc.offset--
 		case tcell.WheelDown:
 			sc.offset++
-			const minViewLines uint = 2 // constant
-			h := sc.height
-			if h < minViewLines {
-				break
-			}
-			var maxOffset uint = h - minViewLines
-			if maxOffset < sc.offset {
-				sc.offset = maxOffset
-			}
 		default:
 			// unfocus
 			sc.Focus(false)
@@ -975,6 +1027,17 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+type containerVerticalFix struct {
+	container
+	hmax uint
+}
+
+func (c *containerVerticalFix) SetHeight(hmax uint) {
+	c.hmax = hmax
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 var TimeFrameSleep time.Duration
 
 func init() {
@@ -987,7 +1050,15 @@ func init() {
 	}
 }
 
+var debugs []string
+
 func Run(root Widget, quitKeys ...tcell.Key) (err error) {
+	defer func() {
+		for i := range debugs {
+			fmt.Println(i, ":", debugs[i])
+		}
+	}()
+
 	if root == nil {
 		err = fmt.Errorf("root widget is nil")
 		return
@@ -1061,14 +1132,12 @@ func Run(root Widget, quitKeys ...tcell.Key) (err error) {
 		if width, height := screen.Size(); 0 < width && 0 < height {
 			const widthOffset uint = 1 // for avoid terminal collisions
 			// root wigdets
-			rootH := root.Render(uint(width)-widthOffset,
+			if vf, ok := root.(VerticalFix); ok {
+				vf.SetHeight(uint(height))
+			}
+			// ignore height of root widget height
+			_ = root.Render(uint(width)-widthOffset,
 				func(row, col uint, st tcell.Style, r rune) {
-					if height < 0 {
-						return
-					}
-					if width < 0 {
-						return
-					}
 					if row < 0 || uint(height) < row {
 						return
 					}
@@ -1077,8 +1146,6 @@ func Run(root Widget, quitKeys ...tcell.Key) (err error) {
 					}
 					screen.SetCell(int(col), int(row), st, r)
 				})
-			// ignore height of root widget height
-			_ = rootH
 		}
 		// show screen result
 		screen.Show()
