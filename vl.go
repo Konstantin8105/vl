@@ -100,6 +100,17 @@ func (screen *Screen) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+type Separator struct{ container }
+
+func (s *Separator) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		s.Set(width, height)
+	}()
+	return 1
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 type Text struct {
 	container
 	content tf.TextField
@@ -557,7 +568,7 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		height = 1
 	}
-	f.offsetRoot.row = height+1
+	f.offsetRoot.row = height + 1
 	f.offsetRoot.col = 2
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
@@ -569,7 +580,7 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		dr(row+height+1, col+2, s, r)
 	}
 	if f.Root != nil {
-		height += f.Root.Render(width-4, droot)+2
+		height += f.Root.Render(width-4, droot) + 2
 	}
 	return
 }
@@ -1196,7 +1207,7 @@ func Demo() (root Widget, action chan func()) {
 			}()
 		}
 	}
-
+	list.Add(new(Separator))
 	{
 		var frame Frame
 		list.Add(&frame)
@@ -1226,11 +1237,11 @@ func Demo() (root Widget, action chan func()) {
 		list.Add(&b)
 		list.Add(&short)
 	}
-
+	list.Add(new(Separator))
 	{
-		var frame Frame
+		var frame CollapsingHeader
 		list.Add(&frame)
-		frame.Header = TextStatic("Inputbox test")
+		frame.SetText("Inputbox test")
 		var list List
 		frame.Root = &list
 
@@ -1280,6 +1291,7 @@ func Demo() (root Widget, action chan func()) {
 			res.SetText("Result:\n" + str)
 		}
 	}
+	list.Add(new(Separator))
 	{
 		var ch CollapsingHeader
 		ch.SetText("Header of collapsing header test")
