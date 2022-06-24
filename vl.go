@@ -557,8 +557,8 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		height = 1
 	}
-	f.offsetRoot.row = height
-	f.offsetRoot.col = 1
+	f.offsetRoot.row = height+1
+	f.offsetRoot.col = 2
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
 	// draw root widget
