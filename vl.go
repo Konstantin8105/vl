@@ -561,22 +561,16 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	f.offsetRoot.col = 1
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
-	// clean row between Header and Root
-	var offsetHeaderRoot uint = 1
-	if f.Root == nil {
-		offsetHeaderRoot = 0
-	}
 	// draw root widget
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row+height+offsetHeaderRoot, col+1, s, r)
+		dr(row+height+1, col+2, s, r)
 	}
 	if f.Root != nil {
-		height += f.Root.Render(width-2, droot)
+		height += f.Root.Render(width-4, droot)+2
 	}
-	height += offsetHeaderRoot
 	return
 }
 
