@@ -561,16 +561,22 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	f.offsetRoot.col = 1
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
+	// clean row between Header and Root
+	var offsetHeaderRoot uint = 1
+	if f.Root == nil {
+		offsetHeaderRoot = 0
+	}
 	// draw root widget
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row+height, col+1, s, r)
+		dr(row+height+offsetHeaderRoot, col+1, s, r)
 	}
 	if f.Root != nil {
 		height += f.Root.Render(width-2, droot)
 	}
+	height += offsetHeaderRoot
 	return
 }
 
@@ -901,9 +907,9 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
 		c.b.OnClick = func() {
 			if c.open {
-				c.b.SetText("Open  >| " + c.content)
+				c.b.SetText("| ▶ | " + c.content)
 			} else {
-				c.b.SetText("Close V| " + c.content)
+				c.b.SetText("| ▼ | " + c.content)
 			}
 			c.open = !c.open
 		}
@@ -1058,7 +1064,6 @@ func (l *ListH) Add(w Widget) {
 // Widget: Table
 
 ///////////////////////////////////////////////////////////////////////////////
-
 
 // Tabs examples:
 //
