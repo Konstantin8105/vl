@@ -943,7 +943,7 @@ func (c *CollapsingHeader) Event(ev tcell.Event) {
 
 // Widget: Horizontal list
 type ListH struct {
-	container
+	containerVerticalFix
 
 	widths []uint
 	ws     []Widget
