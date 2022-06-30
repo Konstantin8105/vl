@@ -96,6 +96,16 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	return screen.hmax
 }
 
+func (screen *Screen) SetHeight(hmax uint) {
+	screen.containerVerticalFix.SetHeight(hmax)
+	if screen.Root == nil {
+		return
+	}
+	if vf, ok := screen.Root.(VerticalFix); ok {
+		vf.SetHeight(hmax)
+	}
+}
+
 func (screen *Screen) Event(ev tcell.Event) {
 	if screen.Root == nil {
 		return
