@@ -100,6 +100,68 @@ func (screen *Screen) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+type node struct {
+	s tcell.Style
+	r rune
+}
+
+type Memory struct {
+	containerVerticalFix
+	buffer struct {
+		width  uint
+		height uint
+		nodes  [][]node
+	}
+	Root Widget
+}
+
+func (m *Memory) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		m.Set(width, height)
+	}()
+	if m.Root == nil {
+		return
+	}
+	if m.buffer.width != width || m.buffer.height != m.hmax {
+		m.buffer.nodes = make([][]node, m.hmax)
+		for i := uint(0); i < m.hmax; i++ {
+			m.buffer.nodes[i] = make([]node, width)
+		}
+	}
+
+	draw := func(row, col uint, s tcell.Style, r rune) {
+		if width < col {
+			panic("Text width")
+		}
+		m.buffer.nodes[row][col] = node{s: s, r: r}
+	}
+	height = m.Root.Render(width, draw)
+	m.buffer.height = height
+	m.buffer.width = width
+
+	for r := uint(0); r < height; r++ {
+		for c := uint(0); c < width; c++ {
+			dr(
+				r,
+				c,
+				m.buffer.nodes[r][c].s,
+				m.buffer.nodes[r][c].r,
+			)
+		}
+	}
+
+	return
+}
+
+func (m *Memory) Event(ev tcell.Event) {
+	if m.Root == nil {
+		return
+	}
+	m.Root.Event(ev)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 type Separator struct{ container }
 
 func (s *Separator) Render(width uint, dr Drawer) (height uint) {
