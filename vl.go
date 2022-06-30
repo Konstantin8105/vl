@@ -122,7 +122,7 @@ func (m *Memory) Render(width uint, dr Drawer) (height uint) {
 	if m.Root == nil {
 		return
 	}
-	if m.buffer.width != width || m.buffer.height != m.hmax {
+	if m.buffer.width != width || m.buffer.height != m.hmax || len(m.buffer) == 0 {
 		m.buffer.nodes = make([][]node, m.hmax)
 		for r := uint(0); r < m.hmax ; r++ {
 			m.buffer.nodes[r] = make([]node, width)
