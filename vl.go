@@ -1031,6 +1031,9 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 			col += l.widths[i]
 			dr(row, col, st, r)
 		}
+		if l.ws[i] == nil {
+			continue
+		}
 		h := l.ws[i].Render(l.widths[i+1]-l.widths[i], draw)
 		if height < h {
 			height = h
