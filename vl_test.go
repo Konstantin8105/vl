@@ -110,19 +110,15 @@ func Test(t *testing.T) {
 						}
 					}
 				}()
-				check(t, name, si, rt)
+				var screen Screen
+				screen.Root = rt
+				check(t, name, si, screen)
 			})
 		}
 	}
 }
 
-func check(t *testing.T, name string, si int, root Widget) {
-	{
-		var sc Screen
-		sc.Root = root
-		root = &sc
-	}
-
+func check(t *testing.T, name string, si int, screen Screen) {
 	width := sizes[si]
 	height := sizes[si]
 
@@ -167,7 +163,7 @@ func check(t *testing.T, name string, si int, root Widget) {
 		}
 	}()
 
-	var db Buffer
+	// var db Buffer
 
 	type Event struct {
 		name string
@@ -231,81 +227,38 @@ func check(t *testing.T, name string, si int, root Widget) {
 	for i := range move {
 		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
 		if e := move[i].ev; e != nil {
-			root.Event(e)
+			screen.Event(e)
 		}
-		if vf, ok := root.(VerticalFix); ok {
-			vf.SetHeight(height)
-		} else {
-			t.Fatalf("Not valid for tests")
+		screen.SetHeight(height)
+		cells := screen.GetContents(width)
+		if len(cells) != int(height) {
+			t.Fatalf("height is not valid: %d %d", len(cells), int(height))
 		}
-		root.Render(width, db.Drawer)
-		if db.ErrorRune() {
-			t.Errorf("error rune")
-		}
-		if len(db.m) != int(height) {
-			t.Fatalf("height is not valid: %d %d", len(db.m), int(height))
-		}
-		for r := range db.m {
-			if len(db.m[r]) != int(width) {
-				t.Errorf("width is not valid: %d %d", len(db.m[r]), int(width))
+		for r := range cells {
+			if len(cells[r]) != int(width) {
+				t.Errorf("width is not valid: %d %d", len(cells[r]), int(width))
 			}
 		}
-		fmt.Fprintf(&buf, "%s", db)
+		fmt.Fprintf(&buf, "%s", Convert(cells))
 	}
 }
 
-type Buffer struct {
-	m [][]rune
-}
-
-func (b *Buffer) Drawer(row, col uint, s tcell.Style, r rune) {
-	for i := len(b.m); i <= int(row); i++ {
-		b.m = append(b.m, make([]rune, 0))
-	}
-	for i := len(b.m[row]); i <= int(col); i++ {
-		b.m[row] = append(b.m[row], errorRune)
-	}
-	b.m[row][col] = r
-}
-
-func (b Buffer) String() string {
+func Convert(cells [][]Cell) string {
 	var str string
 	var w int
-	for r := range b.m {
+	for r := range cells {
 		str += fmt.Sprintf("%09d|", r+1)
-		for c := range b.m[r] {
-			str += string(b.m[r][c])
+		for c := range cells[r] {
+			str += string(cells[r][c].R)
 		}
-		if width := len(b.m[r]); w < width {
+		if width := len(cells[r]); w < width {
 			w = width
 		}
-		str += fmt.Sprintf("| width:%09d\n", len(b.m[r]))
+		str += fmt.Sprintf("| width:%09d\n", len(cells[r]))
 	}
-	str += fmt.Sprintf("rows  = %3d\n", len(b.m))
+	str += fmt.Sprintf("rows  = %3d\n", len(cells))
 	str += fmt.Sprintf("width = %3d\n", w)
 	return str
-}
-
-func (b Buffer) Text() string {
-	var str string
-	for r := range b.m {
-		for c := range b.m[r] {
-			str += string(b.m[r][c])
-		}
-		str += "\n"
-	}
-	return str
-}
-
-func (b Buffer) ErrorRune() bool {
-	for r := range b.m {
-		for c := range b.m[r] {
-			if b.m[r][c] == errorRune {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func TestRun(t *testing.T) {
@@ -321,5 +274,19 @@ func TestRun(t *testing.T) {
 	err := Run(root, action, tcell.KeyCtrlC)
 	if err != nil {
 		t.Fatalf("%v", err)
+	}
+}
+
+func Benchmark(b *testing.B) {
+	var screen Screen
+	r, _ := roots[len(roots)-1].generate()
+	screen.Root = r
+	var size uint = 100
+	screen.SetHeight(size)
+	null := func(row, col uint, s tcell.Style, r rune){
+		return
+	}
+	for n := 0; n < b.N; n++ {
+		_ = screen.Render(size, null)
 	}
 }

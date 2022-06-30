@@ -56,14 +56,28 @@ type Widget interface {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-type node struct {
-	s tcell.Style
-	r rune
+type Cell struct {
+	S tcell.Style
+	R rune
 }
 
 type Screen struct {
 	containerVerticalFix
 	Root Widget
+}
+
+func (screen *Screen) GetContents(width uint) (cells [][]Cell) {
+	drawer := func(row, col uint, s tcell.Style, r rune) {
+		for i := len(cells); i <= int(row); i++ {
+			cells = append(cells, make([]Cell, 0))
+		}
+		for i := len(cells[row]); i <= int(col); i++ {
+			cells[row] = append(cells[row], Cell{R: ' '})
+		}
+		cells[row][col] = Cell{S: s, R: r}
+	}
+	_ = screen.Render(width, drawer) // ignore height
+	return
 }
 
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
