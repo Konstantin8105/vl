@@ -122,13 +122,20 @@ func (m *Memory) Render(width uint, dr Drawer) (height uint) {
 	if m.Root == nil {
 		return
 	}
-	if m.buffer.width != width || m.buffer.height != m.hmax || len(m.buffer.nodes) != int(m.hmax) {
-		m.buffer.nodes = make([][]node, m.hmax)
-		for r := uint(0); r < m.hmax ; r++ {
+
+	if m.buffer.width != width || m.buffer.height != m.hmax || m.buffer.height != height {
+		height = m.hmax
+		m.buffer.nodes = make([][]node, height)
+		for r := uint(0); r < height; r++ {
 			m.buffer.nodes[r] = make([]node, width)
 		}
+		m.buffer.height = height
+		m.buffer.width = width
 	}
 
+	if vf, ok := m.Root.(VerticalFix); ok {
+		vf.SetHeight(m.hmax)
+	}
 	draw := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
 			panic("Text width")
@@ -136,11 +143,9 @@ func (m *Memory) Render(width uint, dr Drawer) (height uint) {
 		m.buffer.nodes[row][col] = node{s: s, r: r}
 	}
 	height = m.Root.Render(width, draw)
-	m.buffer.height = height
-	m.buffer.width = width
 
-	for r := uint(0); r < height; r++ {
-		for c := uint(0); c < width; c++ {
+	for r := uint(0); r < m.buffer.height; r++ {
+		for c := uint(0); c < m.buffer.width; c++ {
 			dr(
 				r,
 				c,
