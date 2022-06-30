@@ -224,22 +224,24 @@ func check(t *testing.T, name string, si int, screen Screen) {
 
 	// move = move[:1] // TODO remove
 
+	cells :=  new([][]Cell)
+
 	for i := range move {
 		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
 		if e := move[i].ev; e != nil {
 			screen.Event(e)
 		}
 		screen.SetHeight(height)
-		cells := screen.GetContents(width)
-		if len(cells) != int(height) {
-			t.Fatalf("height is not valid: %d %d", len(cells), int(height))
+		screen.GetContents(width, cells)
+		if len(*cells) != int(height) {
+			t.Fatalf("height is not valid: %d %d", len(*cells), int(height))
 		}
-		for r := range cells {
-			if len(cells[r]) != int(width) {
-				t.Errorf("width is not valid: %d %d", len(cells[r]), int(width))
+		for r := range (*cells) {
+			if len((*cells)[r]) != int(width) {
+				t.Errorf("width is not valid: %d %d", len((*cells)[r]), int(width))
 			}
 		}
-		fmt.Fprintf(&buf, "%s", Convert(cells))
+		fmt.Fprintf(&buf, "%s", Convert(*cells))
 	}
 }
 
@@ -283,7 +285,7 @@ func Benchmark(b *testing.B) {
 	screen.Root = r
 	var size uint = 100
 	screen.SetHeight(size)
-	null := func(row, col uint, s tcell.Style, r rune){
+	null := func(row, col uint, s tcell.Style, r rune) {
 		return
 	}
 	for n := 0; n < b.N; n++ {

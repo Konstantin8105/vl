@@ -66,17 +66,33 @@ type Screen struct {
 	Root Widget
 }
 
-func (screen *Screen) GetContents(width uint) (cells [][]Cell) {
+func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
+	var ar, ac uint
 	drawer := func(row, col uint, s tcell.Style, r rune) {
-		for i := len(cells); i <= int(row); i++ {
-			cells = append(cells, make([]Cell, 0))
+		for i := len(*cells); i <= int(row); i++ {
+			*cells = append(*cells, make([]Cell, 0))
 		}
-		for i := len(cells[row]); i <= int(col); i++ {
-			cells[row] = append(cells[row], Cell{R: ' '})
+		for i := len((*cells)[row]); i <= int(col); i++ {
+			(*cells)[row] = append((*cells)[row], Cell{R: ' '})
 		}
-		cells[row][col] = Cell{S: s, R: r}
+		if ar < row {
+			ar = row
+		}
+		if ac < col {
+			ac = col
+		}
+		(*cells)[row][col] = Cell{S: s, R: r}
 	}
 	_ = screen.Render(width, drawer) // ignore height
+	// resize cells matrix
+	if len(*cells)-1 != int(ar) {
+		*cells = (*cells)[:int(ar)]
+	}
+	for i := range *cells {
+		if len((*cells)[i])-1 != int(ac) {
+			(*cells)[i] = (*cells)[i][:int(ac)]
+		}
+	}
 	return
 }
 
