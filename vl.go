@@ -1006,6 +1006,18 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+func (l *ListH) SetHeight(hmax uint) {
+	l.containerVerticalFix.SetHeight(hmax)
+	for i := range l.ws {
+		if l.ws[i] == nil {
+			continue
+		}
+		if vf, ok := l.ws[i].(VerticalFix); ok {
+			vf.SetHeight(hmax)
+		}
+	}
+}
+
 func (l *ListH) Event(ev tcell.Event) {
 	_, ok := l.onFocus(ev)
 	if ok {
