@@ -995,6 +995,9 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	}
 	for i := range l.ws {
 		draw := func(row, col uint, st tcell.Style, r rune) {
+			if 0 < l.hmax && l.hmax < row {
+				return
+			}
 			col += l.widths[i]
 			dr(row, col, st, r)
 		}
