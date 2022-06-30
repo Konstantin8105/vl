@@ -124,8 +124,8 @@ func (m *Memory) Render(width uint, dr Drawer) (height uint) {
 	}
 	if m.buffer.width != width || m.buffer.height != m.hmax {
 		m.buffer.nodes = make([][]node, m.hmax)
-		for i := uint(0); i < width; i++ {
-			m.buffer.nodes[i] = make([]node, width)
+		for r := uint(0); r < m.hmax ; r++ {
+			m.buffer.nodes[r] = make([]node, width)
 		}
 	}
 
