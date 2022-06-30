@@ -56,6 +56,11 @@ type Widget interface {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+type node struct {
+	s tcell.Style
+	r rune
+}
+
 type Screen struct {
 	containerVerticalFix
 	Root Widget
@@ -96,73 +101,6 @@ func (screen *Screen) Event(ev tcell.Event) {
 		return
 	}
 	screen.Root.Event(ev)
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-type node struct {
-	s tcell.Style
-	r rune
-}
-
-type Memory struct {
-	containerVerticalFix
-	buffer struct {
-		width  uint
-		height uint
-		nodes  [][]node
-	}
-	Root Widget
-}
-
-func (m *Memory) Render(width uint, dr Drawer) (height uint) {
-	defer func() {
-		m.Set(width, height)
-	}()
-	if m.Root == nil {
-		return
-	}
-
-	if m.buffer.width != width || m.buffer.height != m.hmax || m.buffer.height != height {
-		height = m.hmax
-		m.buffer.nodes = make([][]node, height)
-		for r := uint(0); r < height; r++ {
-			m.buffer.nodes[r] = make([]node, width)
-		}
-		m.buffer.height = height
-		m.buffer.width = width
-	}
-
-	if vf, ok := m.Root.(VerticalFix); ok {
-		vf.SetHeight(m.hmax)
-	}
-	draw := func(row, col uint, s tcell.Style, r rune) {
-		if width < col {
-			panic("Text width")
-		}
-		m.buffer.nodes[row][col] = node{s: s, r: r}
-	}
-	height = m.Root.Render(width, draw)
-
-	for r := uint(0); r < m.buffer.height; r++ {
-		for c := uint(0); c < m.buffer.width; c++ {
-			dr(
-				r,
-				c,
-				m.buffer.nodes[r][c].s,
-				m.buffer.nodes[r][c].r,
-			)
-		}
-	}
-
-	return
-}
-
-func (m *Memory) Event(ev tcell.Event) {
-	if m.Root == nil {
-		return
-	}
-	m.Root.Event(ev)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

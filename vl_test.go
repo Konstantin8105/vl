@@ -120,9 +120,7 @@ func check(t *testing.T, name string, si int, root Widget) {
 	{
 		var sc Screen
 		sc.Root = root
-		var mem Memory
-		mem.Root = &sc
-		root = &mem
+		root = &sc
 	}
 
 	width := sizes[si]
