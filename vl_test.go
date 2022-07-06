@@ -268,15 +268,42 @@ func TestRun(t *testing.T) {
 	defer func() {
 		simulation = false
 	}()
-	root, action := Demo()
-	go func() {
-		<-time.After(time.Millisecond * 200)
-		screen.(tcell.SimulationScreen).InjectKey(tcell.KeyCtrlC, ' ', tcell.ModNone)
-	}()
-	err := Run(root, action, tcell.KeyCtrlC)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
+	t.Run("exit by key", func(t *testing.T) {
+		root, action := Demo()
+		go func() {
+			<-time.After(time.Millisecond * 200)
+			screen.(tcell.SimulationScreen).InjectKey(tcell.KeyCtrlC, ' ', tcell.ModNone)
+		}()
+		err := Run(root, action, nil, tcell.KeyCtrlC)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
+	t.Run("exit by channel", func(t *testing.T) {
+		qu := make(chan struct{})
+		root, action := Demo()
+		go func() {
+			<-time.After(time.Millisecond * 200)
+			var closed struct{}
+			qu <- closed
+		}()
+		err := Run(root, action, qu)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
+	t.Run("exit by close channel", func(t *testing.T) {
+		qu := make(chan struct{})
+		root, action := Demo()
+		go func() {
+			<-time.After(time.Millisecond * 200)
+			close(qu)
+		}()
+		err := Run(root, action, qu)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
 }
 
 func Benchmark(b *testing.B) {

@@ -1455,7 +1455,7 @@ var (
 	simulation bool
 )
 
-func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
+func Run(root Widget, action <-chan func(), chQuit <- chan struct{}, quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i := range debugs {
 			fmt.Println(i, ":", debugs[i])
@@ -1527,6 +1527,8 @@ func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
 		// time sleep beween frames
 		case <-time.After(TimeFrameSleep):
 			// do nothing
+		case <-chQuit:
+			quit = true
 		case f := <-action:
 			if f == nil {
 				// do nothing
