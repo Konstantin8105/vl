@@ -1528,6 +1528,11 @@ func Run(root Widget, action <-chan func(), quitKeys ...tcell.Key) (err error) {
 		case <-time.After(TimeFrameSleep):
 			// do nothing
 		case f := <-action:
+			if f == nil {
+				// do nothing
+				continue
+			}
+			// default action
 			f()
 		}
 		// render

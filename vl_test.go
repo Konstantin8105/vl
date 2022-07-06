@@ -224,7 +224,7 @@ func check(t *testing.T, name string, si int, screen Screen) {
 
 	// move = move[:1] // TODO remove
 
-	cells :=  new([][]Cell)
+	cells := new([][]Cell)
 
 	for i := range move {
 		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
@@ -236,7 +236,7 @@ func check(t *testing.T, name string, si int, screen Screen) {
 		if len(*cells) != int(height) {
 			t.Fatalf("height is not valid: %d %d", len(*cells), int(height))
 		}
-		for r := range (*cells) {
+		for r := range *cells {
 			if len((*cells)[r]) != int(width) {
 				t.Errorf("width is not valid: %d %d", len((*cells)[r]), int(width))
 			}
