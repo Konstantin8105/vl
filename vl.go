@@ -456,6 +456,10 @@ func (l *List) Add(w Widget) {
 	l.ws = append(l.ws, w)
 }
 
+func (l *List) Clear() {
+	l.ws = nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Button examples:
@@ -735,11 +739,15 @@ type RadioGroup struct {
 }
 
 func (rg *RadioGroup) SetText(ts []string) {
+	rg.list.Clear()
 	for i := range ts {
 		var r radio
 		r.content.Text = []rune(ts[i])
 		r.content.NoUpdate = false
 		rg.list.Add(&r)
+	}
+	if len(ts) <= int(rg.pos) {
+		rg.pos = uint(len(ts))
 	}
 }
 
@@ -1455,7 +1463,7 @@ var (
 	simulation bool
 )
 
-func Run(root Widget, action <-chan func(), chQuit <- chan struct{}, quitKeys ...tcell.Key) (err error) {
+func Run(root Widget, action <-chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i := range debugs {
 			fmt.Println(i, ":", debugs[i])
