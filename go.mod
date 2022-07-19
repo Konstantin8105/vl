@@ -3,7 +3,7 @@ module github.com/Konstantin8105/vl
 go 1.18
 
 require (
-	github.com/Konstantin8105/tf v0.0.0-20220630113905-13caad117f07
+	github.com/Konstantin8105/tf v0.0.0-20220719184802-4b4533f5e372
 	github.com/gdamore/tcell/v2 v2.5.1
 )
 
