@@ -158,13 +158,17 @@ func (s *Separator) Render(width uint, dr Drawer) (height uint) {
 
 type Text struct {
 	container
-	content tf.TextField
+	content tf.TextFieldLimit
 }
 
 func TextStatic(str string) *Text {
 	t := new(Text)
 	t.content.Text = []rune(str)
 	return t
+}
+
+func (t *Text) SetLinesLimit(limit uint) {
+	t.content.SetLinesLimit(limit)
 }
 
 func (t *Text) SetText(str string) {
