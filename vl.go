@@ -1501,32 +1501,13 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 	var quit bool
 
 	// event actions
+	chEvent := make(chan tcell.Event)
 	go func() {
 		for {
-			ev := screen.PollEvent()
-			switch ev.(type) {
-			case *tcell.EventResize:
-				screen.Sync()
-			case *tcell.EventKey:
-				for i := range quitKeys {
-					if quitKeys[i] == ev.(*tcell.EventKey).Key() {
-						quit = true
-						return
-					}
-				}
+			if quit {
+				break
 			}
-			if ev == nil {
-				return
-			}
-			if root == nil {
-				return
-			}
-			mu.Lock()
-			root.Event(ev)
-			mu.Unlock()
-			action <- func() {
-				// update after key press
-			}
+			chEvent <- screen.PollEvent()
 		}
 	}()
 
@@ -1536,9 +1517,27 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 		}
 
 		select {
-		// time sleep beween frames
+		case ev := <-chEvent:
+			switch ev.(type) {
+			case *tcell.EventResize:
+				screen.Sync()
+			case *tcell.EventKey:
+				for i := range quitKeys {
+					if quitKeys[i] == ev.(*tcell.EventKey).Key() {
+						quit = true
+						break
+					}
+				}
+			}
+			if ev != nil && root != nil {
+				mu.Lock()
+				root.Event(ev)
+				mu.Unlock()
+			}
 		case <-time.After(TimeFrameSleep):
+			// time sleep beween frames
 			// do nothing
+
 		case <-chQuit:
 			quit = true
 		case f := <-action:
