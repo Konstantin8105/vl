@@ -1452,11 +1452,8 @@ var TimeFrameSleep time.Duration
 
 func init() {
 	// Sleep between frames updates
-	// 50 ms :  20 fps
-	//  5 ms : 150 fps
-	//  1 ms : 500 fps
 	if TimeFrameSleep <= 0 {
-		TimeFrameSleep = time.Millisecond * 50
+		TimeFrameSleep = time.Second * 5
 	}
 }
 
@@ -1467,7 +1464,7 @@ var (
 	simulation bool
 )
 
-func Run(root Widget, action <-chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
+func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i := range debugs {
 			fmt.Println(i, ":", debugs[i])
@@ -1527,6 +1524,9 @@ func Run(root Widget, action <-chan func(), chQuit <-chan struct{}, quitKeys ...
 			mu.Lock()
 			root.Event(ev)
 			mu.Unlock()
+			action <- func() {
+				// update after key press
+			}
 		}
 	}()
 
