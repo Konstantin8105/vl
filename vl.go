@@ -20,6 +20,9 @@ var (
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
+
+	// select
+	InputboxSelectStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorMaroon)
 )
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
@@ -704,6 +707,9 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	}
 	const banner = 4
 	st := InputboxStyle
+	if r.choosed {
+		st = InputboxSelectStyle
+	}
 	if r.focus {
 		st = InputboxFocusStyle
 	}
@@ -845,6 +851,9 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	}
 	const banner = 4
 	st := InputboxStyle
+	if ch.Checked {
+		st = InputboxSelectStyle
+	}
 	if ch.focus {
 		st = InputboxFocusStyle
 	}
