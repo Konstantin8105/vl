@@ -719,6 +719,9 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 		PrintDrawer(0, 0, st, dr, []rune("( )"))
 	}
 	if r.Root != nil {
+		if ch, ok := r.Root.(*CollapsingHeader); ok {
+			ch.Open(r.choosed)
+		}
 		droot := func(row, col uint, s tcell.Style, r rune) {
 			if width < col {
 				panic("Text width")
@@ -1006,6 +1009,10 @@ func (c *CollapsingHeader) Focus(focus bool) {
 
 func (c *CollapsingHeader) SetText(str string) {
 	c.content = str
+}
+
+func (c *CollapsingHeader) Open(state bool) {
+	c.open = state
 }
 
 func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
@@ -1307,6 +1314,8 @@ func Demo() (root Widget, action chan func()) {
 			var rg RadioGroup
 			rg.SetText(names)
 			{
+				var ch CollapsingHeader
+				ch.SetText("CollapsingHeader with CheckBoxes")
 				var c0 CheckBox
 				c0.SetText("CheckBox c0")
 				var c1 CheckBox
@@ -1315,7 +1324,14 @@ func Demo() (root Widget, action chan func()) {
 				l.Add(TextStatic("Main check boxes inside radio group"))
 				l.Add(&c0)
 				l.Add(&c1)
-				rg.Add(&l)
+				ch.Root = &l
+				rg.Add(&ch)
+			}
+			{
+				var ch CollapsingHeader
+				ch.SetText("CollapsingHeader example")
+				ch.Root = TextStatic("Hello inside")
+				rg.Add(&ch)
 			}
 			rg.OnChange(func() {
 				var str string = "Result:\n"
