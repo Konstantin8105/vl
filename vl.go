@@ -1005,14 +1005,17 @@ type CollapsingHeader struct {
 
 func (c *CollapsingHeader) Focus(focus bool) {
 	c.frame.Focus(focus)
+	c.init = false
 }
 
 func (c *CollapsingHeader) SetText(str string) {
 	c.content = str
+	c.init = false
 }
 
 func (c *CollapsingHeader) Open(state bool) {
 	c.open = state
+	c.init = false
 }
 
 func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
