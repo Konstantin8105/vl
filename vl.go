@@ -164,6 +164,7 @@ type Text struct {
 func TextStatic(str string) *Text {
 	t := new(Text)
 	t.content.Text = []rune(str)
+	t.content.NoUpdate = false
 	return t
 }
 
@@ -681,8 +682,17 @@ func (f *Frame) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type radio struct {
-	Text
+	container
+
 	choosed bool
+	Root    Widget
+}
+
+func (r *radio) Focus(focus bool) {
+	r.container.Focus(focus)
+	if r.Root != nil {
+		r.Root.Focus(focus)
+	}
 }
 
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
@@ -702,16 +712,15 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		PrintDrawer(0, 0, st, dr, []rune("( )"))
 	}
-	if !r.content.NoUpdate {
-		r.content.SetWidth(width - banner)
-	}
-	draw := func(row, col uint, r rune) {
-		if width < col {
-			panic("Text width")
+	if r.Root != nil {
+		droot := func(row, col uint, s tcell.Style, r rune) {
+			if width < col {
+				panic("Text width")
+			}
+			dr(row, col+banner, s, r)
 		}
-		dr(row, col+banner, TextStyle, r)
+		height = r.Root.Render(width-banner, droot)
 	}
-	height = r.content.Render(draw, nil)
 	if height < 2 {
 		height = 1
 	}
@@ -729,6 +738,9 @@ func (r *radio) Event(ev tcell.Event) {
 	if mouse[0] {
 		r.Focus(true)
 	}
+	if r.Root != nil {
+		r.Root.Event(ev)
+	}
 }
 
 // Radio - button with single choose
@@ -738,17 +750,25 @@ func (r *radio) Event(ev tcell.Event) {
 type RadioGroup struct {
 	container
 
-	list List
-	pos  uint
+	list     List
+	pos      uint
+	onChange func()
+}
+
+func (rg *RadioGroup) OnChange(f func()) {
+	rg.onChange = f
+}
+
+func (rg *RadioGroup) Add(w Widget) {
+	var r radio
+	r.Root = w
+	rg.list.Add(&r)
 }
 
 func (rg *RadioGroup) SetText(ts []string) {
 	rg.list.Clear()
 	for i := range ts {
-		var r radio
-		r.content.Text = []rune(ts[i])
-		r.content.NoUpdate = false
-		rg.list.Add(&r)
+		rg.Add(TextStatic(ts[i]))
 	}
 	if len(ts) <= int(rg.pos) {
 		rg.pos = uint(len(ts))
@@ -786,9 +806,15 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 	rg.list.Event(ev)
 	if rg.list.focus {
 		// change radio position
+		last := rg.pos
 		for i := range rg.list.ws {
 			if rg.list.ws[i].(*radio).focus {
 				rg.pos = uint(i)
+			}
+		}
+		if last != rg.pos {
+			if f := rg.onChange; f != nil {
+				f()
 			}
 		}
 	}
@@ -802,6 +828,11 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 type CheckBox struct {
 	Checked bool
 	Text
+	onChange func()
+}
+
+func (ch *CheckBox) OnChange(f func()) {
+	ch.onChange = f
 }
 
 func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
@@ -848,6 +879,9 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 	}
 	if mouse[0] {
 		ch.Checked = !ch.Checked
+		if f := ch.onChange; f != nil {
+			f()
+		}
 	}
 }
 
@@ -1219,36 +1253,32 @@ func Demo() (root Widget, action chan func()) {
 			size := 5
 			option := make([]*bool, size)
 
+			var optionInfo Text
+
 			list.Add(TextStatic("Choose oprion/options:"))
 			for i := 0; i < size; i++ {
 				var ch CheckBox
 				option[i] = &ch.Checked
 				ch.SetText(fmt.Sprintf("Option %01d", i))
+				ch.OnChange(func() {
+					var str string = "Result:\n"
+					for i := range option {
+						str += fmt.Sprintf("Option %01d is ", i)
+						if *option[i] {
+							str += "ON"
+						} else {
+							str += "OFF"
+						}
+						if i != len(option)-1 {
+							str += "\n"
+						}
+					}
+					optionInfo.SetText(str)
+				})
 				list.Add(&ch)
 			}
 
-			var optionInfo Text
 			list.Add(&optionInfo)
-			go func() {
-				for {
-					<-time.After(time.Millisecond * 100)
-					action <- func() {
-						var str string = "Result:\n"
-						for i := range option {
-							str += fmt.Sprintf("Option %01d is ", i)
-							if *option[i] {
-								str += "ON"
-							} else {
-								str += "OFF"
-							}
-							if i != len(option)-1 {
-								str += "\n"
-							}
-						}
-						optionInfo.SetText(str)
-					}
-				}
-			}()
 		}
 
 		{
@@ -1264,22 +1294,28 @@ func Demo() (root Widget, action chan func()) {
 			for i := 0; i < size; i++ {
 				names = append(names, fmt.Sprintf("radiobutton%02d", i))
 			}
+			var optionInfo Text
 			var rg RadioGroup
 			rg.SetText(names)
+			{
+				var c0 CheckBox
+				c0.SetText("CheckBox c0")
+				var c1 CheckBox
+				c1.SetText("CheckBox c1")
+				var l List
+				l.Add(TextStatic("Main check boxes inside radio group"))
+				l.Add(&c0)
+				l.Add(&c1)
+				rg.Add(&l)
+			}
+			rg.OnChange(func() {
+				var str string = "Result:\n"
+				str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
+				optionInfo.SetText(str)
+			})
 			list.Add(&rg)
 
-			var optionInfo Text
 			list.Add(&optionInfo)
-			go func() {
-				for {
-					<-time.After(time.Millisecond * 100)
-					action <- func() {
-						var str string = "Result:\n"
-						str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
-						optionInfo.SetText(str)
-					}
-				}
-			}()
 		}
 	}
 	list.Add(new(Separator))
