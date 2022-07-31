@@ -360,6 +360,10 @@ type List struct {
 	ws      []Widget
 }
 
+func (l *List) Size() int {
+	return len(l.heights)
+}
+
 func (l *List) Focus(focus bool) {
 	if !focus {
 		for i := range l.ws {
@@ -758,7 +762,7 @@ func (r *radio) Event(ev tcell.Event) {
 			if row < 0 {
 				return
 			}
-			if col <= banner{
+			if col <= banner {
 				return
 			}
 			col -= banner
