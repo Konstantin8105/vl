@@ -698,6 +698,8 @@ func (r *radio) Focus(focus bool) {
 	}
 }
 
+const banner = 4 // banner for CheckBox and radio
+
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		r.Set(width, height)
@@ -705,7 +707,6 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	const banner = 4
 	st := InputboxStyle
 	if r.choosed {
 		st = InputboxSelectStyle
@@ -748,7 +749,27 @@ func (r *radio) Event(ev tcell.Event) {
 		r.Focus(true)
 	}
 	if r.Root != nil {
-		r.Root.Event(ev)
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			if col < 0 {
+				return
+			}
+			if row < 0 {
+				return
+			}
+			if col <= banner{
+				return
+			}
+			col -= banner
+			r.Root.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			r.Root.Event(ev)
+		}
 	}
 }
 
@@ -852,7 +873,6 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	const banner = 4
 	st := InputboxStyle
 	if ch.Checked {
 		st = InputboxSelectStyle
@@ -1327,6 +1347,10 @@ func Demo() (root Widget, action chan func()) {
 				l.Add(TextStatic("Main check boxes inside radio group"))
 				l.Add(&c0)
 				l.Add(&c1)
+				l.Add(TextStatic("Text example:"))
+				var inp Inputbox
+				inp.SetText("123456789")
+				l.Add(&inp)
 				ch.Root = &l
 				rg.Add(&ch)
 			}
