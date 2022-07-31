@@ -361,7 +361,7 @@ type List struct {
 }
 
 func (l *List) Size() int {
-	return len(l.heights)
+	return len(l.ws)
 }
 
 func (l *List) Focus(focus bool) {
@@ -470,6 +470,7 @@ func (l *List) Add(w Widget) {
 
 func (l *List) Clear() {
 	l.ws = nil
+	l.heights = nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
