@@ -1240,8 +1240,41 @@ func (l *ListH) Add(w Widget) {
 //	| [ TAB1 ] | | [ TAB2 |
 //	+----------+-+        |
 //
-// type Tabs struct {
-// }
+//	<-----*----------------->
+//	+-------------++--------|
+//	| [ TAB1 ][X] || [ TAB2 | // with close
+//	+-------------++        |
+//
+//
+type tabItem struct {
+	name string
+	root Widget
+}
+
+type Tabs struct {
+	Frame
+}
+
+func (t *Tabs) Add(name string, root Widget) {
+	lh := new(ListH)
+	if t.Header == nil {
+		t.Header = lh
+	} else {
+		if l, ok := t.Header.(*ListH); ok {
+			lh = l
+		} else {
+			t.Header = lh
+		}
+	}
+
+	var b Button
+	b.SetText(name)
+	b.OnClick = func() {
+		t.Root = root
+	}
+	lh.Add(&b)
+	b.OnClick() // default action
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1469,6 +1502,14 @@ func Demo() (root Widget, action chan func()) {
 		il.Add(TextStatic("Hello world!"))
 
 		list.Add(&ch)
+	}
+	{
+		var t Tabs
+		for i := 0; i < 5; i++ {
+			t.Add(fmt.Sprintf("tab %02d", i),
+				TextStatic(fmt.Sprintf("Some text %02d", i)))
+		}
+		list.Add(&t)
 	}
 
 	return &scroll, action
