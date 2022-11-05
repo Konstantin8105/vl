@@ -21,7 +21,7 @@ var (
 	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 	// cursor
-	CursorStyle tcell.Style = style(tcell.ColorRed, tcell.ColorYellow)
+	CursorStyle tcell.Style = style(tcell.ColorRed, tcell.ColorRed)
 	// select
 	InputboxSelectStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorMaroon)
 )
