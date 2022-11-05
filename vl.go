@@ -20,7 +20,8 @@ var (
 	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
 	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
 	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
-
+	// cursor
+	CursorStyle tcell.Style = style(tcell.ColorRed, tcell.ColorYellow)
 	// select
 	InputboxSelectStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorMaroon)
 )
@@ -957,6 +958,7 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 		if width < col {
 			panic("Text width")
 		}
+		st := CursorStyle
 		dr(row, col, st, Cursor)
 	}
 	if !in.content.NoUpdate {
