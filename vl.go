@@ -267,10 +267,10 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			}
 			st := TextStyle
 			for r := uint(0); r < sc.hmax; r++ {
-				dr(r, width, st, '|')
+				dr(r, width, st, '│')
 			}
-			dr(0, width, st, '▲')
-			dr(sc.hmax-1, width, st, '▼')
+			dr(0, width, st, '▄')
+			dr(sc.hmax-1, width, st, '▀')
 			pos := uint(value * float32(sc.hmax-2))
 			if pos == 0 {
 				pos = 1
@@ -599,9 +599,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		var i uint
 		for i = 0; i < width; i++ {
 			if f.focus {
-				dr(row, i, TextStyle, '=')
+				dr(row, i, TextStyle, '═')
 			} else {
-				dr(row, i, TextStyle, '-')
+				dr(row, i, TextStyle, '─')
 			}
 		}
 	}
@@ -610,13 +610,25 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		drawRow(height)
 		var r uint
 		for r = 0; r < height; r++ {
-			dr(r, 0, TextStyle, '|')
-			dr(r, width-1, TextStyle, '|')
+			if f.focus {
+				dr(r, 0, TextStyle, '║')
+				dr(r, width-1, TextStyle, '║')
+			} else {
+				dr(r, 0, TextStyle, '│')
+				dr(r, width-1, TextStyle, '│')
+			}
 		}
-		dr(0, 0, TextStyle, '+')
-		dr(0, width-1, TextStyle, '+')
-		dr(height, 0, TextStyle, '+')
-		dr(height, width-1, TextStyle, '+')
+		if f.focus {
+			dr(0, 0, TextStyle, '╔')
+			dr(0, width-1, TextStyle, '╗')
+			dr(height, 0, TextStyle, '╚')
+			dr(height, width-1, TextStyle, '╝')
+		} else {
+			dr(0, 0, TextStyle, '┌')
+			dr(0, width-1, TextStyle, '┐')
+			dr(height, 0, TextStyle, '└')
+			dr(height, width-1, TextStyle, '┘')
+		}
 		height++
 	}()
 	// draw text
@@ -1049,9 +1061,9 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
 		c.b.OnClick = func() {
 			if c.open {
-				c.b.SetText("| ▶ | " + c.content)
+				c.b.SetText("│ » │ " + c.content)
 			} else {
-				c.b.SetText("| ▼ | " + c.content)
+				c.b.SetText("│ « │ " + c.content)
 			}
 			c.open = !c.open
 		}
