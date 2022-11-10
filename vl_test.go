@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -317,5 +318,35 @@ func Benchmark(b *testing.B) {
 	}
 	for n := 0; n < b.N; n++ {
 		_ = screen.Render(size, null)
+	}
+}
+
+func TestAscii(t *testing.T) {
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !utf8.Valid(content) {
+			t.Fatalf("utf8 invalid")
+		}
+		runes := []rune(string(content))
+		for _, r := range runes {
+			ir := int(r)
+			if 32 <= ir && ir <= 127 {
+				continue
+			}
+			if ir == int('\n') {
+				continue
+			}
+			if ir == int('\t') {
+				continue
+			}
+			t.Errorf("find unicode: `%s`", string(r))
+		}
 	}
 }
