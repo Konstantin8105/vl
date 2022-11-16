@@ -135,8 +135,8 @@ func (screen *Screen) SetHeight(hmax uint) {
 	if screen.Root == nil {
 		return
 	}
-	if vf, ok := screen.Root.(VerticalFix); ok {
-		vf.SetHeight(hmax)
+	if _, ok := screen.Root.(VerticalFix); ok {
+		screen.Root.(VerticalFix).SetHeight(hmax)
 	}
 }
 
