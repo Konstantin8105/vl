@@ -1328,7 +1328,7 @@ func Demo() (root Widget, action chan func()) {
 		list   List
 	)
 
-	action = make(chan func())
+	action = make(chan func(), 10)
 
 	scroll.Root = &list
 	{
