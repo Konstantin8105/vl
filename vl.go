@@ -1230,16 +1230,16 @@ func (l *ListH) Clear() {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Widget : Combobox
-// Design :
-// Name03
-// +-| > | Choose: ----+
-// |                   |
-// | ( ) Name 01       |
-// | ( ) Name 02       |
-// | (*) Name 03       |
-// | ( ) Name 04       |
-// |                   |
-// +-------------------+
+//	Design :
+//	Name03
+//	+-| > | Choose: ----+
+//	|                   |
+//	| ( ) Name 01       |
+//	| ( ) Name 02       |
+//	| (*) Name 03       |
+//	| ( ) Name 04       |
+//	|                   |
+//	+-------------------+
 type Combobox struct {
 	ch CollapsingHeader
 
