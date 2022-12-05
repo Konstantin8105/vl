@@ -1222,6 +1222,11 @@ func (l *ListH) Add(w Widget) {
 	l.ws = append(l.ws, w)
 }
 
+func (l *ListH) Clear() {
+	l.ws = nil
+	l.widths = nil
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Widget : Combobox
@@ -1259,35 +1264,31 @@ func (l *ListH) Add(w Widget) {
 //	| [ TAB1 ][X] || [ TAB2 | // with close
 //	+-------------++        |
 //
-//
-type tabItem struct {
-	name string
-	root Widget
-}
 
 type Tabs struct {
 	Frame
+	views []Widget
 }
 
 func (t *Tabs) Add(name string, root Widget) {
-	lh := new(ListH)
+	rg := new(RadioGroup)
 	if t.Header == nil {
-		t.Header = lh
+		t.Header = rg
 	} else {
-		if l, ok := t.Header.(*ListH); ok {
-			lh = l
+		if r, ok := t.Header.(*RadioGroup); ok {
+			rg = r
 		} else {
-			t.Header = lh
+			t.Header = rg
 		}
 	}
 
-	var b Button
-	b.SetText(name)
-	b.OnClick = func() {
-		t.Root = root
+	rg.Add(TextStatic(name))
+	t.views = append(t.views, root)
+	f := func() {
+		t.Root = t.views[rg.pos]
 	}
-	lh.Add(&b)
-	b.OnClick() // default action
+	rg.OnChange(f)
+	f()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1519,7 +1520,7 @@ func Demo() (root Widget, action chan func()) {
 	}
 	{
 		var t Tabs
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 20; i++ {
 			t.Add(fmt.Sprintf("tab %02d", i),
 				TextStatic(fmt.Sprintf("Some text %02d", i)))
 		}
