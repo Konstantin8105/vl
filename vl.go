@@ -1231,10 +1231,44 @@ func (l *ListH) Clear() {
 
 // Widget : Combobox
 // Design :
-// +-------------------+
+// Name03
+// +-| > | Choose: ----+
 // |                   |
+// | ( ) Name 01       |
+// | ( ) Name 02       |
+// | (*) Name 03       |
+// | ( ) Name 04       |
 // |                   |
 // +-------------------+
+type Combobox struct {
+	CollapsingHeader
+
+	rg RadioGroup
+	ts []string
+}
+
+func (c *Combobox) SetText(ts []string) {
+	c.ts = ts
+	c.rg.SetText(ts)
+}
+
+func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		c.Set(width, height)
+	}()
+	if width < 4 {
+		return 1
+	}
+	if c.Root == nil {
+		// c.root.SetText(string(c.RadioGroup.list.ws[c.RadioGroup.list.pos].(*Text).content.Text))
+		c.Root = &c.rg
+		c.rg.onChange = func() {
+			c.CollapsingHeader.SetText(c.ts[c.rg.pos])
+		}
+		c.rg.onChange()
+	}
+	return c.CollapsingHeader.Render(width, dr)
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1315,6 +1349,27 @@ func (t *Tabs) Add(name string, root Widget) {
 //	  +- Node 01
 //	  |
 //	  +- Node 02
+//
+//	(*) Main
+//     (  )(-) Node 0
+//         (  )(-)Node 01
+//         (  )(-)Node 02
+//     (  )(+) Node 1
+//
+//	Main
+//  +---- Node M0
+//  +---- Node M1
+//	|
+//	+-(-) Node 0
+//	|  +---- Node 01
+//	|  +---- Node 02
+//	|
+//	+-(-) Node 1
+//	|  +-(+) Node 01
+//	|  +-(+) Node 02d
+//  |
+//	+-(+) Node 1
+//
 // type Tree struct {
 // 	open  bool
 // 	Name  Widget
@@ -1525,6 +1580,11 @@ func Demo() (root Widget, action chan func()) {
 				TextStatic(fmt.Sprintf("Some text %02d", i)))
 		}
 		list.Add(&t)
+	}
+	{
+		var c Combobox
+		c.SetText([]string{"A", "BB", "CCC"})
+		list.Add(&c)
 	}
 
 	return &scroll, action
