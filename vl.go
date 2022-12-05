@@ -1241,15 +1241,24 @@ func (l *ListH) Clear() {
 // |                   |
 // +-------------------+
 type Combobox struct {
-	CollapsingHeader
+	ch CollapsingHeader
 
-	rg RadioGroup
-	ts []string
+	rg       RadioGroup
+	ts       []string
+	onChange func()
 }
 
 func (c *Combobox) SetText(ts []string) {
 	c.ts = ts
 	c.rg.SetText(ts)
+}
+
+func (c *Combobox) OnChange(f func()) {
+	c.onChange = f
+}
+
+func (c *Combobox) GetPos() uint {
+	return c.rg.pos
 }
 
 func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
@@ -1259,15 +1268,25 @@ func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	if width < 4 {
 		return 1
 	}
-	if c.Root == nil {
-		// c.root.SetText(string(c.RadioGroup.list.ws[c.RadioGroup.list.pos].(*Text).content.Text))
-		c.Root = &c.rg
+	if c.ch.Root == nil {
+		c.ch.Root = &c.rg
 		c.rg.onChange = func() {
-			c.CollapsingHeader.SetText(c.ts[c.rg.pos])
+			c.ch.SetText(c.ts[c.rg.pos])
+			if c.onChange != nil {
+				c.onChange()
+			}
 		}
 		c.rg.onChange()
 	}
-	return c.CollapsingHeader.Render(width, dr)
+	return c.ch.Render(width, dr)
+}
+
+func (c *Combobox) Focus(focus bool) { c.ch.Focus(focus) }
+func (c *Combobox) Set(width, height uint) {
+	c.ch.Set(width, height)
+}
+func (c *Combobox) Event(ev tcell.Event) {
+	c.ch.Event(ev)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
