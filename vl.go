@@ -476,16 +476,18 @@ func (l *List) Clear() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Button examples:
-// Minimal width:
+// Button examples
+//
+//	Minimal width:
 //	[  ]
-// Single text:
+//	Single text:
 //	[ Text ] Button
-// Long text:
+//	Long text:
 //	[ Text                ] Button
-// Multiline text:
+//	 Multiline text:
 //	[ Line 1              ] Button
 //	[ Line 2              ]
+//
 type Button struct {
 	Text
 	OnClick  func()
@@ -562,10 +564,12 @@ func (b *Button) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Frame examples:
+// Frame examples
+//
 //	+- Header ---------+
 //	|      Root        |
 //	+------------------+
+//
 type Frame struct {
 	container
 
@@ -792,9 +796,11 @@ func (r *radio) Event(ev tcell.Event) {
 }
 
 // Radio - button with single choose
-// Example:
+//
+// 	Example:
 //	(0) choose one
 //	( ) choose two
+//
 type RadioGroup struct {
 	container
 
@@ -811,15 +817,15 @@ func (rg *RadioGroup) Add(w Widget) {
 	var r radio
 	r.Root = w
 	rg.list.Add(&r)
+	rg.pos = uint(len(rg.list.ws) - 1)
+	if f := rg.onChange; f != nil {
+		f()
+	}
 }
 
-func (rg *RadioGroup) SetText(ts []string) {
-	rg.list.Clear()
-	for i := range ts {
-		rg.Add(TextStatic(ts[i]))
-	}
-	if len(ts) <= int(rg.pos) {
-		rg.pos = uint(len(ts))
+func (rg *RadioGroup) AddText(ts ...string) {
+	for _, s := range ts {
+		rg.Add(TextStatic(s))
 	}
 }
 
@@ -870,9 +876,10 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Widget : CheckBox
-// Design : [V] Option
-
+// CheckBox example
+//
+// [v] Option
+//
 type CheckBox struct {
 	Checked bool
 	Text
@@ -1229,8 +1236,8 @@ func (l *ListH) Clear() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Widget : Combobox
-//	Design :
+// Combobox example
+//
 //	Name03
 //	+-| > | Choose: ----+
 //	|                   |
@@ -1240,17 +1247,22 @@ func (l *ListH) Clear() {
 //	| ( ) Name 04       |
 //	|                   |
 //	+-------------------+
+//
 type Combobox struct {
-	ch CollapsingHeader
-
+	ch       CollapsingHeader
 	rg       RadioGroup
 	ts       []string
 	onChange func()
 }
 
-func (c *Combobox) SetText(ts []string) {
-	c.ts = ts
-	c.rg.SetText(ts)
+func (c *Combobox) Add(ts ...string) {
+	for _, s := range ts {
+		c.ts = append(c.ts, s)
+		c.rg.Add(TextStatic(s))
+	}
+	if f := c.rg.onChange; f != nil {
+		f()
+	}
 }
 
 func (c *Combobox) OnChange(f func()) {
@@ -1319,29 +1331,26 @@ func (c *Combobox) Event(ev tcell.Event) {
 //
 
 type Tabs struct {
-	Frame
-	views []Widget
+	List
+
+	combo Combobox
+	rs    []Widget
 }
 
 func (t *Tabs) Add(name string, root Widget) {
-	rg := new(RadioGroup)
-	if t.Header == nil {
-		t.Header = rg
-	} else {
-		if r, ok := t.Header.(*RadioGroup); ok {
-			rg = r
-		} else {
-			t.Header = rg
+	t.rs = append(t.rs, root)
+	t.combo.Add(name)
+	if t.combo.onChange == nil {
+		t.List.Add(&t.combo)
+		t.combo.onChange = func() {
+			if len(t.List.ws) == 1 {
+				t.List.Add(nil)
+			}
+			if 1 < len(t.List.ws) {
+				t.List.ws[1] = t.rs[t.combo.GetPos()]
+			}
 		}
 	}
-
-	rg.Add(TextStatic(name))
-	t.views = append(t.views, root)
-	f := func() {
-		t.Root = t.views[rg.pos]
-	}
-	rg.OnChange(f)
-	f()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1462,7 +1471,7 @@ func Demo() (root Widget, action chan func()) {
 			}
 			var optionInfo Text
 			var rg RadioGroup
-			rg.SetText(names)
+			rg.AddText(names...)
 			{
 				var ch CollapsingHeader
 				ch.SetText("CollapsingHeader with CheckBoxes")
@@ -1594,15 +1603,16 @@ func Demo() (root Widget, action chan func()) {
 	}
 	{
 		var t Tabs
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 10; i++ {
 			t.Add(fmt.Sprintf("tab %02d", i),
 				TextStatic(fmt.Sprintf("Some text %02d", i)))
 		}
+		t.Add("nil", nil)
 		list.Add(&t)
 	}
 	{
 		var c Combobox
-		c.SetText([]string{"A", "BB", "CCC"})
+		c.Add([]string{"A", "BB", "CCC"}...)
 		list.Add(&c)
 	}
 

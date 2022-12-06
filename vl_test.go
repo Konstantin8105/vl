@@ -73,7 +73,7 @@ func init() {
 				l.Add(&b)
 
 				var rg RadioGroup
-				rg.SetText([]string{"one", "two", "three"})
+				rg.AddText([]string{"one", "two", "three"}...)
 				l.Add(&rg)
 
 				var ch CheckBox
