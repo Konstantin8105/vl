@@ -829,6 +829,10 @@ func (rg *RadioGroup) AddText(ts ...string) {
 	}
 }
 
+func (rg *RadioGroup) Clear() {
+	rg.list.Clear()
+}
+
 func (rg *RadioGroup) SetPos(pos uint) {
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
