@@ -14,16 +14,23 @@ func style(fd, bd tcell.Color) tcell.Style {
 }
 
 var (
-	ScreenStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorWhite)
+	white  = tcell.ColorWhite
+	yellow = tcell.ColorYellow
+	focus  = tcell.ColorOrange
+	red    = tcell.ColorRed
+	green  = tcell.ColorGreen
+	black  = tcell.ColorBlack
+
+	ScreenStyle        tcell.Style = style(black, white)
 	TextStyle          tcell.Style = ScreenStyle
-	ButtonStyle        tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
-	ButtonFocusStyle   tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
-	InputboxStyle      tcell.Style = style(tcell.ColorBlack, tcell.ColorYellow)
-	InputboxFocusStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorViolet)
+	ButtonStyle        tcell.Style = style(black, yellow)
+	ButtonFocusStyle   tcell.Style = style(black, focus)
+	InputboxStyle      tcell.Style = style(black, yellow)
+	InputboxFocusStyle tcell.Style = style(black, focus)
 	// cursor
-	CursorStyle tcell.Style = style(tcell.ColorRed, tcell.ColorRed)
+	CursorStyle tcell.Style = style(red, red)
 	// select
-	InputboxSelectStyle tcell.Style = style(tcell.ColorBlack, tcell.ColorMaroon)
+	InputboxSelectStyle tcell.Style = style(black, green)
 )
 
 type Drawer = func(row, col uint, s tcell.Style, r rune)
@@ -836,6 +843,9 @@ func (rg *RadioGroup) Clear() {
 
 func (rg *RadioGroup) SetPos(pos uint) {
 	rg.pos = pos
+	if len(rg.list.ws) <= int(rg.pos) {
+		rg.pos = 0
+	}
 }
 
 func (rg *RadioGroup) GetPos() uint {
