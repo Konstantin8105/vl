@@ -16,7 +16,7 @@ func style(fd, bd tcell.Color) tcell.Style {
 var (
 	white  = tcell.ColorWhite
 	yellow = tcell.ColorYellow
-	focus  = tcell.ColorOrange
+	focus  = tcell.ColorDeepPink // ColorDeepPink
 	red    = tcell.ColorRed
 	green  = tcell.ColorGreen
 	black  = tcell.ColorBlack
