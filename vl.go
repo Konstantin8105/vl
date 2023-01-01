@@ -1768,22 +1768,30 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 		}
 	}()
 
+	var ignore bool
 	for {
 		if quit {
 			break
 		}
 
+		ignore = false
+
 		select {
 		case ev := <-chEvent:
-			switch ev.(type) {
+			switch ev := ev.(type) {
 			case *tcell.EventResize:
 				screen.Sync()
 			case *tcell.EventKey:
 				for i := range quitKeys {
-					if quitKeys[i] == ev.(*tcell.EventKey).Key() {
+					if quitKeys[i] == ev.Key() {
 						quit = true
 						break
 					}
+				}
+			case *tcell.EventMouse:
+				if ev.Buttons() == tcell.ButtonNone {
+					ignore = true
+					continue
 				}
 			}
 			if ev != nil && root != nil {
@@ -1806,6 +1814,10 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			f()
 		}
 		// render
+
+		if ignore {
+			continue
+		}
 
 		// clear screen
 		mu.Lock()
