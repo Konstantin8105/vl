@@ -1,5 +1,7 @@
 github.com/Konstantin8105/tf v0.0.0-20220721103236-83ad8d7b923c h1:nnYYtBUgGgTgpBAUwMjjBd34R1M8wYRkiVXAUqQoTyM=
 github.com/Konstantin8105/tf v0.0.0-20220721103236-83ad8d7b923c/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
+github.com/Konstantin8105/tf v0.0.0-20230105232239-7fe128a23b21 h1:78NOvXH0rTB3ZA3hw9m/H8VoOInR/62DdPawndQ4km4=
+github.com/Konstantin8105/tf v0.0.0-20230105232239-7fe128a23b21/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
 github.com/gdamore/encoding v1.0.0 h1:+7OoQ1Bc6eTm5niUzBa0Ctsh6JbMW6Ra+YNuAtDBdko=
 github.com/gdamore/encoding v1.0.0/go.mod h1:alR0ol34c49FCSBLjhosxzcPHQbf2trDkoo5dl+VrEg=
 github.com/gdamore/tcell/v2 v2.5.3 h1:b9XQrT6QGbgI7JvZOJXFNczOQeIYbo8BfeSMzt2sAV0=

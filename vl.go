@@ -180,6 +180,7 @@ func TextStatic(str string) *Text {
 }
 
 func (t *Text) SetLinesLimit(limit uint) {
+	t.content.NoUpdate = false
 	t.content.SetLinesLimit(limit)
 }
 
@@ -193,6 +194,7 @@ func (t *Text) GetText() string {
 }
 
 func (t *Text) Filter(f func(r rune) (insert bool)) {
+	t.content.NoUpdate = false
 	t.content.Filter = f
 }
 
@@ -1369,6 +1371,8 @@ func (t *Tabs) Add(name string, root Widget) {
 				t.List.ws[1] = t.rs[t.combo.GetPos()]
 			}
 		}
+		t.combo.rg.SetPos(0)
+		t.combo.onChange()
 	}
 }
 
@@ -1622,11 +1626,17 @@ func Demo() (root Widget, action chan func()) {
 	}
 	{
 		var t Tabs
-		for i := 0; i < 10; i++ {
-			t.Add(fmt.Sprintf("tab %02d", i),
-				TextStatic(fmt.Sprintf("Some text %02d", i)))
-		}
 		t.Add("nil", nil)
+		for i := 0; i < 10; i++ {
+			var list List
+			list.Add(TextStatic(fmt.Sprintf("Some text %02d", i)))
+			var text Inputbox
+			if i%2 == 0 {
+				text.SetText(fmt.Sprintf("== %d ==", i))
+			}
+			list.Add(&text)
+			t.Add(fmt.Sprintf("tab %02d", i), &list)
+		}
 		list.Add(&t)
 	}
 	{
