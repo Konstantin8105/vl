@@ -256,38 +256,42 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		row -= sc.offset
 		dr(row, col, st, r)
 	}
-	if width < scrollBarWidth {
-		return
-	}
-	height = sc.Root.Render(width-scrollBarWidth, draw)
-	// calculate location
-	if 2 < sc.hmax {
-		var value float32 // 0 ... 1
-		if sc.hmax <= height {
-			value = float32(sc.offset) / float32(height-sc.hmax)
-		} else {
-			value = 1.0
+	if sc.hmax <= 0 {
+		height = sc.Root.Render(width, draw)
+	} else {
+		if width < scrollBarWidth {
+			return
 		}
-		if 1 < value {
-			value = 1.0
+		height = sc.Root.Render(width-scrollBarWidth, draw)
+		// calculate location
+		if 2 < sc.hmax {
+			var value float32 // 0 ... 1
+			if sc.hmax <= height {
+				value = float32(sc.offset) / float32(height-sc.hmax)
+			} else {
+				value = 1.0
+			}
+			if 1 < value {
+				value = 1.0
+			}
+			if value < 0 {
+				value = 0.0
+			}
+			st := TextStyle
+			for r := uint(0); r < sc.hmax; r++ {
+				dr(r, width, st, '|')
+			}
+			dr(0, width, st, '-')
+			dr(sc.hmax-1, width, st, '-')
+			pos := uint(value * float32(sc.hmax-2))
+			if pos == 0 {
+				pos = 1
+			}
+			if pos == sc.hmax-1 {
+				pos = sc.hmax - 2
+			}
+			dr(pos, width, st, '*')
 		}
-		if value < 0 {
-			value = 0.0
-		}
-		st := TextStyle
-		for r := uint(0); r < sc.hmax; r++ {
-			dr(r, width, st, '|')
-		}
-		dr(0, width, st, '-')
-		dr(sc.hmax-1, width, st, '-')
-		pos := uint(value * float32(sc.hmax-2))
-		if pos == 0 {
-			pos = 1
-		}
-		if pos == sc.hmax-1 {
-			pos = sc.hmax - 2
-		}
-		dr(pos, width, st, '*')
 	}
 	return
 }
@@ -327,6 +331,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		col, row := ev.Position()
+		_, _ = col, row
 		switch ev.Buttons() {
 		case tcell.WheelUp:
 			if sc.offset == 0 {
@@ -336,10 +341,13 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 		default:
-			if ev.Buttons() == tcell.Button1 && col == int(sc.width) && 0 < sc.hmax {
-				ratio := float32(row) / float32(sc.hmax)
-				dh := float32(sc.height - sc.hmax)
-				sc.offset = uint(dh * ratio)
+			if 0 < row && 2 < sc.hmax && ev.Buttons() == tcell.Button1 && col == int(sc.width) && 0 < sc.hmax {
+				ratio := float32(row-1) / float32(sc.hmax-2)
+				dh := float32(sc.height)
+				if 0 < dh {
+					sc.offset = uint(dh * ratio)
+				}
+				sc.fixOffset() // fix offset position
 				break
 			}
 			// unfocus
@@ -363,7 +371,24 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
+		// switch ev.Key() {
+		// case tcell.KeyUp:
+		// 	if 0 < sc.hmax {
+		// 		sc.offset += sc.hmax / 2
+		// 		sc.fixOffset() // fix offset position
+		// 	}
+		// case tcell.KeyDown:
+		// 	if 0 < sc.hmax {
+		// 		if sc.offset < sc.hmax/2 {
+		// 			sc.offset = 0
+		// 		} else {
+		// 			sc.offset -= sc.hmax / 2
+		// 		}
+		// 		sc.fixOffset() // fix offset position
+		// 	}
+		// default:
 		sc.Root.Event(ev)
+		// }
 	}
 }
 
