@@ -1152,6 +1152,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 			dw := w
 			if i+1 == 1 && w < l.minWidth1element {
 				dw = l.minWidth1element
+				w = uint(float32(width-l.minWidth1element) / float32(len(l.ws)-1))
 			}
 			l.widths[i+1] = l.widths[i] + dw
 			if width < l.widths[i+1] {
