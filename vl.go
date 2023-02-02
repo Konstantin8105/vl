@@ -496,7 +496,6 @@ func (l *List) Clear() {
 //	 Multiline text:
 //	[ Line 1              ] Button
 //	[ Line 2              ]
-//
 type Button struct {
 	Text
 	OnClick  func()
@@ -578,7 +577,6 @@ func (b *Button) Event(ev tcell.Event) {
 //	+- Header ---------+
 //	|      Root        |
 //	+------------------+
-//
 type Frame struct {
 	container
 
@@ -806,10 +804,9 @@ func (r *radio) Event(ev tcell.Event) {
 
 // Radio - button with single choose
 //
-// 	Example:
+//	Example:
 //	(0) choose one
 //	( ) choose two
-//
 type RadioGroup struct {
 	container
 
@@ -900,7 +897,6 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 // CheckBox example
 //
 // [v] Option
-//
 type CheckBox struct {
 	Checked bool
 	Text
@@ -1122,6 +1118,8 @@ func (c *CollapsingHeader) Event(ev tcell.Event) {
 type ListH struct {
 	containerVerticalFix
 
+	minWidth1element uint
+
 	widths []uint
 	ws     []Widget
 }
@@ -1144,14 +1142,21 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	if len(l.ws) == 0 {
 		return
 	}
-	if len(l.widths) != len(l.ws) {
+	if len(l.widths) != len(l.ws) || l.widths[len(l.widths)-1] != width {
 		// width of each element
 		w := uint(float32(width) / float32(len(l.ws)))
 		// calculate widths
 		l.widths = make([]uint, len(l.ws)+1)
 		l.widths[0] = 0
 		for i := range l.ws {
-			l.widths[i+1] = l.widths[i] + w
+			dw := w
+			if i+1 == 1 && w < l.minWidth1element {
+				dw = l.minWidth1element
+			}
+			l.widths[i+1] = l.widths[i] + dw
+			if width < l.widths[i+1] {
+				l.widths[i+1] = width
+			}
 		}
 		l.widths[len(l.widths)-1] = width
 	}
@@ -1253,6 +1258,11 @@ func (l *ListH) Add(w Widget) {
 func (l *ListH) Clear() {
 	l.ws = nil
 	l.widths = nil
+	l.minWidth1element = 0
+}
+
+func (l *ListH) MinWidth1element(width uint) {
+	l.minWidth1element = width
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1268,7 +1278,6 @@ func (l *ListH) Clear() {
 //	| ( ) Name 04       |
 //	|                   |
 //	+-------------------+
-//
 type Combobox struct {
 	ch       CollapsingHeader
 	rg       RadioGroup
@@ -1440,6 +1449,7 @@ func Demo() (root Widget, action chan func()) {
 	scroll.Root = &list
 	{
 		var listh ListH
+		listh.MinWidth1element(20)
 		list.Add(&listh)
 
 		{
