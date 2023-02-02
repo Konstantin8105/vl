@@ -371,24 +371,24 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
-		// switch ev.Key() {
-		// case tcell.KeyUp:
-		// 	if 0 < sc.hmax {
-		// 		sc.offset += sc.hmax / 2
-		// 		sc.fixOffset() // fix offset position
-		// 	}
-		// case tcell.KeyDown:
-		// 	if 0 < sc.hmax {
-		// 		if sc.offset < sc.hmax/2 {
-		// 			sc.offset = 0
-		// 		} else {
-		// 			sc.offset -= sc.hmax / 2
-		// 		}
-		// 		sc.fixOffset() // fix offset position
-		// 	}
-		// default:
+		 switch ev.Key() {
+		 case tcell.KeyPgDn:
+		 	if 0 < sc.hmax {
+		 		sc.offset += sc.hmax / 2
+		 		sc.fixOffset() // fix offset position
+		 	}
+		 case tcell.KeyPgUp:
+		 	if 0 < sc.hmax {
+		 		if sc.offset < sc.hmax/2 {
+		 			sc.offset = 0
+		 		} else {
+		 			sc.offset -= sc.hmax / 2
+		 		}
+		 		sc.fixOffset() // fix offset position
+		 	}
+		 default:
 		sc.Root.Event(ev)
-		// }
+		 }
 	}
 }
 
