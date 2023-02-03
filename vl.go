@@ -1333,6 +1333,7 @@ func (c *Combobox) OnChange(f func()) {
 
 func (c *Combobox) SetPos(pos uint) {
 	c.rg.SetPos(pos)
+	c.rg.onChange()
 }
 
 func (c *Combobox) GetPos() uint {
