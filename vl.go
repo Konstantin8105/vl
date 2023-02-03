@@ -1290,8 +1290,12 @@ func (c *Combobox) OnChange(f func()) {
 	c.onChange = f
 }
 
+func (c *Combobox) SetPos(pos uint) {
+	c.rg.SetPos(pos)
+}
+
 func (c *Combobox) GetPos() uint {
-	return c.rg.pos
+	return c.rg.GetPos()
 }
 
 func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
