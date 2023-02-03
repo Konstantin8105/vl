@@ -28,7 +28,7 @@ var (
 	InputboxStyle      tcell.Style = style(black, yellow)
 	InputboxFocusStyle tcell.Style = style(black, focus)
 	// cursor
-	CursorStyle tcell.Style = style(red, red)
+	CursorStyle tcell.Style = style(white, red)
 	// select
 	InputboxSelectStyle tcell.Style = style(black, green)
 )
@@ -220,7 +220,8 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+const scrollBarWidth uint = 1
 
 type Scroll struct {
 	containerVerticalFix
@@ -258,7 +259,9 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	if sc.hmax <= 0 {
 		height = sc.Root.Render(width, draw)
 	} else {
-		const scrollBarWidth uint = 1
+		if width < scrollBarWidth {
+			return
+		}
 		height = sc.Root.Render(width-scrollBarWidth, draw)
 		// calculate location
 		if 2 < sc.hmax {
@@ -327,6 +330,8 @@ func (sc *Scroll) Event(ev tcell.Event) {
 	}
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
+		col, row := ev.Position()
+		_, _ = col, row
 		switch ev.Buttons() {
 		case tcell.WheelUp:
 			if sc.offset == 0 {
@@ -336,6 +341,15 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 		default:
+			if 0 < row && 2 < sc.hmax && ev.Buttons() == tcell.Button1 && col == int(sc.width) && 0 < sc.hmax {
+				ratio := float32(row-1) / float32(sc.hmax-2)
+				dh := float32(sc.height)
+				if 0 < dh {
+					sc.offset = uint(dh * ratio)
+				}
+				sc.fixOffset() // fix offset position
+				break
+			}
 			// unfocus
 			sc.Focus(false)
 			sc.Root.Focus(false)
@@ -357,7 +371,24 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				ev.Modifiers()))
 		}
 	case *tcell.EventKey:
+		 switch ev.Key() {
+		 case tcell.KeyPgDn:
+		 	if 0 < sc.hmax {
+		 		sc.offset += sc.hmax / 2
+		 		sc.fixOffset() // fix offset position
+		 	}
+		 case tcell.KeyPgUp:
+		 	if 0 < sc.hmax {
+		 		if sc.offset < sc.hmax/2 {
+		 			sc.offset = 0
+		 		} else {
+		 			sc.offset -= sc.hmax / 2
+		 		}
+		 		sc.fixOffset() // fix offset position
+		 	}
+		 default:
 		sc.Root.Event(ev)
+		 }
 	}
 }
 
@@ -496,7 +527,6 @@ func (l *List) Clear() {
 //	 Multiline text:
 //	[ Line 1              ] Button
 //	[ Line 2              ]
-//
 type Button struct {
 	Text
 	OnClick  func()
@@ -578,7 +608,6 @@ func (b *Button) Event(ev tcell.Event) {
 //	+- Header ---------+
 //	|      Root        |
 //	+------------------+
-//
 type Frame struct {
 	container
 
@@ -806,10 +835,9 @@ func (r *radio) Event(ev tcell.Event) {
 
 // Radio - button with single choose
 //
-// 	Example:
+//	Example:
 //	(0) choose one
 //	( ) choose two
-//
 type RadioGroup struct {
 	container
 
@@ -900,7 +928,6 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 // CheckBox example
 //
 // [v] Option
-//
 type CheckBox struct {
 	Checked bool
 	Text
@@ -1122,6 +1149,8 @@ func (c *CollapsingHeader) Event(ev tcell.Event) {
 type ListH struct {
 	containerVerticalFix
 
+	minWidth1element uint
+
 	widths []uint
 	ws     []Widget
 }
@@ -1144,14 +1173,22 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	if len(l.ws) == 0 {
 		return
 	}
-	if len(l.widths) != len(l.ws) {
+	if len(l.widths) != len(l.ws) || l.widths[len(l.widths)-1] != width {
 		// width of each element
 		w := uint(float32(width) / float32(len(l.ws)))
 		// calculate widths
 		l.widths = make([]uint, len(l.ws)+1)
 		l.widths[0] = 0
 		for i := range l.ws {
-			l.widths[i+1] = l.widths[i] + w
+			dw := w
+			if i+1 == 1 && w < l.minWidth1element {
+				dw = l.minWidth1element
+				w = uint(float32(width-l.minWidth1element) / float32(len(l.ws)-1))
+			}
+			l.widths[i+1] = l.widths[i] + dw
+			if width < l.widths[i+1] {
+				l.widths[i+1] = width
+			}
 		}
 		l.widths[len(l.widths)-1] = width
 	}
@@ -1253,6 +1290,11 @@ func (l *ListH) Add(w Widget) {
 func (l *ListH) Clear() {
 	l.ws = nil
 	l.widths = nil
+	l.minWidth1element = 0
+}
+
+func (l *ListH) MinWidth1element(width uint) {
+	l.minWidth1element = width
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1268,7 +1310,6 @@ func (l *ListH) Clear() {
 //	| ( ) Name 04       |
 //	|                   |
 //	+-------------------+
-//
 type Combobox struct {
 	ch       CollapsingHeader
 	rg       RadioGroup
@@ -1444,6 +1485,7 @@ func Demo() (root Widget, action chan func()) {
 	scroll.Root = &list
 	{
 		var listh ListH
+		listh.MinWidth1element(20)
 		list.Add(&listh)
 
 		{
