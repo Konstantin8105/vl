@@ -341,7 +341,8 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.WheelDown:
 			sc.offset++
 		default:
-			if 0 < row && 2 < sc.hmax && ev.Buttons() == tcell.Button1 && col == int(sc.width) && 0 < sc.hmax {
+			if 0 < row && 2 < sc.hmax && ev.Buttons() == tcell.Button1 &&
+				col == int(sc.width) && 0 < sc.hmax {
 				ratio := float32(row-1) / float32(sc.hmax-2)
 				dh := float32(sc.height)
 				if 0 < dh {
@@ -1858,6 +1859,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			}
 			if ev != nil && root != nil {
 				mu.Lock()
+				time.Sleep(time.Millisecond*500) // sleep for Windows
 				root.Event(ev)
 				mu.Unlock()
 			}
