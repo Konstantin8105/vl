@@ -1859,7 +1859,12 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			}
 			if ev != nil && root != nil {
 				mu.Lock()
-				time.Sleep(time.Millisecond*500) // sleep for Windows
+				if p, ok := ev.(*tcell.EventMouse); ok {
+					bm := p.Buttons()
+					if bm == tcell.Button1 || bm == tcell.Button2 || bm == tcell.Button3 {
+						time.Sleep(time.Millisecond*500) // sleep for Windows
+					}
+				}
 				root.Event(ev)
 				mu.Unlock()
 			}
