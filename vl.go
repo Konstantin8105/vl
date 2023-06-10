@@ -1884,6 +1884,9 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 		}
 		// render
 
+		if quit {
+			break
+		}
 		if ignore {
 			continue
 		}
