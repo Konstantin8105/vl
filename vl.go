@@ -1423,6 +1423,7 @@ func (t *Tabs) Add(name string, root Widget) {
 				t.List.ws[1] = t.rs[t.combo.GetPos()]
 			}
 		}
+	} else {
 		t.combo.rg.SetPos(0)
 		t.combo.onChange()
 	}

@@ -3,13 +3,13 @@ package vl
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 	"unicode/utf8"
 
+	"github.com/Konstantin8105/compare"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -127,41 +127,8 @@ func check(t *testing.T, name string, si int, screen Screen) {
 
 	// compare
 	defer func() {
-		var (
-			actual   = buf.Bytes()
-			filename = filepath.Join(testdata, name)
-		)
-		// for update test screens run in console:
-		// UPDATE=true go test
-		if os.Getenv("UPDATE") == "true" {
-			if err := ioutil.WriteFile(filename, actual, 0644); err != nil {
-				t.Fatalf("Cannot write snapshot to file: %v", err)
-			}
-		}
-		// get expect result
-		expect, err := ioutil.ReadFile(filename)
-		if err != nil {
-			t.Fatalf("Cannot read snapshot file: %v", err)
-		}
-		// compare
-		if !bytes.Equal(actual, expect) {
-			f2 := filename + ".new"
-			if err := ioutil.WriteFile(f2, actual, 0644); err != nil {
-				t.Fatalf("Cannot write snapshot to file new: %v", err)
-			}
-			size := 1000
-			if size < len(actual) {
-				actual = actual[:size]
-			}
-			if size < len(expect) {
-				expect = expect[:size]
-			}
-			t.Errorf("Snapshots is not same:\nActual:\n%s\nExpect:\n%s\nmeld %s %s",
-				actual,
-				expect,
-				filename, f2,
-			)
-		}
+		filename := filepath.Join(testdata, name)
+		compare.Test(t, filename, buf.Bytes())
 	}()
 
 	// var db Buffer
