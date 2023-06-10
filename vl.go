@@ -1821,7 +1821,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 	var quit bool
 
 	// event actions
-	chEvent := make(chan tcell.Event)
+	chEvent := make(chan tcell.Event, 1)
 	go func() {
 		for {
 			if quit {
@@ -1877,7 +1877,6 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 
 		case <-chQuit:
 			quit = true
-			break
 		case f := <-action:
 			if f == nil {
 				// do nothing
