@@ -1857,6 +1857,9 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 					continue
 				}
 			}
+			if quit {
+				break
+			}
 			if ev != nil && root != nil {
 				mu.Lock()
 				if p, ok := ev.(*tcell.EventMouse); ok {
@@ -1874,6 +1877,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 
 		case <-chQuit:
 			quit = true
+			break
 		case f := <-action:
 			if f == nil {
 				// do nothing
