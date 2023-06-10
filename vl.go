@@ -873,9 +873,13 @@ func (rg *RadioGroup) Clear() {
 }
 
 func (rg *RadioGroup) SetPos(pos uint) {
+	last := rh.pos
 	rg.pos = pos
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
+	}
+	if f := rg.onChange; f != nil {
+		f()
 	}
 }
 
@@ -1866,7 +1870,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 				if p, ok := ev.(*tcell.EventMouse); ok {
 					bm := p.Buttons()
 					if bm == tcell.Button1 || bm == tcell.Button2 || bm == tcell.Button3 {
-						time.Sleep(time.Millisecond*500) // sleep for Windows
+						time.Sleep(time.Millisecond * 500) // sleep for Windows
 					}
 				}
 				root.Event(ev)
