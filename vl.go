@@ -873,7 +873,6 @@ func (rg *RadioGroup) Clear() {
 }
 
 func (rg *RadioGroup) SetPos(pos uint) {
-	last := rh.pos
 	rg.pos = pos
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
