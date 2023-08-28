@@ -33,6 +33,64 @@ var (
 	InputboxSelectStyle tcell.Style = style(black, green)
 )
 
+///////////////////////////////////////////////////////////////////////////////
+
+// specific symbols for borders
+// default symbol '-' if not initialized symbols
+var (
+	LineHorizontalFocus    rune = '-'
+	LineHorizontalUnfocus       = '-'
+	LineVerticalFocus           = '-'
+	LineVerticalUnfocus         = '-'
+	CornerLeftUpFocus           = '-'
+	CornerLeftDownFocus         = '-'
+	CornerRightUpFocus          = '-'
+	CornerRightDownFocus        = '-'
+	CornerLeftUpUnfocus         = '-'
+	CornerLeftDownUnfocus       = '-'
+	CornerRightUpUnfocus        = '-'
+	CornerRightDownUnfocus      = '-'
+	ScrollLine                  = '-'
+	ScrollUp                    = '-'
+	ScrollDown                  = '-'
+)
+
+func init() {
+	SpecificSymbol(true)
+}
+
+func SpecificSymbol(ascii bool) {
+	for _, v := range []struct {
+		r       *rune
+		acsii   rune
+		unicode rune
+	}{
+		{&LineHorizontalFocus, '=', '\u2550'},
+		{&LineHorizontalUnfocus, '-', '\u2500'},
+		{&LineVerticalFocus, 'I', '\u2551'},
+		{&LineVerticalUnfocus, '|', '\u2502'},
+		{&CornerLeftUpFocus, '+', '\u2554'},
+		{&CornerLeftDownFocus, '+', '\u255A'},
+		{&CornerRightUpFocus, '+', '\u2557'},
+		{&CornerRightDownFocus, '+', '\u255D'},
+		{&CornerLeftUpUnfocus, '+', '\u250C'},
+		{&CornerLeftDownUnfocus, '+', '\u2514'},
+		{&CornerRightUpUnfocus, '+', '\u2510'},
+		{&CornerRightDownUnfocus, '+', '\u2518'},
+		{&ScrollLine, '|', '\u2506'},
+		{&ScrollUp, '-', '\u2534'},
+		{&ScrollDown, '-', '\u252C'},
+	} {
+		if ascii {
+			*v.r = v.acsii
+			continue
+		}
+		*v.r = v.unicode
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 type Drawer = func(row, col uint, s tcell.Style, r rune)
 
 func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
@@ -279,10 +337,10 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			}
 			st := TextStyle
 			for r := uint(0); r < sc.hmax; r++ {
-				dr(r, width, st, '|')
+				dr(r, width, st, ScrollLine)
 			}
-			dr(0, width, st, '-')
-			dr(sc.hmax-1, width, st, '-')
+			dr(0, width, st, ScrollDown)
+			dr(sc.hmax-1, width, st, ScrollUp)
 			pos := uint(value * float32(sc.hmax-2))
 			if pos == 0 {
 				pos = 1
@@ -642,9 +700,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		var i uint
 		for i = 0; i < width; i++ {
 			if f.focus {
-				dr(row, i, TextStyle, '=')
+				dr(row, i, TextStyle, LineHorizontalFocus)
 			} else {
-				dr(row, i, TextStyle, '-')
+				dr(row, i, TextStyle, LineHorizontalUnfocus)
 			}
 		}
 	}
@@ -654,23 +712,23 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		var r uint
 		for r = 0; r < height; r++ {
 			if f.focus {
-				dr(r, 0, TextStyle, 'I')
-				dr(r, width-1, TextStyle, 'I')
+				dr(r, 0, TextStyle, LineVerticalFocus)
+				dr(r, width-1, TextStyle, LineVerticalFocus)
 			} else {
-				dr(r, 0, TextStyle, '|')
-				dr(r, width-1, TextStyle, '|')
+				dr(r, 0, TextStyle, LineVerticalUnfocus)
+				dr(r, width-1, TextStyle, LineVerticalUnfocus)
 			}
 		}
 		if f.focus {
-			dr(0, 0, TextStyle, '+')
-			dr(0, width-1, TextStyle, '+')
-			dr(height, 0, TextStyle, '+')
-			dr(height, width-1, TextStyle, '+')
+			dr(0, 0, TextStyle, CornerLeftUpFocus)
+			dr(0, width-1, TextStyle, CornerRightUpFocus)
+			dr(height, 0, TextStyle, CornerLeftDownFocus)
+			dr(height, width-1, TextStyle, CornerRightDownFocus)
 		} else {
-			dr(0, 0, TextStyle, '+')
-			dr(0, width-1, TextStyle, '+')
-			dr(height, 0, TextStyle, '+')
-			dr(height, width-1, TextStyle, '+')
+			dr(0, 0, TextStyle, CornerLeftUpUnfocus)
+			dr(0, width-1, TextStyle, CornerRightUpUnfocus)
+			dr(height, 0, TextStyle, CornerLeftDownUnfocus)
+			dr(height, width-1, TextStyle, CornerRightDownUnfocus)
 		}
 		height++
 	}()
