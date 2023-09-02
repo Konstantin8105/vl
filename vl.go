@@ -53,6 +53,7 @@ var (
 	ScrollLine                  = '-'
 	ScrollUp                    = '-'
 	ScrollDown                  = '-'
+	TreeNodeCircle              = '-'
 )
 
 func init() {
@@ -80,6 +81,7 @@ func SpecificSymbol(ascii bool) {
 		{&ScrollLine, '|', '\u2506'},
 		{&ScrollUp, '-', '\u2534'},
 		{&ScrollDown, '-', '\u252C'},
+		{&TreeNodeCircle, '+', '\u229E'},
 	} {
 		if ascii {
 			*v.r = v.acsii
@@ -1510,8 +1512,8 @@ func (t *Tabs) Add(name string, root Widget) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO
 // Tree examples:
+//
 //	Main
 //	|
 //	+-+ Node 0
@@ -1525,32 +1527,104 @@ func (t *Tabs) Add(name string, root Widget) {
 //	  +- Node 01
 //	  |
 //	  +- Node 02
-//
-//	(*) Main
-//     (  )(-) Node 0
-//         (  )(-)Node 01
-//         (  )(-)Node 02
-//     (  )(+) Node 1
-//
-//	Main
-//  +---- Node M0
-//  +---- Node M1
-//	|
-//	+-(-) Node 0
-//	|  +---- Node 01
-//	|  +---- Node 02
-//	|
-//	+-(-) Node 1
-//	|  +-(+) Node 01
-//	|  +-(+) Node 02d
-//  |
-//	+-(+) Node 1
-//
-// type Tree struct {
-// 	open  bool
-// 	Name  Widget
-// 	Nodes []Tree
-// }
+type Tree struct {
+	container
+
+	Root        Widget
+	offsetRoot  Offset
+	Nodes       []Tree
+	offsetNodes []Offset
+}
+
+func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		tr.Set(width, height)
+	}()
+
+	if width <= 1 {
+		// hide unvisual tree elements
+		return 1
+	}
+
+	if w := tr.Root; w != nil {
+		height = w.Render(width, dr)
+	}
+	tr.offsetRoot.row = 0
+	tr.offsetRoot.col = 0
+	hs := []uint{height}
+
+	if len(tr.offsetNodes) != len(tr.Nodes) {
+		tr.offsetNodes = make([]Offset, len(tr.Nodes))
+	}
+
+	for i := range tr.Nodes {
+		draw := func(row, col uint, st tcell.Style, r rune) {
+			if width < col {
+				panic("Text width")
+			}
+			dr(row+height, col+2, st, r)
+		}
+		tr.offsetNodes[i].col = 2
+		tr.offsetNodes[i].row = height
+		h := tr.Nodes[i].Render(width-1, draw)
+		height += h
+		hs = append(hs, height)
+	}
+	for i := range hs {
+		if i == len(hs)-1 {
+			continue
+		}
+		if 0 < i {
+			for h := hs[i-1] + 1; h < hs[i]; h++ {
+				dr(h, 0, TextStyle, LineVerticalUnfocus)
+			}
+		}
+		dr(hs[i], 0, TextStyle, '+')
+		dr(hs[i], 1, TextStyle, LineHorizontalUnfocus)
+	}
+	height += 1
+	return
+}
+
+func (tr *Tree) Event(ev tcell.Event) {
+	_, ok := tr.onFocus(ev)
+	if ok {
+		tr.Focus(true)
+	}
+	if !tr.focus {
+		return
+	}
+	if tr.Root != nil {
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			col -= int(tr.offsetRoot.col)
+			row -= int(tr.offsetRoot.row)
+			tr.Root.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			tr.Root.Event(ev)
+		}
+	}
+	for i := range tr.Nodes {
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			col -= int(tr.offsetNodes[i].col)
+			row -= int(tr.offsetNodes[i].row)
+			tr.Nodes[i].Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			tr.Nodes[i].Event(ev)
+		}
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1747,8 +1821,37 @@ func Demo() (root Widget, action chan func()) {
 		ch.Root = &il
 
 		il.Add(TextStatic("Hello world!"))
-
 		list.Add(&ch)
+	}
+	{
+		list.Add(TextStatic("Example of tree"))
+
+		var res Text
+		res.SetText("Result:")
+		var b Button
+		b.SetText("Add char A and\nnew line separator")
+		b.Compress = true
+		b.OnClick = func() {
+			str := res.GetText()
+			res.SetText(str + "\nA")
+		}
+
+		tr := Tree{
+			Root: TextStatic("Root node"),
+			Nodes: []Tree{
+				Tree{Root: TextStatic("Childs 01\nLine 1\nLine 2")},
+				Tree{Root: TextStatic("Childs 02: Long line. qwerty[posdifaslkdfjaskldjf;al ksdjf;alksdjf;laksdjf;laksdjfl;kasdjf;lkasdjf;lkasdjfl;kaj,vkmncx,mzxncfkasdjhkahdfiuewryhiuwehrkjdfhsadlkjfhalskdjhfaslkdjhfalskdjhflaksdjhfalksdjfhaklsdjhflkasdjhfaklsdjhflaksdjh")},
+				Tree{Root: TextStatic("Childs 03\nLine 1\nLine 2"),
+					Nodes: []Tree{
+						Tree{Root: &res},
+						Tree{Root: &b},
+						Tree{Root: &res},
+					},
+				},
+				Tree{Root: TextStatic("Childs\n04\nMultilines")},
+			},
+		}
+		list.Add(&tr)
 	}
 	{
 		var t Tabs
