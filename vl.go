@@ -53,6 +53,7 @@ var (
 	ScrollLine                  = '-'
 	ScrollUp                    = '-'
 	ScrollDown                  = '-'
+	ScrollSquare                = '-'
 	TreeNodeCircle              = '-'
 )
 
@@ -79,8 +80,9 @@ func SpecificSymbol(ascii bool) {
 		{&CornerRightUpUnfocus, '+', '\u2510'},
 		{&CornerRightDownUnfocus, '+', '\u2518'},
 		{&ScrollLine, '|', '\u2506'},
-		{&ScrollUp, '-', '\u2534'},
-		{&ScrollDown, '-', '\u252C'},
+		{&ScrollUp, '-', '\u252C'},
+		{&ScrollDown, '-', '\u2534'},
+		{&ScrollSquare, '*', '\u25A0'},
 		{&TreeNodeCircle, '+', '\u229E'},
 	} {
 		if ascii {
@@ -341,8 +343,8 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			for r := uint(0); r < sc.hmax; r++ {
 				dr(r, width, st, ScrollLine)
 			}
-			dr(0, width, st, ScrollDown)
-			dr(sc.hmax-1, width, st, ScrollUp)
+			dr(0, width, st, ScrollUp)
+			dr(sc.hmax-1, width, st, ScrollDown)
 			pos := uint(value * float32(sc.hmax-2))
 			if pos == 0 {
 				pos = 1
@@ -350,7 +352,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			if pos == sc.hmax-1 {
 				pos = sc.hmax - 2
 			}
-			dr(pos, width, st, '*')
+			dr(pos, width, st, ScrollSquare)
 		}
 	}
 	return
@@ -754,7 +756,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}
 	// add limit of height
 	if f.addlimit {
-		hmax := f.hmax - height-10
+		hmax := f.hmax - height - 2
 		if f.Root != nil {
 			if _, ok := f.Root.(VerticalFix); ok {
 				f.Root.(VerticalFix).SetHeight(hmax)
@@ -777,7 +779,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		height += f.Root.Render(width-4, droot) + 2
 	}
 	if f.addlimit {
-		height = f.hmax
+		height = f.hmax - 1
 	}
 	return
 }
@@ -1488,24 +1490,19 @@ func (c *Combobox) Event(ev tcell.Event) {
 //
 
 type Tabs struct {
-	fr     Frame
+	Frame
 	header ListH
 }
 
-func (t *Tabs) Focus(focus bool)                           { t.fr.Focus(focus) }
-func (t *Tabs) Render(width uint, dr Drawer) (height uint) { return t.fr.Render(width, dr) }
-func (t *Tabs) Set(width, height uint)                     { t.fr.Set(width, height) }
-func (t *Tabs) Event(ev tcell.Event)                       { t.fr.Event(ev) }
-
 func (t *Tabs) Add(name string, root Widget) {
 	if len(t.header.ws) == 0 {
-		t.fr.Header = &t.header
-		t.fr.Root = root
+		t.Header = &t.header
+		t.Root = root
 	}
 	var btn Button
 	btn.SetText(name)
 	btn.OnClick = func() {
-		t.fr.Root = root
+		t.Root = root
 	}
 	btn.Compress = true
 	t.header.Add(&btn)
