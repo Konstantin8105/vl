@@ -318,9 +318,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		row -= sc.offset
 		dr(row, col, st, r)
 	}
-	if sc.hmax <= 0 {
-		height = sc.Root.Render(width, draw)
-	} else {
+	if sc.addlimit {
 		if width < scrollBarWidth {
 			return
 		}
@@ -341,10 +339,10 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			}
 			st := TextStyle
 			for r := uint(0); r < sc.hmax; r++ {
-				dr(r, width, st, ScrollLine)
+				dr(r, width-1, st, ScrollLine)
 			}
-			dr(0, width, st, ScrollUp)
-			dr(sc.hmax-1, width, st, ScrollDown)
+			dr(0, width-1, st, ScrollUp)
+			dr(sc.hmax-1, width-1, st, ScrollDown)
 			pos := uint(value * float32(sc.hmax-2))
 			if pos == 0 {
 				pos = 1
@@ -352,8 +350,10 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			if pos == sc.hmax-1 {
 				pos = sc.hmax - 2
 			}
-			dr(pos, width, st, ScrollSquare)
+			dr(pos, width-1, st, ScrollSquare)
 		}
+	} else {
+		height = sc.Root.Render(width, draw)
 	}
 	return
 }
