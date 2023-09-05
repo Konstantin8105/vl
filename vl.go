@@ -754,7 +754,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}
 	// add limit of height
 	if f.addlimit {
-		hmax := f.hmax - height
+		hmax := f.hmax - height-3
 		if f.Root != nil {
 			if _, ok := f.Root.(VerticalFix); ok {
 				f.Root.(VerticalFix).SetHeight(hmax)
