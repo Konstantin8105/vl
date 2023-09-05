@@ -670,7 +670,7 @@ func (b *Button) Event(ev tcell.Event) {
 //	|      Root        |
 //	+------------------+
 type Frame struct {
-	container
+	containerVerticalFix
 
 	Header       Widget
 	offsetHeader Offset
