@@ -1469,29 +1469,27 @@ func (c *Combobox) Event(ev tcell.Event) {
 //
 
 type Tabs struct {
-	List
-
-	combo Combobox
-	rs    []Widget
+	fr     Frame
+	header ListH
 }
 
+func (t *Tabs) Focus(focus bool)                           { t.fr.Focus(focus) }
+func (t *Tabs) Render(width uint, dr Drawer) (height uint) { return t.fr.Render(width, dr) }
+func (t *Tabs) Set(width, height uint)                     { t.fr.Set(width, height) }
+func (t *Tabs) Event(ev tcell.Event)                       { t.fr.Event(ev) }
+
 func (t *Tabs) Add(name string, root Widget) {
-	t.rs = append(t.rs, root)
-	t.combo.Add(name)
-	if t.combo.onChange == nil {
-		t.List.Add(&t.combo)
-		t.combo.onChange = func() {
-			if len(t.List.ws) == 1 {
-				t.List.Add(nil)
-			}
-			if 1 < len(t.List.ws) {
-				t.List.ws[1] = t.rs[t.combo.GetPos()]
-			}
-		}
-	} else {
-		t.combo.rg.SetPos(0)
-		t.combo.onChange()
+	if len(t.header.ws) == 0 {
+		t.fr.Header = &t.header
+		t.fr.Root = root
 	}
+	var btn Button
+	btn.SetText(name)
+	btn.OnClick = func() {
+		t.fr.Root = root
+	}
+	btn.Compress = true
+	t.header.Add(&btn)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
