@@ -690,6 +690,16 @@ func (f *Frame) Focus(focus bool) {
 	f.container.Focus(focus)
 }
 
+func (f *Frame) SetHeight(hmax uint) {
+	f.containerVerticalFix.SetHeight(hmax)
+	if f.Root == nil {
+		return
+	}
+	if _, ok := f.Root.(VerticalFix); ok {
+		f.Root.(VerticalFix).SetHeight(hmax)
+	}
+}
+
 func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.Set(width, height)
