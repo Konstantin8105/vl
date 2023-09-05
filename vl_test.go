@@ -274,6 +274,11 @@ func TestRun(t *testing.T) {
 	})
 }
 
+// goos: linux
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
+// Benchmark-4   	   15679	     72798 ns/op	     505 B/op	      19 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
