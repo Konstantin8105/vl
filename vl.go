@@ -690,10 +690,16 @@ func (f *Frame) Focus(focus bool) {
 	f.container.Focus(focus)
 }
 
-func (f *Frame) Render(width uint, dr Drawer) (height uint) {
+func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.Set(width, height)
 	}()
+	dr := func(row, col uint, s tcell.Style, r rune) {
+		if f.hmax < row && f.addlimit {
+			return
+		}
+		drg(row, col, s, r)
+	}
 	if width < 4 {
 		return 1
 	}
@@ -759,6 +765,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	}
 	if f.Root != nil {
 		height += f.Root.Render(width-4, droot) + 2
+	}
+	if f.addlimit {
+		height = f.hmax
 	}
 	return
 }
@@ -1933,11 +1942,13 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 
 type containerVerticalFix struct {
 	container
-	hmax uint
+	hmax     uint
+	addlimit bool
 }
 
 func (c *containerVerticalFix) SetHeight(hmax uint) {
 	c.hmax = hmax
+	c.addlimit = true
 }
 
 ///////////////////////////////////////////////////////////////////////////////
