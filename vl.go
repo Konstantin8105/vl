@@ -54,7 +54,8 @@ var (
 	ScrollUp                    = '-'
 	ScrollDown                  = '-'
 	ScrollSquare                = '-'
-	TreeNodeCircle              = '-'
+	TreeUpDown                  = '-'
+	TreeUp                      = '-'
 )
 
 func init() {
@@ -83,7 +84,8 @@ func SpecificSymbol(ascii bool) {
 		{&ScrollUp, '-', '\u252C'},
 		{&ScrollDown, '-', '\u2534'},
 		{&ScrollSquare, '*', '\u25A0'},
-		{&TreeNodeCircle, '+', '\u229E'},
+		{&TreeUpDown    , '+', '\u251D' },
+		{&TreeUp        , '+', '\u2514' },
 	} {
 		if ascii {
 			*v.r = v.acsii
@@ -396,7 +398,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		if col < 0 {
 			return
 		}
-		if sc.width <= uint(col)  {
+		if sc.width <= uint(col) {
 			return
 		}
 		_, _ = col, row
@@ -1586,7 +1588,7 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 		}
 		tr.offsetNodes[i].col = 2
 		tr.offsetNodes[i].row = height
-		h := tr.Nodes[i].Render(width-1, draw)
+		h := tr.Nodes[i].Render(width-2, draw)
 		height += h
 		hs = append(hs, height)
 	}
@@ -1599,10 +1601,13 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 				dr(h, 0, TextStyle, LineVerticalUnfocus)
 			}
 		}
-		dr(hs[i], 0, TextStyle, '+')
+		if i == len(hs)-1-1 {
+			dr(hs[i], 0, TextStyle, TreeUp)
+		} else {
+			dr(hs[i], 0, TextStyle, TreeUpDown)
+		}
 		dr(hs[i], 1, TextStyle, LineHorizontalUnfocus)
 	}
-	height += 1
 	return
 }
 
