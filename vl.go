@@ -84,8 +84,8 @@ func SpecificSymbol(ascii bool) {
 		{&ScrollUp, '-', '\u252C'},
 		{&ScrollDown, '-', '\u2534'},
 		{&ScrollSquare, '*', '\u25A0'},
-		{&TreeUpDown    , '+', '\u251D' },
-		{&TreeUp        , '+', '\u2514' },
+		{&TreeUpDown, '+', '\u251D'},
+		{&TreeUp, '+', '\u2514'},
 	} {
 		if ascii {
 			*v.r = v.acsii
@@ -1607,6 +1607,9 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 			dr(hs[i], 0, TextStyle, TreeUpDown)
 		}
 		dr(hs[i], 1, TextStyle, LineHorizontalUnfocus)
+	}
+	if 1 < len(hs) {
+		height += 1
 	}
 	return
 }
