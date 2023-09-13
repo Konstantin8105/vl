@@ -139,6 +139,10 @@ type Cell struct {
 type Screen struct {
 	containerVerticalFix
 	Root Widget
+	//	dialog struct {
+	//		Root             Widget
+	//		offsetX, offsetY uint
+	//	}
 }
 
 func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
@@ -198,25 +202,63 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	if screen.Root != nil {
 		_ = screen.Root.Render(width, draw) // ignore height
 	}
+	// draw dialog
+	// if d := screen.dialog.Root; d != nil {
+	// 	_ = d.Render(width, draw)
+	// 	if c, ok := d.(*container); ok {
+	// 		screen.dialog.offsetX = (width - c.width) / 2
+	// 		screen.dialog.offsetY = (screen.hmax - c.height) / 2
+	// 	}
+	// }
 	return screen.hmax
 }
 
 func (screen *Screen) SetHeight(hmax uint) {
 	screen.containerVerticalFix.SetHeight(hmax)
-	if screen.Root == nil {
-		return
+	if screen.Root != nil {
+		if _, ok := screen.Root.(VerticalFix); ok {
+			screen.Root.(VerticalFix).SetHeight(hmax)
+		}
 	}
-	if _, ok := screen.Root.(VerticalFix); ok {
-		screen.Root.(VerticalFix).SetHeight(hmax)
-	}
+	//	if screen.dialog.Root != nil {
+	//		if _, ok := screen.dialog.Root.(VerticalFix); ok {
+	//			screen.dialog.Root.(VerticalFix).SetHeight(hmax)
+	//		}
+	//	}
 }
 
 func (screen *Screen) Event(ev tcell.Event) {
 	if screen.Root == nil {
 		return
 	}
+	// if screen.dialog.Root != nil {
+	// 	screen.dialog.Root.Event(ev)
+	// 	return
+	// }
 	screen.Root.Event(ev)
 }
+
+// func (screen *Screen) Close() {
+// 	screen.dialog.Root = nil
+// }
+//
+// func (screen *Screen) AddDialog(name string, dialog Widget) {
+// 	var frame Frame
+// 	frame.Header = TextStatic(name)
+// 	var list List
+// 	if dialog != nil {
+// 		list.Add(dialog)
+// 	}
+// 	var btn Button
+// 	btn.Compress = true
+// 	btn.OnClick = func() {
+// 		screen.Close()
+// 	}
+// 	list.Add(&btn)
+// 	frame.Root = &list
+// 	frame.SetHeight(screen.hmax)
+// 	screen.dialog.Root = &frame
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2030,6 +2072,10 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 		ok = true
 	}
 	return
+}
+
+func (c *container) Render(width uint, dr Drawer) (height uint) {
+	return c.height
 }
 
 ///////////////////////////////////////////////////////////////////////////////
