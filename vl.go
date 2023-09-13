@@ -587,6 +587,63 @@ func (l *List) Clear() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// type MenuItem struct {
+// 	container
+// 	w Widget
+// 	a func()
+// }
+//
+// func (m *MenuItem) Create(name string, action func()) {
+// 	m.w = TextStatic(name)
+// 	m.a = action
+// }
+//
+// func (m *MenuItem) Render(width uint, dr Drawer) (height uint) {
+// 	defer func() {
+// 		m.width = width
+// 		m.height = height
+// 	}()
+// 	if width < 6 {
+// 		return 1
+// 	}
+// 	st := InputboxStyle
+// 	if m.focus {
+// 		st = InputboxFocusStyle
+// 	} else {
+// 		st = InputboxStyle
+// 	}
+// 	PrintDrawer(0, 0, st, dr, []rune(" "))
+// 	const banner = 1
+// 	draw := func(row, col uint, s tcell.Style, r rune) {
+// 		if width < col {
+// 			panic("Text width")
+// 		}
+// 		dr(row, col+banner, TextStyle, r)
+// 	}
+// 	if m.w != nil {
+// 		height = m.w.Render(width-banner, draw)
+// 	}
+// 	if height < 2 {
+// 		height = 1
+// 	}
+// 	return
+//
+// }
+//
+// func (m *MenuItem) Event(ev tcell.Event) {
+// 	mouse, ok := m.onFocus(ev)
+// 	if ok {
+// 		m.Focus(true)
+// 	} else {
+// 		m.Focus(false)
+// 	}
+// 	if mouse[0] && m.a != nil {
+// 		m.a()
+// 	}
+// }
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Button examples
 //
 //	Minimal width:
@@ -1787,6 +1844,22 @@ func Demo() (root Widget, action chan func()) {
 		list.Add(&b)
 		list.Add(&short)
 	}
+	list.Add(new(Separator))
+	// 	{
+	// 		var lh ListH
+	// 		names := []string{"Hello", "World", "Gophers"}
+	// 		for i := 0; i < 3; i++ {
+	// 			for k :=0;k < 3;k++ {
+	// 				names = append(names, fmt.Sprintf("%s%02d", names[i], k))
+	// 			}
+	// 		}
+	// 		for _, name := range names {
+	// 			var m MenuItem
+	// 			m.Create(name, nil)
+	// 			lh.Add(&m)
+	// 		}
+	// 		list.Add(&lh)
+	// 	}
 	list.Add(new(Separator))
 	{
 		var frame CollapsingHeader
