@@ -2074,10 +2074,6 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 	return
 }
 
-func (c *container) Render(width uint, dr Drawer) (height uint) {
-	return c.height
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 type containerVerticalFix struct {
