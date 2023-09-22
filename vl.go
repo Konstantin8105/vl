@@ -175,6 +175,25 @@ func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
 	return
 }
 
+func Convert(cells [][]Cell) string {
+	var str string
+	var w int
+	for r := range cells {
+		str += fmt.Sprintf("%09d|", r+1)
+		for c := range cells[r] {
+			str += string(cells[r][c].R)
+		}
+		if width := len(cells[r]); w < width {
+			w = width
+		}
+		str += fmt.Sprintf("| width:%09d\n", len(cells[r]))
+	}
+	str += fmt.Sprintf("rows  = %3d\n", len(cells))
+	str += fmt.Sprintf("width = %3d\n", w)
+	return str
+}
+
+
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		screen.Set(width, height)
