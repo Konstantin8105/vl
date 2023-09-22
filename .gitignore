@@ -2,3 +2,4 @@
 ttyrecord
 *.test
 testdata/*.new
+*.html

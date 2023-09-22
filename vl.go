@@ -193,7 +193,6 @@ func Convert(cells [][]Cell) string {
 	return str
 }
 
-
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		screen.Set(width, height)
@@ -527,7 +526,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type List struct {
-	container
+	containerVerticalFix
 
 	heights []uint
 	ws      []Widget
@@ -555,23 +554,36 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	if len(l.ws) == 0 {
 		return
 	}
+	var heightMax uint
+	if l.addlimit {
+		heightMax = l.hmax / uint(len(l.ws))
+	}
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
+			return
+		}
+		if l.addlimit && heightMax <= row {
 			return
 		}
 		row += height
 		dr(row, col, st, r)
 	}
+	// prepare list of heights
 	if len(l.heights)+1 != len(l.ws) || len(l.heights) == 0 {
 		l.heights = make([]uint, len(l.ws)+1)
 	}
-	l.heights[0] = height
+	l.heights[0] = height // default first element is zero
+	// render each widget
 	for i := range l.ws {
-		if l.ws[i] == nil {
-			l.heights[i+1] = height
-			continue
+		var h uint
+		if l.ws[i] != nil {
+			h = l.ws[i].Render(width, draw)
 		}
-		height += l.ws[i].Render(width, draw)
+		if l.addlimit {
+			height += heightMax
+		} else {
+			height += h
+		}
 		l.heights[i+1] = height
 	}
 	return
@@ -1802,7 +1814,8 @@ func Demo() (root Widget, action chan func()) {
 				ch.OnChange = func() {
 					var str string = "Result:\n"
 					for i := range option {
-						str += fmt.Sprintf("Option %01d is ", i)
+						opt := fmt.Sprintf("Option %01d is ", i)
+						str += opt
 						if *option[i] {
 							str += "ON"
 						} else {
@@ -1821,6 +1834,8 @@ func Demo() (root Widget, action chan func()) {
 		}
 
 		{
+			var log Text
+			log.SetLinesLimit(2)
 			var frame Frame
 			listh.Add(&frame)
 			frame.Header = TextStatic("Radio button test")
@@ -1864,8 +1879,12 @@ func Demo() (root Widget, action chan func()) {
 				var str string = "Result:\n"
 				str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
 				optionInfo.SetText(str)
+				log.SetText(fmt.Sprintf("%d %s", rg.GetPos(), log.GetText()))
 			}
+			rg.SetPos(0)
 			list.Add(&rg)
+			list.Add(TextStatic("Logger:"))
+			list.Add(&log)
 
 			list.Add(&optionInfo)
 		}
@@ -1975,9 +1994,18 @@ func Demo() (root Widget, action chan func()) {
 		var ch CollapsingHeader
 		ch.SetText("Header of collapsing header test")
 		var il List
+		il.SetHeight(4)
+
 		ch.Root = &il
 
+		var verylong string
+		for i := 0; i < 100; i++ {
+			verylong += "-0123456789="
+		}
+		il.Add(TextStatic(verylong))
+
 		il.Add(TextStatic("Hello world!"))
+
 		list.Add(&ch)
 	}
 	{
