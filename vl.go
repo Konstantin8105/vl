@@ -1072,6 +1072,7 @@ func (rg *RadioGroup) AddText(ts ...string) {
 
 func (rg *RadioGroup) Clear() {
 	rg.pos = 0
+	rg.OnChange = nil
 	rg.list.Clear()
 }
 
@@ -1528,6 +1529,12 @@ func (c *Combobox) Add(ts ...string) {
 	if f := c.rg.OnChange; f != nil {
 		f()
 	}
+}
+
+func (c *Combobox) Clear() {
+	c.rg.Clear()
+	c.ts = []string{}
+	c.OnChange = nil
 }
 
 func (c *Combobox) SetPos(pos uint) {
