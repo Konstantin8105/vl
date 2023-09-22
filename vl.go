@@ -1051,11 +1051,7 @@ type RadioGroup struct {
 
 	list     List
 	pos      uint
-	onChange func()
-}
-
-func (rg *RadioGroup) OnChange(f func()) {
-	rg.onChange = f
+	OnChange func()
 }
 
 func (rg *RadioGroup) Add(w Widget) {
@@ -1063,7 +1059,7 @@ func (rg *RadioGroup) Add(w Widget) {
 	r.Root = w
 	rg.list.Add(&r)
 	rg.pos = uint(len(rg.list.ws) - 1)
-	if f := rg.onChange; f != nil {
+	if f := rg.OnChange; f != nil {
 		f()
 	}
 }
@@ -1084,7 +1080,7 @@ func (rg *RadioGroup) SetPos(pos uint) {
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
 	}
-	if f := rg.onChange; f != nil {
+	if f := rg.OnChange; f != nil {
 		f()
 	}
 }
@@ -1127,7 +1123,7 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 			}
 		}
 		if last != rg.pos {
-			if f := rg.onChange; f != nil {
+			if f := rg.OnChange; f != nil {
 				f()
 			}
 		}
@@ -1142,11 +1138,7 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 type CheckBox struct {
 	Checked bool
 	Text
-	onChange func()
-}
-
-func (ch *CheckBox) OnChange(f func()) {
-	ch.onChange = f
+	OnChange func()
 }
 
 func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
@@ -1195,7 +1187,7 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 	}
 	if mouse[0] {
 		ch.Checked = !ch.Checked
-		if f := ch.onChange; f != nil {
+		if f := ch.OnChange; f != nil {
 			f()
 		}
 	}
@@ -1525,7 +1517,7 @@ type Combobox struct {
 	ch       CollapsingHeader
 	rg       RadioGroup
 	ts       []string
-	onChange func()
+	OnChange func()
 }
 
 func (c *Combobox) Add(ts ...string) {
@@ -1533,22 +1525,18 @@ func (c *Combobox) Add(ts ...string) {
 		c.ts = append(c.ts, s)
 		c.rg.Add(TextStatic(s))
 	}
-	if f := c.rg.onChange; f != nil {
+	if f := c.rg.OnChange; f != nil {
 		f()
 	}
 }
 
-func (c *Combobox) OnChange(f func()) {
-	c.onChange = f
-}
-
 func (c *Combobox) SetPos(pos uint) {
 	c.rg.SetPos(pos)
-	if c.onChange != nil {
-		c.onChange()
+	if f := c.OnChange; f != nil {
+		f()
 	}
-	if c.rg.onChange != nil {
-		c.rg.onChange()
+	if f := c.rg.OnChange; f != nil {
+		f()
 	}
 }
 
@@ -1565,13 +1553,13 @@ func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	}
 	if c.ch.Root == nil {
 		c.ch.Root = &c.rg
-		c.rg.onChange = func() {
+		c.rg.OnChange = func() {
 			c.ch.SetText(c.ts[c.rg.pos])
-			if c.onChange != nil {
-				c.onChange()
+			if f := c.OnChange; f != nil {
+				f()
 			}
 		}
-		c.rg.onChange()
+		c.rg.OnChange()
 	}
 	return c.ch.Render(width, dr)
 }
@@ -1804,7 +1792,7 @@ func Demo() (root Widget, action chan func()) {
 				var ch CheckBox
 				option[i] = &ch.Checked
 				ch.SetText(fmt.Sprintf("Option %01d", i))
-				ch.OnChange(func() {
+				ch.OnChange = func() {
 					var str string = "Result:\n"
 					for i := range option {
 						str += fmt.Sprintf("Option %01d is ", i)
@@ -1818,7 +1806,7 @@ func Demo() (root Widget, action chan func()) {
 						}
 					}
 					optionInfo.SetText(str)
-				})
+				}
 				list.Add(&ch)
 			}
 
@@ -1865,11 +1853,11 @@ func Demo() (root Widget, action chan func()) {
 				ch.Root = TextStatic("Hello inside")
 				rg.Add(&ch)
 			}
-			rg.OnChange(func() {
+			rg.OnChange = func() {
 				var str string = "Result:\n"
 				str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
 				optionInfo.SetText(str)
-			})
+			}
 			list.Add(&rg)
 
 			list.Add(&optionInfo)
