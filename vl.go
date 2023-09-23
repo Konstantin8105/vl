@@ -530,6 +530,8 @@ type List struct {
 
 	heights []uint
 	ws      []Widget
+
+	IgnoreVerticalFix bool
 }
 
 func (l *List) Size() int {
@@ -679,6 +681,9 @@ func (l *List) Clear() {
 }
 
 func (l *List) SetHeight(hmax uint) {
+	if l.IgnoreVerticalFix {
+		return
+	}
 	l.containerVerticalFix.SetHeight(hmax)
 	for i := range l.ws {
 		if l.ws[i] == nil {
