@@ -649,6 +649,14 @@ func (l *List) Event(ev tcell.Event) {
 	}
 }
 
+func (l *List) Update(index int, w Widget) {
+	if index < 0 || len(l.ws) <= index {
+		// not valid index
+		return
+	}
+	l.ws[index] = w
+}
+
 func (l *List) Add(w Widget) {
 	l.ws = append(l.ws, w)
 }
@@ -1573,6 +1581,15 @@ func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	if c.ch.Root == nil {
 		c.ch.Root = &c.rg
 		c.rg.OnChange = func() {
+			if len(c.ts) == 0 {
+				// empty list
+				return
+			}
+			if len(c.ts) <= int(c.rg.pos) {
+				// outside of range - this is strange
+				// try to analyze your code
+				return
+			}
 			c.ch.SetText(c.ts[c.rg.pos])
 			if f := c.OnChange; f != nil {
 				f()
