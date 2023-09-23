@@ -388,7 +388,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		// calculate location
 		if 2 < sc.hmax {
 			var value float32 // 0 ... 1
-			if sc.hmax <= height {
+			if sc.hmax < height {
 				value = float32(sc.offset) / float32(height-sc.hmax)
 			} else {
 				value = 1.0
@@ -547,6 +547,10 @@ func (l *List) Focus(focus bool) {
 	l.focus = focus
 }
 
+func (l List) getItemHmax() uint {
+	return l.hmax / uint(len(l.ws))
+}
+
 func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.Set(width, height)
@@ -556,7 +560,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	}
 	var heightMax uint
 	if l.addlimit {
-		heightMax = l.hmax / uint(len(l.ws))
+		heightMax = l.getItemHmax()
 	}
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
@@ -649,6 +653,14 @@ func (l *List) Event(ev tcell.Event) {
 	}
 }
 
+func (l *List) Get(index int) Widget {
+	if index < 0 || len(l.ws) <= index {
+		// not valid index
+		return nil
+	}
+	return l.ws[index]
+}
+
 func (l *List) Update(index int, w Widget) {
 	if index < 0 || len(l.ws) <= index {
 		// not valid index
@@ -664,6 +676,18 @@ func (l *List) Add(w Widget) {
 func (l *List) Clear() {
 	l.ws = nil
 	l.heights = nil
+}
+
+func (l *List) SetHeight(hmax uint) {
+	l.containerVerticalFix.SetHeight(hmax)
+	for i := range l.ws {
+		if l.ws[i] == nil {
+			continue
+		}
+		if vf, ok := l.ws[i].(VerticalFix); ok {
+			vf.SetHeight(l.getItemHmax())
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
