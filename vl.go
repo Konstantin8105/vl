@@ -1186,6 +1186,7 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 //
 // [v] Option
 type CheckBox struct {
+	pair    [2]string
 	Checked bool
 	Text
 	OnChange func()
@@ -1206,19 +1207,27 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	if ch.focus {
 		st = InputboxFocusStyle
 	}
+	if len(ch.pair[0]) == 0 || len(ch.pair[1]) == 0 {
+		// default values
+		ch.pair = [2]string{"[v]", "[ ]"}
+	}
+	var lenght uint = 0
 	if ch.Checked {
-		PrintDrawer(0, 0, st, dr, []rune("[v]"))
+		PrintDrawer(0, 0, st, dr, []rune(ch.pair[0]))
+		lenght = uint(len(ch.pair[0]))
 	} else {
-		PrintDrawer(0, 0, st, dr, []rune("[ ]"))
+		PrintDrawer(0, 0, st, dr, []rune(ch.pair[1]))
+		lenght = uint(len(ch.pair[1]))
 	}
 	if !ch.content.NoUpdate {
-		ch.content.SetWidth(width - banner)
+		ch.content.SetWidth(width - lenght)
 	}
+	dr(0, lenght, TextStyle, ' ')
 	draw := func(row, col uint, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col+banner, TextStyle, r)
+		dr(row, col+lenght+1, TextStyle, r)
 	}
 	height = ch.content.Render(draw, nil)
 	if height < 2 {
@@ -1342,43 +1351,33 @@ func (in *Inputbox) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type CollapsingHeader struct {
-	frame   Frame
-	open    bool
-	b       Button
-	content string
-	Root    Widget
-	init    bool
+	frame Frame
+	open  bool
+	cb    CheckBox
+	Root  Widget
+	init  bool
 }
 
 func (c *CollapsingHeader) Focus(focus bool) {
 	c.frame.Focus(focus)
-	c.init = false
 }
 
 func (c *CollapsingHeader) SetText(str string) {
-	c.content = str
-	c.init = false
+	c.cb.SetText(str)
 }
 
 func (c *CollapsingHeader) Open(state bool) {
 	c.open = state
-	c.init = false
+	c.cb.Checked = state
 }
 
 func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
-		c.b.Compress = true
-		c.b.OnClick = func() {
-			if c.open {
-				c.b.SetText("| > | " + c.content)
-			} else {
-				c.b.SetText("| < | " + c.content)
-			}
+		c.cb.pair = [2]string{"[ > ]", "[ < ]"}
+		c.cb.OnChange = func() {
 			c.open = !c.open
 		}
-		c.b.OnClick()
-		c.b.OnClick() // two times for closed by default
-		c.frame.Header = &c.b
+		c.frame.Header = &c.cb
 		c.init = true
 	}
 	if c.open {
