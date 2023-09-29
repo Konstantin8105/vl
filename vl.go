@@ -1367,6 +1367,7 @@ func (c *CollapsingHeader) Open(state bool) {
 
 func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
+		c.b.Compress = true
 		c.b.OnClick = func() {
 			if c.open {
 				c.b.SetText("| > | " + c.content)
