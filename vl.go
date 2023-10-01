@@ -734,6 +734,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		menu.Set(width, height)
 	}()
+	menu.header.Compress()
 	h := menu.header.Render(width, dr)
 	droot := func(row, col uint, s tcell.Style, r rune) {
 		if menu.hmax < row && menu.addlimit {
@@ -759,10 +760,12 @@ func (menu *Menu) Event(ev tcell.Event) {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			menu.header.Event(tcell.NewEventMouse(
-				col, row,
-				ev.Buttons(),
-				ev.Modifiers()))
+			if row < int(menu.height) {
+				menu.header.Event(tcell.NewEventMouse(
+					col, row,
+					ev.Buttons(),
+					ev.Modifiers()))
+			}
 
 		case *tcell.EventKey:
 			menu.header.Event(ev)
@@ -772,7 +775,13 @@ func (menu *Menu) Event(ev tcell.Event) {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
+			if int(menu.height) < row {
+				return
+			}
 			row -= int(menu.header.height)
+			if row < 0 {
+				return
+			}
 			menu.Root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
@@ -1499,6 +1508,7 @@ type listNode struct {
 // Widget: Horizontal list
 type ListH struct {
 	containerVerticalFix
+	compress
 
 	nodes    []listNode
 	minWidth uint
@@ -1523,27 +1533,50 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	if l.nodes[len(l.nodes)-1].to != int(width) {
-		// width of each element
-		// gap 1 symbol between widgets
-		dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
-		if dw < int(l.minWidth) {
-			dw = int(l.minWidth)
-		}
-		// calculate widths
-		for i := range l.nodes {
-			l.nodes[i].from = i * (dw + 1)
-			l.nodes[i].to = l.nodes[i].from + dw
-		}
-		// limits of width
-		for i := range l.nodes {
-			if int(width) < l.nodes[i].from {
-				l.nodes[i].from = int(width)
+		if l.compress.state {
+			for i := range l.nodes {
+				// initialize sizes of widgets
+				l.nodes[i].w.Render(width, nil)
 			}
-			if int(width) < l.nodes[i].to {
-				l.nodes[i].to = int(width)
+			l.nodes[0].from = 0
+			for i := range l.nodes {
+				if c, ok := l.nodes[i].w.(Compressable); ok {
+					c.Compress()
+				} else {
+					panic(fmt.Errorf("add Compressable widget: %T", l.nodes[i].w))
+				}
+				if c, ok := l.nodes[i].w.(interface{ Get() (w, h uint) }); ok {
+					w, _ := c.Get()
+					l.nodes[i].to = l.nodes[i].from + int(w)
+					if i+1 != len(l.nodes) {
+						l.nodes[i+1].from = l.nodes[i].to + 1
+					}
+				}
 			}
-			if l.nodes[i].to < l.nodes[i].from {
-				l.nodes[i].from = l.nodes[i].to
+			l.nodes[len(l.nodes)-1].to = int(width)
+		} else {
+			// width of each element
+			// gap 1 symbol between widgets
+			dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
+			if dw < int(l.minWidth) {
+				dw = int(l.minWidth)
+			}
+			// calculate widths
+			for i := range l.nodes {
+				l.nodes[i].from = i * (dw + 1)
+				l.nodes[i].to = l.nodes[i].from + dw
+			}
+			// limits of width
+			for i := range l.nodes {
+				if int(width) < l.nodes[i].from {
+					l.nodes[i].from = int(width)
+				}
+				if int(width) < l.nodes[i].to {
+					l.nodes[i].to = int(width)
+				}
+				if l.nodes[i].to < l.nodes[i].from {
+					l.nodes[i].from = l.nodes[i].to
+				}
 			}
 		}
 	}
