@@ -1489,27 +1489,25 @@ func (c *CollapsingHeader) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// type listNode struct {
-// 	w Widget
-// 	// widths
-// 	from uint
-// 	to uint
-// }
+type listNode struct {
+	w Widget
+	// widths
+	from int
+	to   int
+}
 
 // Widget: Horizontal list
 type ListH struct {
 	containerVerticalFix
 
+	nodes            []listNode
 	minWidth1element uint
-
-	widths []uint
-	ws     []Widget
 }
 
 func (l *ListH) Focus(focus bool) {
 	if !focus {
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Focus(focus)
 			}
 		}
@@ -1521,40 +1519,46 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.Set(width, height)
 	}()
-	if len(l.ws) == 0 {
+	if len(l.nodes) == 0 {
 		return
 	}
-	if len(l.widths) != len(l.ws) || l.widths[len(l.widths)-1] != width {
+	if l.nodes[len(l.nodes)-1].to != int(width) {
 		// width of each element
-		w := uint(float32(width) / float32(len(l.ws)))
+		// gap 1 symbol between widgets
+		dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
+		if dw < int(l.minWidth1element) {
+			dw = int(l.minWidth1element)
+		}
 		// calculate widths
-		l.widths = make([]uint, len(l.ws)+1)
-		l.widths[0] = 0
-		for i := range l.ws {
-			dw := w
-			if i+1 == 1 && w < l.minWidth1element {
-				dw = l.minWidth1element
-				w = uint(float32(width-l.minWidth1element) / float32(len(l.ws)-1))
+		for i := range l.nodes {
+			l.nodes[i].from = i * (dw + 1)
+			l.nodes[i].to = l.nodes[i].from + dw
+		}
+		// limits of width
+		for i := range l.nodes {
+			if int(width) < l.nodes[i].from {
+				l.nodes[i].from = int(width)
 			}
-			l.widths[i+1] = l.widths[i] + dw
-			if width < l.widths[i+1] {
-				l.widths[i+1] = width
+			if int(width) < l.nodes[i].to {
+				l.nodes[i].to = int(width)
+			}
+			if l.nodes[i].to < l.nodes[i].from {
+				l.nodes[i].from = l.nodes[i].to
 			}
 		}
-		l.widths[len(l.widths)-1] = width
 	}
-	for i := range l.ws {
+	for i := range l.nodes {
 		draw := func(row, col uint, st tcell.Style, r rune) {
 			if 0 < l.hmax && l.hmax < row {
 				return
 			}
-			col += l.widths[i]
+			col += uint(l.nodes[i].from)
 			dr(row, col, st, r)
 		}
-		if l.ws[i] == nil {
+		if l.nodes[i].w == nil {
 			continue
 		}
-		h := l.ws[i].Render(l.widths[i+1]-l.widths[i], draw)
+		h := l.nodes[i].w.Render(uint(l.nodes[i].to-l.nodes[i].from), draw)
 		if height < h {
 			height = h
 		}
@@ -1564,11 +1568,11 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 
 func (l *ListH) SetHeight(hmax uint) {
 	l.containerVerticalFix.SetHeight(hmax)
-	for i := range l.ws {
-		if l.ws[i] == nil {
+	for i := range l.nodes {
+		if l.nodes[i].w == nil {
 			continue
 		}
-		if vf, ok := l.ws[i].(VerticalFix); ok {
+		if vf, ok := l.nodes[i].w.(VerticalFix); ok {
 			vf.SetHeight(hmax)
 		}
 	}
@@ -1586,8 +1590,8 @@ func (l *ListH) Event(ev tcell.Event) {
 	case *tcell.EventMouse:
 		// unfocus
 		l.Focus(false)
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Focus(false)
 			}
 		}
@@ -1602,23 +1606,17 @@ func (l *ListH) Event(ev tcell.Event) {
 			return
 		}
 		// find focus widget
-		for i := range l.widths {
-			if i == 0 {
+		for i := range l.nodes {
+			if l.nodes[i].w == nil {
 				continue
 			}
-			if l.widths[i-1] <= uint(col) &&
-				uint(col) < l.widths[i] {
+			if l.nodes[i].from <= col && col < l.nodes[i].to {
 				// row correction
-				col -= int(l.widths[i-1])
-				// index correction
-				i--
+				col := col - int(l.nodes[i].from)
 				// focus
 				l.Focus(true)
-				if l.ws[i] == nil {
-					continue
-				}
 				//l.ws[i].Focus(true)
-				l.ws[i].Event(tcell.NewEventMouse(
+				l.nodes[i].w.Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
 					ev.Modifiers()))
@@ -1626,8 +1624,8 @@ func (l *ListH) Event(ev tcell.Event) {
 			}
 		}
 	case *tcell.EventKey:
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Event(ev)
 			}
 		}
@@ -1635,12 +1633,11 @@ func (l *ListH) Event(ev tcell.Event) {
 }
 
 func (l *ListH) Add(w Widget) {
-	l.ws = append(l.ws, w)
+	l.nodes = append(l.nodes, listNode{w: w, from: 0, to: 0})
 }
 
 func (l *ListH) Clear() {
-	l.ws = nil
-	l.widths = nil
+	l.nodes = nil
 	l.minWidth1element = 0
 }
 
@@ -1772,7 +1769,7 @@ type Tabs struct {
 }
 
 func (t *Tabs) Add(name string, root Widget) {
-	if len(t.header.ws) == 0 {
+	if len(t.header.nodes) == 0 {
 		t.Header = &t.header
 		t.Root = root
 	}
