@@ -105,6 +105,8 @@ func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
 	}
 }
 
+func NilDrawer(row, col uint, s tcell.Style, r rune) {}
+
 type Offset struct {
 	row uint // vertical root offset
 	col uint // horizontal root offset
@@ -926,6 +928,9 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 		}
 	}
 	height = b.content.Render(draw, nil)
+	if height < 2 {
+		height = 1
+	}
 	return
 }
 
@@ -1286,6 +1291,7 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 //
 // [v] Option
 type CheckBox struct {
+	compress
 	pair    [2]string
 	Checked bool
 	Text
@@ -1328,6 +1334,14 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 			panic("Text width")
 		}
 		dr(row, col+lenght+1, TextStyle, r)
+	}
+	if ch.compress.state {
+		// added for create buttons with minimal width
+		w := ch.content.GetRenderWidth() + lenght + 1
+		if w < width {
+			width = w
+			ch.content.SetWidth(w)
+		}
 	}
 	height = ch.content.Render(draw, nil)
 	if height < 2 {
@@ -1536,7 +1550,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		if l.compress.state {
 			for i := range l.nodes {
 				// initialize sizes of widgets
-				l.nodes[i].w.Render(width, nil)
+				l.nodes[i].w.Render(width, NilDrawer)
 			}
 			l.nodes[0].from = 0
 			for i := range l.nodes {
@@ -2237,13 +2251,24 @@ func Demo() (root Widget, action chan func()) {
 	menu.Root = &scroll
 
 	{
-		var btn1 Button
-		btn1.SetText("File")
-		menu.Add(&btn1)
-
-		var btn2 Button
-		btn2.SetText("Edit")
-		menu.Add(&btn2)
+		var btn Button
+		btn.SetText("File")
+		menu.Add(&btn)
+	}
+	{
+		var btn Button
+		btn.SetText("Edit")
+		menu.Add(&btn)
+	}
+	{
+		var cb CheckBox
+		cb.SetText("Line")
+		menu.Add(&cb)
+	}
+	{
+		var btn Button
+		btn.SetText("Help")
+		menu.Add(&btn)
 	}
 
 	return &menu, action
