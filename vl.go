@@ -767,8 +767,8 @@ func (l *List) SetHeight(hmax uint) {
 //	[ Line 2              ]
 type Button struct {
 	Text
-	OnClick  func()
-	Compress bool
+	compress
+	OnClick func()
 }
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
@@ -817,7 +817,7 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	if !b.content.NoUpdate {
 		b.content.SetWidth(width - 2*buttonOffset)
 	}
-	if b.Compress {
+	if b.compress.state {
 		// added for create buttons with minimal width
 		w := b.content.GetRenderWidth() + 2*buttonOffset + 2
 		if w < width {
@@ -1683,7 +1683,7 @@ func (t *Tabs) Add(name string, root Widget) {
 	btn.OnClick = func() {
 		t.Root = root
 	}
-	btn.Compress = true
+	btn.Compress()
 	t.header.Add(&btn)
 }
 
@@ -1953,7 +1953,7 @@ func Demo() (root Widget, action chan func()) {
 		b.SetText(view())
 
 		var short Button
-		short.Compress = true
+		short.Compress()
 		short.SetText(view())
 		short.OnClick = func() {
 			counter++
@@ -2061,7 +2061,7 @@ func Demo() (root Widget, action chan func()) {
 		res.SetText("Result:")
 		var b Button
 		b.SetText("Add char A and\nnew line separator")
-		b.Compress = true
+		b.Compress()
 		b.OnClick = func() {
 			str := res.GetText()
 			res.SetText(str + "\nA")
@@ -2173,6 +2173,20 @@ type containerVerticalFix struct {
 func (c *containerVerticalFix) SetHeight(hmax uint) {
 	c.hmax = hmax
 	c.addlimit = true
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type Compressable interface {
+	Compress(state bool)
+}
+
+type compress struct {
+	state bool
+}
+
+func (c *compress) Compress() {
+	c.state = true
 }
 
 ///////////////////////////////////////////////////////////////////////////////
