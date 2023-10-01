@@ -697,6 +697,97 @@ func (l *List) SetHeight(hmax uint) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Example of menu line:
+// [ File ] [ Edit ] [ Select ] [ Groups ] [ Help ]
+//
+// Elements for submenu:
+//	* Button
+//	* Checkbox
+//	* RadioGroup
+
+type Menu struct {
+	containerVerticalFix
+	header ListH
+	Root   Widget
+}
+
+func (menu *Menu) SetHeight(hmax uint) {
+	menu.containerVerticalFix.SetHeight(hmax)
+	if menu.Root != nil {
+		if _, ok := menu.Root.(VerticalFix); ok {
+			menu.Root.(VerticalFix).SetHeight(hmax)
+		}
+	}
+}
+
+func (menu *Menu) Add(nodes ...interface {
+	Widget
+	Compressable
+}) {
+	for i := range nodes {
+		nodes[i].Compress()
+		menu.header.Add(nodes[i])
+	}
+}
+
+func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		menu.Set(width, height)
+	}()
+	h := menu.header.Render(width, dr)
+	droot := func(row, col uint, s tcell.Style, r rune) {
+		if menu.hmax < row && menu.addlimit {
+			return
+		}
+		dr(row+h, col, s, r)
+	}
+	height = menu.Root.Render(width, droot)
+	height += h // for menu
+	return
+}
+
+func (menu *Menu) Event(ev tcell.Event) {
+	_, ok := menu.onFocus(ev)
+	if ok {
+		menu.Focus(true)
+	}
+	if !menu.focus {
+		return
+	}
+	{
+		// menu
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			menu.header.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			menu.header.Event(ev)
+		}
+	}
+	if menu.Root != nil {
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			row -= int(menu.header.height)
+			menu.Root.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+
+		case *tcell.EventKey:
+			menu.Root.Event(ev)
+		}
+	}
+}
+
+// func (m *Menu) AddMenu(menu *Menu)               {
+// 	m.nodes = append(m.nodes, menu)
+// }
+
 // type MenuItem struct {
 // 	container
 // 	w Widget
@@ -1397,6 +1488,13 @@ func (c *CollapsingHeader) Event(ev tcell.Event) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// type listNode struct {
+// 	w Widget
+// 	// widths
+// 	from uint
+// 	to uint
+// }
 
 // Widget: Horizontal list
 type ListH struct {
@@ -2105,7 +2203,21 @@ func Demo() (root Widget, action chan func()) {
 		list.Add(&c)
 	}
 
-	return &scroll, action
+	var menu Menu
+	menu.Root = &scroll
+
+	{
+		var btn1 Button
+		btn1.SetText("File")
+		menu.Add(&btn1)
+
+		var btn2 Button
+		btn2.SetText("Edit")
+		menu.Add(&btn2)
+	}
+
+	return &menu, action
+	// return &scroll, action
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2123,6 +2235,10 @@ func (c *container) Focus(focus bool) {
 func (c *container) Set(width, height uint) {
 	c.width = width
 	c.height = height
+}
+
+func (c container) Get() (width, height uint) {
+	return c.width, c.height
 }
 
 func (c *container) Event(ev tcell.Event) {
@@ -2178,7 +2294,7 @@ func (c *containerVerticalFix) SetHeight(hmax uint) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type Compressable interface {
-	Compress(state bool)
+	Compress()
 }
 
 type compress struct {
