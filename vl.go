@@ -1500,8 +1500,8 @@ type listNode struct {
 type ListH struct {
 	containerVerticalFix
 
-	nodes            []listNode
-	minWidth1element uint
+	nodes    []listNode
+	minWidth uint
 }
 
 func (l *ListH) Focus(focus bool) {
@@ -1526,8 +1526,8 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		// width of each element
 		// gap 1 symbol between widgets
 		dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
-		if dw < int(l.minWidth1element) {
-			dw = int(l.minWidth1element)
+		if dw < int(l.minWidth) {
+			dw = int(l.minWidth)
 		}
 		// calculate widths
 		for i := range l.nodes {
@@ -1638,11 +1638,11 @@ func (l *ListH) Add(w Widget) {
 
 func (l *ListH) Clear() {
 	l.nodes = nil
-	l.minWidth1element = 0
+	l.minWidth = 0
 }
 
 func (l *ListH) MinWidth1element(width uint) {
-	l.minWidth1element = width
+	l.minWidth = width
 }
 
 ///////////////////////////////////////////////////////////////////////////////
