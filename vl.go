@@ -124,7 +124,7 @@ type Widget interface {
 	Event(ev tcell.Event)
 
 	// store widget size
-	SetSize(width, height uint)
+	StoreSize(width, height uint)
 
 	// return for widget sizes
 	GetSize() (width, height uint)
@@ -196,7 +196,7 @@ func Convert(cells [][]Cell) string {
 
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		screen.SetSize(width, height)
+		screen.StoreSize(width, height)
 	}()
 	if width == 0 {
 		return
@@ -285,7 +285,7 @@ type Separator struct{ container }
 
 func (s *Separator) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		s.SetSize(width, height)
+		s.StoreSize(width, height)
 	}()
 	return 1
 }
@@ -308,21 +308,25 @@ func TextStatic(str string) *Text {
 	return t
 }
 
+// SetMaxLines set maximal visible lines of text
 func (t *Text) SetMaxLines(limit uint) {
 	t.content.NoUpdate = false
 	t.maxLines = limit
 }
 
+// SetLinesLimit set minimal visible lines of text
 func (t *Text) SetLinesLimit(limit uint) {
 	t.content.NoUpdate = false
 	t.content.SetLinesLimit(limit)
 }
 
+// SetText set to new widget text
 func (t *Text) SetText(str string) {
 	t.content.Text = []rune(str)
 	t.content.NoUpdate = false
 }
 
+// GetText return widget text
 func (t *Text) GetText() string {
 	return string(t.content.Text)
 }
@@ -341,7 +345,7 @@ const maxSize uint = 100000
 
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		t.SetSize(width, height)
+		t.StoreSize(width, height)
 	}()
 	if width < 1 {
 		width, height = 0, 0
@@ -403,7 +407,7 @@ func (sc *Scroll) Focus(focus bool) {
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		sc.SetSize(width, height)
+		sc.StoreSize(width, height)
 	}()
 	if sc.Root == nil {
 		return
@@ -594,7 +598,7 @@ func (l List) getItemHmax() uint {
 
 func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		l.SetSize(width, height)
+		l.StoreSize(width, height)
 	}()
 	if len(l.ws) == 0 {
 		return
@@ -778,7 +782,7 @@ func (menu *Menu) Add(nodes ...interface {
 
 func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		menu.SetSize(width, height)
+		menu.StoreSize(width, height)
 	}()
 	menu.header.Compress()
 	h := menu.header.Render(width, dr)
@@ -924,7 +928,7 @@ func (b *Button) SetText(str string) {
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		b.SetSize(width, height)
+		b.StoreSize(width, height)
 	}()
 	// default style
 	st := ButtonStyle
@@ -1023,7 +1027,7 @@ func (f *Frame) Focus(focus bool) {
 
 func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
-		f.SetSize(width, height)
+		f.StoreSize(width, height)
 	}()
 	dr := func(row, col uint, s tcell.Style, r rune) {
 		if f.hmax < row && f.addlimit {
@@ -1173,7 +1177,7 @@ const banner = 4 // banner for CheckBox and radio
 
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		r.SetSize(width, height)
+		r.StoreSize(width, height)
 	}()
 	if width < 6 {
 		return 1
@@ -1300,7 +1304,7 @@ func (rg *RadioGroup) Focus(focus bool) {
 
 func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		rg.SetSize(width, height)
+		rg.StoreSize(width, height)
 	}()
 	if len(rg.list.ws) <= int(rg.pos) {
 		rg.pos = 0
@@ -1417,7 +1421,7 @@ var Cursor rune = '_'
 
 func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		in.SetSize(width, height)
+		in.StoreSize(width, height)
 	}()
 	st := InputboxStyle
 	if in.focus {
@@ -1544,8 +1548,8 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	return c.frame.Render(width, dr)
 }
 
-func (c *CollapsingHeader) SetSize(width, height uint) {
-	c.frame.SetSize(width, height)
+func (c *CollapsingHeader) StoreSize(width, height uint) {
+	c.frame.StoreSize(width, height)
 }
 
 func (c CollapsingHeader) GetSize() (width, height uint) {
@@ -1590,7 +1594,7 @@ func (l *ListH) Compress() {
 
 func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		l.SetSize(width, height)
+		l.StoreSize(width, height)
 	}()
 	if len(l.nodes) == 0 {
 		return
@@ -1789,7 +1793,7 @@ func (c *Combobox) GetPos() uint {
 
 func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		c.SetSize(width, height)
+		c.StoreSize(width, height)
 	}()
 	if width < 4 {
 		return 1
@@ -1816,8 +1820,8 @@ func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	return c.ch.Render(width, dr)
 }
 
-func (c *Combobox) SetSize(width, height uint) {
-	c.ch.SetSize(width, height)
+func (c *Combobox) StoreSize(width, height uint) {
+	c.ch.StoreSize(width, height)
 }
 
 func (c Combobox) GetSize() (width, height uint) {
@@ -1923,7 +1927,7 @@ type Tree struct {
 
 func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
-		tr.SetSize(width, height)
+		tr.StoreSize(width, height)
 	}()
 
 	if width <= 1 {
@@ -2335,19 +2339,23 @@ type container struct {
 	height uint
 }
 
+// Focus modify focus state of widget
 func (c *container) Focus(focus bool) {
 	c.focus = focus
 }
 
-func (c *container) SetSize(width, height uint) {
+	// StoreSize store widget size
+func (c *container) StoreSize(width, height uint) {
 	c.width = width
 	c.height = height
 }
 
+	// GetSize return for widget sizes
 func (c container) GetSize() (width, height uint) {
 	return c.width, c.height
 }
 
+// Event for widget actions
 func (c *container) Event(ev tcell.Event) {
 	_, ok := c.onFocus(ev)
 	if ok {
