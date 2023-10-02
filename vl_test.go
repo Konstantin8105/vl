@@ -109,7 +109,6 @@ func Test(t *testing.T) {
 	run := func(si, ri int) {
 		name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 		t.Run(name, func(t *testing.T) {
-			// t.Parallel()
 			rt, ac := roots[ri].generate()
 			if _, ok := rt.(*Separator); ok {
 				return
