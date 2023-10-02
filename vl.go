@@ -348,7 +348,6 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		width, height = 0, 0
 		return
 	}
-	var maxwidth uint
 	draw := func(row, col uint, r rune) {
 		if maxSize < row {
 			panic(fmt.Errorf("row more max size: %d", row))
@@ -358,9 +357,6 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		}
 		if width < col {
 			return
-		}
-		if maxwidth < row && r != ' ' {
-			maxwidth = row
 		}
 		if 0 < t.maxLines && t.maxLines < row {
 			return
@@ -383,7 +379,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		height = t.maxLines
 	}
 	if t.compress {
-		width = maxwidth
+		width = t.content.GetRenderWidth()
 	}
 	return
 }
@@ -1356,9 +1352,6 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		ch.width = width
 		ch.height = height
 	}()
-	if width < 6 {
-		return 1
-	}
 	st := InputboxStyle
 	if ch.Checked {
 		st = InputboxSelectStyle
@@ -1370,6 +1363,10 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		// default values
 		ch.pair = [2]string{"[v]", "[ ]"}
 	}
+	if width < uint(len(ch.pair[0])+1+1) {
+		// not enought for 1 symbol
+		return 1
+	}
 	var lenght uint = 0
 	if ch.Checked {
 		PrintDrawer(0, 0, st, dr, []rune(ch.pair[0]))
@@ -1378,9 +1375,6 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		PrintDrawer(0, 0, st, dr, []rune(ch.pair[1]))
 		lenght = uint(len(ch.pair[1]))
 	}
-	if !ch.content.NoUpdate {
-		ch.content.SetWidth(width - lenght)
-	}
 	dr(0, lenght, TextStyle, ' ')
 	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
@@ -1388,17 +1382,12 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col+lenght+1, st, r)
 	}
-	if ch.Text.compress {
-		// added for create buttons with minimal width
-		w := ch.content.GetRenderWidth() + lenght + 1
-		if w < width {
-			width = w
-			ch.content.SetWidth(w)
-		}
-	}
 	height = ch.Text.Render(width-lenght, draw)
 	if height < 2 {
 		height = 1
+	}
+	if ch.Text.compress {
+		width = ch.Text.width + lenght + 1
 	}
 	return
 }
@@ -1669,7 +1658,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 
 func (l *ListH) SetHeight(hmax uint) {
 	l.containerVerticalFix.SetHeight(hmax)
-	if len(l.nodes ) == 0 {
+	if len(l.nodes) == 0 {
 		return
 	}
 	l.nodes[len(l.nodes)-1].to = -1
