@@ -123,17 +123,12 @@ type Widget interface {
 	Render(width uint, dr Drawer) (height uint)
 	Event(ev tcell.Event)
 
-	// operations for widget sizes
+	// store widget size
 	SetSize(width, height uint)
+
+	// return for widget sizes
 	GetSize() (width, height uint)
 }
-
-// Template for widgets:
-//
-//	func (...) Focus(focus bool) {}
-//	func (...) Render(width uint, dr Drawer) (height uint) {}
-//	func (...) Set(width, height uint) {}
-//	func (...) Event(ev tcell.Event) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 
