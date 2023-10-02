@@ -98,23 +98,27 @@ func init() {
 }
 
 func Test(t *testing.T) {
+	run := func(si, ri int ) {
+		name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			rt, ac := roots[ri].generate()
+			go func() {
+				for {
+					select {
+					case f := <-ac:
+						f()
+					}
+				}
+			}()
+			var screen Screen
+			screen.Root = rt
+			check(t, name, si, screen)
+		})
+	}
 	for si := range sizes {
 		for ri := range roots {
-			name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
-			t.Run(name, func(t *testing.T) {
-				rt, ac := roots[ri].generate()
-				go func() {
-					for {
-						select {
-						case f := <-ac:
-							f()
-						}
-					}
-				}()
-				var screen Screen
-				screen.Root = rt
-				check(t, name, si, screen)
-			})
+			run(si, ri)
 		}
 	}
 }

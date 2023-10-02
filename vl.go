@@ -295,14 +295,23 @@ func (s *Separator) Render(width uint, dr Drawer) (height uint) {
 
 type Text struct {
 	container
-	content tf.TextFieldLimit
+	content  tf.TextFieldLimit
+	compress bool
+	maxLines uint
 }
+
+var DefaultMaxTextLines uint = 5
 
 func TextStatic(str string) *Text {
 	t := new(Text)
 	t.content.Text = []rune(str)
 	t.content.NoUpdate = false
 	return t
+}
+
+func (t *Text) SetMaxLines(limit uint) {
+	t.content.NoUpdate = false
+	t.maxLines = limit
 }
 
 func (t *Text) SetLinesLimit(limit uint) {
@@ -319,29 +328,62 @@ func (t *Text) GetText() string {
 	return string(t.content.Text)
 }
 
+func (t *Text) Compress() {
+	t.compress = true
+	t.content.NoUpdate = false
+}
+
 func (t *Text) Filter(f func(r rune) (insert bool)) {
 	t.content.NoUpdate = false
 	t.content.Filter = f
 }
 
+const maxSize uint = 100000
+
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		t.Set(width, height)
 	}()
+	if width < 1 {
+		width, height = 0, 0
+		return
+	}
+	var maxwidth uint
 	draw := func(row, col uint, r rune) {
+		if maxSize < row {
+			panic(fmt.Errorf("row more max size: %d", row))
+		}
+		if maxSize < col {
+			panic(fmt.Errorf("col more max size: %d", col))
+		}
 		if width < col {
-			panic("Text width")
+			return
+		}
+		if maxwidth < row && r != ' ' {
+			maxwidth = row
+		}
+		if 0 < t.maxLines && t.maxLines < row {
+			return
 		}
 		dr(row, col, TextStyle, r)
 	}
 	if !t.content.NoUpdate {
 		t.content.SetWidth(width)
 	}
+
+	// TODO min width
+
 	height = t.content.Render(draw, nil) // nil - not view cursor
 	// added for colorize unvisible lines too
 	h := t.content.GetRenderHeight()
 	if height < h {
 		height = h
+	}
+	if 0 < t.maxLines && t.maxLines < height {
+		height = t.maxLines
+	}
+	if t.compress {
+		width = maxwidth
 	}
 	return
 }
@@ -728,6 +770,13 @@ func (menu *Menu) Add(nodes ...interface {
 }) {
 	for i := range nodes {
 		nodes[i].Compress()
+		if c, ok := nodes[i].(interface {
+			SetMaxLines(limit uint)
+			SetLinesLimit(limit uint)
+		}); ok {
+			c.SetMaxLines(1)
+			c.SetLinesLimit(1)
+		}
 		menu.header.Add(nodes[i])
 	}
 }
@@ -867,10 +916,15 @@ func (menu *Menu) Event(ev tcell.Event) {
 //	 Multiline text:
 //	[ Line 1              ] Button
 //	[ Line 2              ]
+//
+// button borders, for example: "[ Button ]", "< Button >"
 type Button struct {
 	Text
-	compress
 	OnClick func()
+}
+
+func (b *Button) SetText(str string) {
+	b.Text.SetText(str)
 }
 
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
@@ -902,6 +956,18 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	if width < 2*buttonOffset {
 		width = 2 * buttonOffset
 	}
+	// update content
+	if !b.content.NoUpdate {
+		b.content.SetWidth(width - 2*buttonOffset)
+	}
+	if b.Text.compress {
+		// added for create buttons with minimal width
+		w := b.content.GetRenderWidth() + 2*buttonOffset + 2
+		if w < width {
+			width = w
+			b.content.SetWidth(width - 2*buttonOffset)
+		}
+	}
 	// draw runes
 	draw := func(row, col uint, r rune) {
 		if width < col {
@@ -914,18 +980,6 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 		}
 		// draw symbol
 		dr(row, col+buttonOffset, st, r)
-	}
-	// update content
-	if !b.content.NoUpdate {
-		b.content.SetWidth(width - 2*buttonOffset)
-	}
-	if b.compress.state {
-		// added for create buttons with minimal width
-		w := b.content.GetRenderWidth() + 2*buttonOffset + 2
-		if w < width {
-			width = w
-			b.content.SetWidth(width - 2*buttonOffset)
-		}
 	}
 	height = b.content.Render(draw, nil)
 	if height < 2 {
@@ -1291,7 +1345,6 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 //
 // [v] Option
 type CheckBox struct {
-	compress
 	pair    [2]string
 	Checked bool
 	Text
@@ -1329,13 +1382,13 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		ch.content.SetWidth(width - lenght)
 	}
 	dr(0, lenght, TextStyle, ' ')
-	draw := func(row, col uint, r rune) {
+	draw := func(row, col uint, st tcell.Style, r rune) {
 		if width < col {
 			panic("Text width")
 		}
-		dr(row, col+lenght+1, TextStyle, r)
+		dr(row, col+lenght+1, st, r)
 	}
-	if ch.compress.state {
+	if ch.Text.compress {
 		// added for create buttons with minimal width
 		w := ch.content.GetRenderWidth() + lenght + 1
 		if w < width {
@@ -1343,7 +1396,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 			ch.content.SetWidth(w)
 		}
 	}
-	height = ch.content.Render(draw, nil)
+	height = ch.Text.Render(width-lenght, draw)
 	if height < 2 {
 		height = 1
 	}
@@ -1478,6 +1531,7 @@ func (c *CollapsingHeader) Focus(focus bool) {
 
 func (c *CollapsingHeader) SetText(str string) {
 	c.cb.SetText(str)
+	c.cb.SetMaxLines(DefaultMaxTextLines)
 }
 
 func (c *CollapsingHeader) Open(state bool) {
@@ -1522,10 +1576,9 @@ type listNode struct {
 // Widget: Horizontal list
 type ListH struct {
 	containerVerticalFix
-	compress
 
 	nodes    []listNode
-	minWidth uint
+	compress bool
 }
 
 func (l *ListH) Focus(focus bool) {
@@ -1539,6 +1592,10 @@ func (l *ListH) Focus(focus bool) {
 	l.focus = focus
 }
 
+func (l *ListH) Compress() {
+	l.compress = true
+}
+
 func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.Set(width, height)
@@ -1547,7 +1604,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	if l.nodes[len(l.nodes)-1].to != int(width) {
-		if l.compress.state {
+		if l.compress {
 			for i := range l.nodes {
 				// initialize sizes of widgets
 				l.nodes[i].w.Render(width, NilDrawer)
@@ -1572,9 +1629,6 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 			// width of each element
 			// gap 1 symbol between widgets
 			dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
-			if dw < int(l.minWidth) {
-				dw = int(l.minWidth)
-			}
 			// calculate widths
 			for i := range l.nodes {
 				l.nodes[i].from = i * (dw + 1)
@@ -1615,6 +1669,10 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 
 func (l *ListH) SetHeight(hmax uint) {
 	l.containerVerticalFix.SetHeight(hmax)
+	if len(l.nodes ) == 0 {
+		return
+	}
+	l.nodes[len(l.nodes)-1].to = -1
 	for i := range l.nodes {
 		if l.nodes[i].w == nil {
 			continue
@@ -1685,11 +1743,6 @@ func (l *ListH) Add(w Widget) {
 
 func (l *ListH) Clear() {
 	l.nodes = nil
-	l.minWidth = 0
-}
-
-func (l *ListH) MinWidth1element(width uint) {
-	l.minWidth = width
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1980,7 +2033,6 @@ func Demo() (root Widget, action chan func()) {
 	scroll.Root = &list
 	{
 		var listh ListH
-		listh.MinWidth1element(20)
 		list.Add(&listh)
 
 		{
@@ -2350,14 +2402,6 @@ func (c *containerVerticalFix) SetHeight(hmax uint) {
 
 type Compressable interface {
 	Compress()
-}
-
-type compress struct {
-	state bool
-}
-
-func (c *compress) Compress() {
-	c.state = true
 }
 
 ///////////////////////////////////////////////////////////////////////////////
