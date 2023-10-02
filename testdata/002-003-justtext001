@@ -1,264 +1,264 @@
-Move: none
+Pos 0000. Move: none
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0001. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0002. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click
+Pos 0003. Move: Click
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0004. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0005. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0006. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0007. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0008. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0009. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0010. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0011. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0012. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0013. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0014. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0015. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0016. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0017. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0018. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0019. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelUp
+Pos 0020. Move: WheelUp
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click
+Pos 0021. Move: Click
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0022. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0023. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0024. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click
+Pos 0025. Move: Click
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0026. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0027. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: WheelDown
+Pos 0028. Move: WheelDown
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0029. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0030. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0031. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0032. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click-2--2
+Pos 0033. Move: Click-2--2
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0034. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0035. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0036. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click-1--2
+Pos 0037. Move: Click-1--2
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0038. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0039. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0040. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click00--2
+Pos 0041. Move: Click00--2
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0042. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0043. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0044. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click01--2
+Pos 0045. Move: Click01--2
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0046. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0047. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0048. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Click02--2
+Pos 0049. Move: Click02--2
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: InputRune
+Pos 0050. Move: InputRune
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Right
+Pos 0051. Move: Right
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2
 width =   2
-Move: Left
+Pos 0052. Move: Left
 000000001|L | width:000000002
 000000002|o | width:000000002
 rows  =   2

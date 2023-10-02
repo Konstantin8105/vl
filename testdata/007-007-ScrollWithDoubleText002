@@ -1,4 +1,4 @@
-Move: none
+Pos 0000. Move: none
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -8,7 +8,7 @@ Move: none
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0001. Move: WheelUp
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -18,7 +18,7 @@ Move: WheelUp
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0002. Move: WheelDown
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -28,7 +28,7 @@ Move: WheelDown
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click
+Pos 0003. Move: Click
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -38,7 +38,7 @@ Move: Click
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0004. Move: InputRune
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -48,7 +48,7 @@ Move: InputRune
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0005. Move: Right
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -58,7 +58,7 @@ Move: Right
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0006. Move: Left
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -68,7 +68,7 @@ Move: Left
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0007. Move: WheelDown
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -78,7 +78,7 @@ Move: WheelDown
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0008. Move: WheelDown
 000000001|[ t  ]-| width:000000007
 000000002|[ e  ]*| width:000000007
 000000003|[ a  ]|| width:000000007
@@ -88,7 +88,7 @@ Move: WheelDown
 000000007|[ t  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0009. Move: WheelDown
 000000001|[ e  ]-| width:000000007
 000000002|[ a  ]*| width:000000007
 000000003|[ d  ]|| width:000000007
@@ -98,7 +98,7 @@ Move: WheelDown
 000000007|[ h  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0010. Move: WheelDown
 000000001|[ a  ]-| width:000000007
 000000002|[ d  ]*| width:000000007
 000000003|[ ,  ]|| width:000000007
@@ -108,7 +108,7 @@ Move: WheelDown
 000000007|[ e  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0011. Move: WheelDown
 000000001|[ d  ]-| width:000000007
 000000002|[ ,  ]*| width:000000007
 000000003|[    ]|| width:000000007
@@ -118,7 +118,7 @@ Move: WheelDown
 000000007|[ y  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0012. Move: WheelDown
 000000001|[ ,  ]-| width:000000007
 000000002|[    ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -128,7 +128,7 @@ Move: WheelDown
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0013. Move: WheelUp
 000000001|[ d  ]-| width:000000007
 000000002|[ ,  ]*| width:000000007
 000000003|[    ]|| width:000000007
@@ -138,7 +138,7 @@ Move: WheelUp
 000000007|[ y  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0014. Move: WheelUp
 000000001|[ a  ]-| width:000000007
 000000002|[ d  ]*| width:000000007
 000000003|[ ,  ]|| width:000000007
@@ -148,7 +148,7 @@ Move: WheelUp
 000000007|[ e  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0015. Move: WheelUp
 000000001|[ e  ]-| width:000000007
 000000002|[ a  ]*| width:000000007
 000000003|[ d  ]|| width:000000007
@@ -158,7 +158,7 @@ Move: WheelUp
 000000007|[ h  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0016. Move: WheelUp
 000000001|[ t  ]-| width:000000007
 000000002|[ e  ]*| width:000000007
 000000003|[ a  ]|| width:000000007
@@ -168,7 +168,7 @@ Move: WheelUp
 000000007|[ t  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0017. Move: WheelUp
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -178,7 +178,7 @@ Move: WheelUp
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0018. Move: WheelUp
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -188,7 +188,7 @@ Move: WheelUp
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0019. Move: WheelUp
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -198,7 +198,7 @@ Move: WheelUp
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelUp
+Pos 0020. Move: WheelUp
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -208,7 +208,7 @@ Move: WheelUp
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click
+Pos 0021. Move: Click
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -218,7 +218,7 @@ Move: Click
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0022. Move: InputRune
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -228,7 +228,7 @@ Move: InputRune
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0023. Move: InputRune
 000000001|[ I  ]-| width:000000007
 000000002|[ n  ]*| width:000000007
 000000003|[ s  ]|| width:000000007
@@ -238,7 +238,7 @@ Move: InputRune
 000000007|[ d  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0024. Move: WheelDown
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -248,7 +248,7 @@ Move: WheelDown
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click
+Pos 0025. Move: Click
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -258,7 +258,7 @@ Move: Click
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0026. Move: InputRune
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -268,7 +268,7 @@ Move: InputRune
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0027. Move: InputRune
 000000001|[ n  ]-| width:000000007
 000000002|[ s  ]*| width:000000007
 000000003|[ t  ]|| width:000000007
@@ -278,7 +278,7 @@ Move: InputRune
 000000007|[ ,  ]-| width:000000007
 rows  =   7
 width =   7
-Move: WheelDown
+Pos 0028. Move: WheelDown
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -288,7 +288,7 @@ Move: WheelDown
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0029. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -298,7 +298,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0030. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -308,7 +308,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0031. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -318,7 +318,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0032. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -328,7 +328,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click-2--2
+Pos 0033. Move: Click-2--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -338,7 +338,7 @@ Move: Click-2--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0034. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -348,7 +348,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0035. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -358,7 +358,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0036. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -368,7 +368,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click-2-03
+Pos 0037. Move: Click-2-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -378,7 +378,7 @@ Move: Click-2-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0038. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -388,7 +388,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0039. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -398,7 +398,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0040. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -408,7 +408,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click-1--2
+Pos 0041. Move: Click-1--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -418,7 +418,7 @@ Move: Click-1--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0042. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -428,7 +428,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0043. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -438,7 +438,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0044. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -448,7 +448,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click-1-03
+Pos 0045. Move: Click-1-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -458,7 +458,7 @@ Move: Click-1-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0046. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -468,7 +468,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0047. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -478,7 +478,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0048. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -488,7 +488,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click00--2
+Pos 0049. Move: Click00--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -498,7 +498,7 @@ Move: Click00--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0050. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -508,7 +508,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0051. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -518,7 +518,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0052. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -528,7 +528,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click00-03
+Pos 0053. Move: Click00-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -538,7 +538,7 @@ Move: Click00-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0054. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -548,7 +548,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0055. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -558,7 +558,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0056. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -568,7 +568,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click01--2
+Pos 0057. Move: Click01--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -578,7 +578,7 @@ Move: Click01--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0058. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -588,7 +588,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0059. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -598,7 +598,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0060. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -608,7 +608,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click01-03
+Pos 0061. Move: Click01-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -618,7 +618,7 @@ Move: Click01-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0062. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -628,7 +628,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0063. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -638,7 +638,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0064. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -648,7 +648,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click02--2
+Pos 0065. Move: Click02--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -658,7 +658,7 @@ Move: Click02--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0066. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -668,7 +668,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0067. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -678,7 +678,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0068. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -688,7 +688,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click02-03
+Pos 0069. Move: Click02-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -698,7 +698,7 @@ Move: Click02-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0070. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -708,7 +708,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0071. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -718,7 +718,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0072. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -728,7 +728,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click03--2
+Pos 0073. Move: Click03--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -738,7 +738,7 @@ Move: Click03--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0074. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -748,7 +748,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0075. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -758,7 +758,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0076. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -768,7 +768,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click03-03
+Pos 0077. Move: Click03-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -778,7 +778,7 @@ Move: Click03-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0078. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -788,7 +788,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0079. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -798,7 +798,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0080. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -808,7 +808,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click04--2
+Pos 0081. Move: Click04--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -818,7 +818,7 @@ Move: Click04--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0082. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -828,7 +828,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0083. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -838,7 +838,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0084. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -848,7 +848,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click04-03
+Pos 0085. Move: Click04-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -858,7 +858,7 @@ Move: Click04-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0086. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -868,7 +868,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0087. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -878,7 +878,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0088. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -888,7 +888,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click05--2
+Pos 0089. Move: Click05--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -898,7 +898,7 @@ Move: Click05--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0090. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -908,7 +908,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0091. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -918,7 +918,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0092. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -928,7 +928,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click05-03
+Pos 0093. Move: Click05-03
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -938,7 +938,7 @@ Move: Click05-03
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0094. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -948,7 +948,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0095. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -958,7 +958,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0096. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -968,7 +968,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click06--2
+Pos 0097. Move: Click06--2
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -978,7 +978,7 @@ Move: Click06--2
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0098. Move: InputRune
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -988,7 +988,7 @@ Move: InputRune
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0099. Move: Right
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -998,7 +998,7 @@ Move: Right
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0100. Move: Left
 000000001|[ s  ]-| width:000000007
 000000002|[ t  ]*| width:000000007
 000000003|[ e  ]|| width:000000007
@@ -1008,7 +1008,7 @@ Move: Left
 000000007|[    ]-| width:000000007
 rows  =   7
 width =   7
-Move: Click06-03
+Pos 0101. Move: Click06-03
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1018,7 +1018,7 @@ Move: Click06-03
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0102. Move: InputRune
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1028,7 +1028,7 @@ Move: InputRune
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0103. Move: Right
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1038,7 +1038,7 @@ Move: Right
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0104. Move: Left
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1048,7 +1048,7 @@ Move: Left
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Click07--2
+Pos 0105. Move: Click07--2
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1058,7 +1058,7 @@ Move: Click07--2
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0106. Move: InputRune
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1068,7 +1068,7 @@ Move: InputRune
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0107. Move: Right
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1078,7 +1078,7 @@ Move: Right
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0108. Move: Left
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1088,7 +1088,7 @@ Move: Left
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Click07-03
+Pos 0109. Move: Click07-03
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1098,7 +1098,7 @@ Move: Click07-03
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: InputRune
+Pos 0110. Move: InputRune
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1108,7 +1108,7 @@ Move: InputRune
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Right
+Pos 0111. Move: Right
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007
@@ -1118,7 +1118,7 @@ Move: Right
 000000007|s tha -| width:000000007
 rows  =   7
 width =   7
-Move: Left
+Pos 0112. Move: Left
 000000001|hey u -| width:000000007
 000000002|se Mo || width:000000007
 000000003|dAlt, *| width:000000007

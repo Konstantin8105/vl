@@ -115,9 +115,16 @@ func Test(t *testing.T) {
 			}
 			go func() {
 				for {
+					isbreak := false
 					select {
-					case f := <-ac:
+					case f, ok := <-ac:
+						if !ok {
+							isbreak = true
+						}
 						f()
+					}
+					if isbreak {
+						break
 					}
 				}
 			}()
@@ -209,7 +216,7 @@ func check(t *testing.T, name string, si int, screen Screen) {
 	cells := new([][]Cell)
 
 	for i := range move {
-		fmt.Fprintf(&buf, "Move: %s\n", move[i].name)
+		fmt.Fprintf(&buf, "Pos %04d. Move: %s\n", i, move[i].name)
 		if e := move[i].ev; e != nil {
 			screen.Event(e)
 		}

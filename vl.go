@@ -2,6 +2,7 @@ package vl
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"time"
 
@@ -2315,7 +2316,7 @@ func Demo() (demos []Widget) {
 		menu.Add(&btn)
 	}
 
-	demos = append(demos,&menu) 
+	demos = append(demos, &menu)
 	return
 }
 
@@ -2492,10 +2493,12 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			}
 			if ev != nil && root != nil {
 				mu.Lock()
-				if p, ok := ev.(*tcell.EventMouse); ok {
-					bm := p.Buttons()
-					if bm == tcell.Button1 || bm == tcell.Button2 || bm == tcell.Button3 {
-						time.Sleep(time.Millisecond * 500) // sleep for Windows
+				if runtime.GOOS == "windows" {
+					if p, ok := ev.(*tcell.EventMouse); ok {
+						bm := p.Buttons()
+						if bm == tcell.Button1 || bm == tcell.Button2 || bm == tcell.Button3 {
+							time.Sleep(time.Millisecond * 500) // sleep for Windows
+						}
 					}
 				}
 				root.Event(ev)
