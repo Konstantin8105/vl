@@ -33,13 +33,20 @@ var roots = []Root{
 }
 
 func init() {
-	roots = append(roots, Root{
-		name: "Demo",
-		generate: func() (Widget, chan func()) {
-			action := make(chan func(), 10)
-			return Demo(), action
-		},
-	})
+	{
+		ws := Demo()
+		for i := range ws {
+			i := i
+			roots = append(roots, Root{
+				name: fmt.Sprintf("Demo%03d", i),
+				generate: func() (Widget, chan func()) {
+					action := make(chan func(), 10)
+					return ws[i], action
+				},
+			})
+			break
+		}
+	}
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
@@ -102,8 +109,11 @@ func Test(t *testing.T) {
 	run := func(si, ri int) {
 		name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 			rt, ac := roots[ri].generate()
+			if _, ok := rt.(*Separator); ok {
+				return
+			}
 			go func() {
 				for {
 					select {
@@ -225,7 +235,7 @@ func TestRun(t *testing.T) {
 	}()
 	t.Run("exit by key", func(t *testing.T) {
 		action := make(chan func(), 10)
-		root := Demo()
+		root := Demo()[0]
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			screen.(tcell.SimulationScreen).InjectKey(tcell.KeyCtrlC, ' ', tcell.ModNone)
@@ -238,7 +248,7 @@ func TestRun(t *testing.T) {
 	t.Run("exit by channel", func(t *testing.T) {
 		qu := make(chan struct{})
 		action := make(chan func(), 10)
-		root := Demo()
+		root := Demo()[0]
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			var closed struct{}
@@ -252,7 +262,7 @@ func TestRun(t *testing.T) {
 	t.Run("exit by close channel", func(t *testing.T) {
 		qu := make(chan struct{})
 		action := make(chan func(), 10)
-		root := Demo()
+		root := Demo()[0]
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			close(qu)
@@ -269,6 +279,7 @@ func TestRun(t *testing.T) {
 // pkg: github.com/Konstantin8105/vl
 // cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
 // Benchmark-4   	   15679	     72798 ns/op	     505 B/op	      19 allocs/op
+// Benchmark-4   	   14728	     97233 ns/op	     538 B/op	      19 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()

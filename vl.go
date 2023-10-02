@@ -2011,12 +2011,16 @@ func (tr *Tree) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func Demo() (root Widget) {
+func Demo() (demos []Widget) {
 	var (
 		scroll Scroll
 		list   List
 	)
-
+	defer func() {
+		for i := range list.ws {
+			demos = append(demos, list.ws[i])
+		}
+	}()
 
 	scroll.Root = &list
 	{
@@ -2311,7 +2315,8 @@ func Demo() (root Widget) {
 		menu.Add(&btn)
 	}
 
-	return &menu
+	demos = append(demos,&menu) 
+	return
 }
 
 ///////////////////////////////////////////////////////////////////////////////

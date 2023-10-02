@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	root, action := vl.Demo()
+	action := make(chan func(), 10)
+	root := vl.Demo()[0]
 	err := vl.Run(root, action, nil, tcell.KeyCtrlC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
