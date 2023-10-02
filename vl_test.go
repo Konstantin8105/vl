@@ -36,7 +36,8 @@ func init() {
 	roots = append(roots, Root{
 		name: "Demo",
 		generate: func() (Widget, chan func()) {
-			return Demo()
+			action := make(chan func(), 10)
+			return Demo(), action
 		},
 	})
 	for ti := range texts {
@@ -98,7 +99,7 @@ func init() {
 }
 
 func Test(t *testing.T) {
-	run := func(si, ri int ) {
+	run := func(si, ri int) {
 		name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -223,7 +224,8 @@ func TestRun(t *testing.T) {
 		simulation = false
 	}()
 	t.Run("exit by key", func(t *testing.T) {
-		root, action := Demo()
+		action := make(chan func(), 10)
+		root := Demo()
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			screen.(tcell.SimulationScreen).InjectKey(tcell.KeyCtrlC, ' ', tcell.ModNone)
@@ -235,7 +237,8 @@ func TestRun(t *testing.T) {
 	})
 	t.Run("exit by channel", func(t *testing.T) {
 		qu := make(chan struct{})
-		root, action := Demo()
+		action := make(chan func(), 10)
+		root := Demo()
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			var closed struct{}
@@ -248,7 +251,8 @@ func TestRun(t *testing.T) {
 	})
 	t.Run("exit by close channel", func(t *testing.T) {
 		qu := make(chan struct{})
-		root, action := Demo()
+		action := make(chan func(), 10)
+		root := Demo()
 		go func() {
 			<-time.After(time.Millisecond * 200)
 			close(qu)

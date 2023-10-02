@@ -2011,13 +2011,12 @@ func (tr *Tree) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-func Demo() (root Widget, action chan func()) {
+func Demo() (root Widget) {
 	var (
 		scroll Scroll
 		list   List
 	)
 
-	action = make(chan func(), 10)
 
 	scroll.Root = &list
 	{
@@ -2312,8 +2311,7 @@ func Demo() (root Widget, action chan func()) {
 		menu.Add(&btn)
 	}
 
-	return &menu, action
-	// return &scroll, action
+	return &menu
 }
 
 ///////////////////////////////////////////////////////////////////////////////
