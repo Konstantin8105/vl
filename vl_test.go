@@ -285,18 +285,20 @@ func TestRun(t *testing.T) {
 // pkg: github.com/Konstantin8105/vl
 // cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
 // Benchmark-4   	   15679	     72798 ns/op	     505 B/op	      19 allocs/op
-// Benchmark-4   	   14728	     97233 ns/op	     538 B/op	      19 allocs/op
+// Benchmark-4   	   16251	     73508 ns/op	     537 B/op	      19 allocs/op
+// Benchmark-4   	   16137	     73325 ns/op	     537 B/op	      19 allocs/op
+// Benchmark-4   	   16294	     73189 ns/op	     537 B/op	      19 allocs/op
+// Benchmark-4   	   16347	     73162 ns/op	     537 B/op	      19 allocs/op
+// Benchmark-4   	   16138	     74406 ns/op	     537 B/op	      19 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
 	screen.Root = r
 	var size uint = 100
 	screen.SetHeight(size)
-	null := func(row, col uint, s tcell.Style, r rune) {
-		return
-	}
+	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		_ = screen.Render(size, null)
+		_ = screen.Render(size, NilDrawer)
 	}
 }
 
