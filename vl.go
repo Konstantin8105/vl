@@ -106,7 +106,36 @@ func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
 	}
 }
 
+const maxSize uint = 100000
+
 func NilDrawer(row, col uint, s tcell.Style, r rune) {}
+
+func drawerLimit(
+	dr Drawer,
+	drow, dcol uint,
+	rowFrom, rowTo uint,
+	colFrom, colTo uint,
+) Drawer {
+	return func(row, col uint, s tcell.Style, r rune) {
+		row += drow
+		col += dcol
+		if maxSize <= row {
+			panic(fmt.Errorf("row is too big: %d", row))
+		}
+		if maxSize <= col {
+			panic(fmt.Errorf("col is too big: %d", col))
+		}
+		if row < rowFrom || rowTo < row { // outside roe
+			return
+		}
+		if col < colFrom || colTo+1 < col { // outside col
+			return
+		}
+		dr(row, col, s, r)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 type Offset struct {
 	row uint // vertical root offset
@@ -297,6 +326,7 @@ type Text struct {
 	content  tf.TextFieldLimit
 	compress bool
 	maxLines uint
+	style *tcell.Style
 }
 
 var DefaultMaxTextLines uint = 5
@@ -341,8 +371,6 @@ func (t *Text) Filter(f func(r rune) (insert bool)) {
 	t.content.Filter = f
 }
 
-const maxSize uint = 100000
-
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		t.StoreSize(width, height)
@@ -350,6 +378,9 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if width < 1 {
 		width, height = 0, 0
 		return
+	}
+	if t.style == nil {
+		t.style = &TextStyle
 	}
 	draw := func(row, col uint, r rune) {
 		if maxSize < row {
@@ -364,7 +395,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		if 0 < t.maxLines && t.maxLines < row {
 			return
 		}
-		dr(row, col, TextStyle, r)
+		dr(row, col, *t.style, r)
 	}
 	if !t.content.NoUpdate {
 		t.content.SetWidth(width)
@@ -612,6 +643,8 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	l.nodes[0].from = 0
 	for i := range l.nodes {
 		if l.nodes[i].w == nil {
+			l.nodes[i].from = -1
+			l.nodes[i].to = -1
 			continue
 		}
 		// initialize sizes of widgets
@@ -631,20 +664,12 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 			break
 		}
 		// drawing
-		draw := func(row, col uint, st tcell.Style, r rune) {
-			if width < col {
-				return
-			}
-			// if int(row) < l.nodes[i].from {
-			// 	return
-			// }
-			if l.nodes[i].to < int(row) {
-				return
-			}
-			row += uint(l.nodes[i].from)
-			dr(row, col, st, r)
-		}
-		l.nodes[i].w.Render(width, draw)
+		l.nodes[i].w.Render(width, drawerLimit(
+			dr,
+			uint(l.nodes[i].from), 0,
+			uint(l.nodes[i].from), uint(l.nodes[i].to),
+			0, width,
+		))
 	}
 	height = uint(l.nodes[len(l.nodes)-1].to)
 	if l.addlimit {
@@ -948,6 +973,7 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	if b.focus {
 		st = ButtonFocusStyle
 	}
+	b.Text.style = &st
 	// show button row
 	var emptyLines int = -1
 	showRow := func(row uint) {
@@ -1115,14 +1141,14 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
 	// draw root widget
-	droot := func(row, col uint, s tcell.Style, r rune) {
-		if width < col {
-			panic("Text width")
-		}
-		dr(row+height+1, col+2, s, r)
-	}
 	if f.Root != nil {
-		height += f.Root.Render(width-4, droot) + 2
+		h := f.Root.Render(width-4, drawerLimit(
+			dr,
+			height+1, 2,
+			0, maxSize,
+			0, width-4,
+		))
+		height += h + 2
 	}
 	if f.addlimit {
 		height = f.hmax - 1
