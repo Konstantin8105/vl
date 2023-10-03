@@ -68,6 +68,7 @@ func init() {
 				b.OnClick = func() {}
 				l.Add(&b)
 				l.Add(TextStatic(texts[ti]))
+				l.Add(new(Separator))
 				l.Add(nil)
 				var fr Frame
 				var chfr CheckBox
