@@ -323,10 +323,11 @@ func (s *Separator) Render(width uint, dr Drawer) (height uint) {
 
 type Text struct {
 	container
-	content  tf.TextFieldLimit
-	compress bool
-	maxLines uint
-	style *tcell.Style
+	content   tf.TextFieldLimit
+	compress  bool
+	maxLines  uint
+	style     *tcell.Style
+	addCursor bool
 }
 
 var DefaultMaxTextLines uint = 5
@@ -400,10 +401,20 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if !t.content.NoUpdate {
 		t.content.SetWidth(width)
 	}
+	var cur func(row, col uint) = nil // hide cursor for not-focus inputbox
+	if t.focus && t.addCursor {
+		cur = func(row, col uint) {
+			if width < col {
+				panic("Text width")
+			}
+			st := CursorStyle
+			dr(row, col, st, Cursor)
+		}
+	}
 
 	// TODO min width
 
-	height = t.content.Render(draw, nil) // nil - not view cursor
+	height = t.content.Render(draw, cur) // nil - not view cursor
 	// added for colorize unvisible lines too
 	h := t.content.GetRenderHeight()
 	if height < h {
@@ -1462,43 +1473,28 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		in.StoreSize(width, height)
 	}()
+	// set test property
 	st := InputboxStyle
 	if in.focus {
 		st = InputboxFocusStyle
 	}
-	// default line color
-	h := in.content.GetRenderHeight()
-	for row := uint(0); row < h; row++ {
-		// draw empty line
-		for i := uint(0); i < width; i++ {
-			dr(row, i, st, ' ')
+	in.Text.style = &st
+	in.Text.addCursor = true
+	// drawing
+	found := make([]bool, 2)
+	draw := func(row, col uint, st tcell.Style, r rune) {
+		if len(found) <= int(row) {
+			found = append(found, false)
 		}
-	}
-	// draw
-	draw := func(row, col uint, r rune) {
-		if width < col {
-			panic("Text width")
+		if !found[row] {
+			for i := uint(0); i < width; i++ {
+				dr(row, i, st, ' ')
+			}
+			found[row] = true
 		}
 		dr(row, col, st, r)
 	}
-	cur := func(row, col uint) {
-		if width < col {
-			panic("Text width")
-		}
-		st := CursorStyle
-		dr(row, col, st, Cursor)
-	}
-	if !in.content.NoUpdate {
-		in.content.SetWidth(width)
-	}
-	if !in.focus {
-		cur = nil // hide cursor for not-focus inputbox
-	}
-	height = in.content.Render(draw, cur)
-	if height < h {
-		height = h
-	}
-	return
+	return in.Text.Render(width, draw)
 }
 
 func (in *Inputbox) Event(ev tcell.Event) {
