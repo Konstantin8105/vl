@@ -570,21 +570,18 @@ func (sc *Scroll) Event(ev tcell.Event) {
 
 type List struct {
 	containerVerticalFix
-
-	heights []uint
-	ws      []Widget
-
-	IgnoreVerticalFix bool
+	nodes    []listNode
+	compress bool
 }
 
 func (l *List) Size() int {
-	return len(l.ws)
+	return len(l.nodes)
 }
 
 func (l *List) Focus(focus bool) {
 	if !focus {
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Focus(focus)
 			}
 		}
@@ -592,48 +589,66 @@ func (l *List) Focus(focus bool) {
 	l.focus = focus
 }
 
+func (l *List) Compress() {
+	l.compress = true
+}
+
 func (l List) getItemHmax() uint {
-	return l.hmax / uint(len(l.ws))
+	return l.hmax / uint(len(l.nodes))
 }
 
 func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.StoreSize(width, height)
 	}()
-	if len(l.ws) == 0 {
+	if width < 2 {
+		width, height = 0, 0
 		return
 	}
-	var heightMax uint
-	if l.addlimit {
-		heightMax = l.getItemHmax()
+	if len(l.nodes) == 0 {
+		return
 	}
-	draw := func(row, col uint, st tcell.Style, r rune) {
-		if width < col {
-			return
+	dh := l.getItemHmax()
+	l.nodes[0].from = 0
+	for i := range l.nodes {
+		if l.nodes[i].w == nil {
+			continue
 		}
-		if l.addlimit && heightMax <= row {
-			return
-		}
-		row += height
-		dr(row, col, st, r)
-	}
-	// prepare list of heights
-	if len(l.heights)+1 != len(l.ws) || len(l.heights) == 0 {
-		l.heights = make([]uint, len(l.ws)+1)
-	}
-	l.heights[0] = height // default first element is zero
-	// render each widget
-	for i := range l.ws {
-		var h uint
-		if l.ws[i] != nil {
-			h = l.ws[i].Render(width, draw)
-		}
-		if l.addlimit {
-			height += heightMax
+		// initialize sizes of widgets
+		if (l.compress && (l.addlimit && 0 < l.hmax)) || !l.addlimit {
+			l.nodes[i].w.Render(width, NilDrawer)
+			_, h := l.nodes[i].w.GetSize()
+			l.nodes[i].to = l.nodes[i].from + int(h)
 		} else {
-			height += h
+			l.nodes[i].to = l.nodes[i].from + int(dh)
 		}
-		l.heights[i+1] = height
+		// prepare position of next node
+		for pos := i + 1; pos < len(l.nodes); pos++ {
+			if l.nodes[pos].w == nil {
+				continue
+			}
+			l.nodes[pos].from = l.nodes[i].to
+			break
+		}
+		// drawing
+		draw := func(row, col uint, st tcell.Style, r rune) {
+			if width < col {
+				return
+			}
+			// if int(row) < l.nodes[i].from {
+			// 	return
+			// }
+			if l.nodes[i].to < int(row) {
+				return
+			}
+			row += uint(l.nodes[i].from)
+			dr(row, col, st, r)
+		}
+		l.nodes[i].w.Render(width, draw)
+	}
+	height = uint(l.nodes[len(l.nodes)-1].to)
+	if l.addlimit {
+		height = l.hmax
 	}
 	return
 }
@@ -650,8 +665,8 @@ func (l *List) Event(ev tcell.Event) {
 	case *tcell.EventMouse:
 		// unfocus
 		l.Focus(false)
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Focus(false)
 			}
 		}
@@ -666,23 +681,21 @@ func (l *List) Event(ev tcell.Event) {
 			return
 		}
 		// find focus widget
-		for i := range l.heights {
-			if i == 0 {
+		for i := range l.nodes {
+			if l.nodes[i].w == nil {
 				continue
 			}
-			if l.heights[i-1] <= uint(row) &&
-				uint(row) < l.heights[i] {
+			// debugs = append(debugs, fmt.Sprintln(l.nodes))
+			if l.nodes[i].from <= row && row < l.nodes[i].to {
 				// row correction
-				row -= int(l.heights[i-1])
-				// index correction
-				i--
+				row := row - int(l.nodes[i].from)
 				// focus
 				l.Focus(true)
-				if l.ws[i] == nil {
-					continue
-				}
-				//l.ws[i].Focus(true)
-				l.ws[i].Event(tcell.NewEventMouse(
+				// 				if l.nodes[i].w == nil {
+				// 					continue
+				// 				}
+				//l.nodes[i].w.Focus(true)
+				l.nodes[i].w.Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
 					ev.Modifiers()))
@@ -690,8 +703,8 @@ func (l *List) Event(ev tcell.Event) {
 			}
 		}
 	case *tcell.EventKey:
-		for i := range l.ws {
-			if w := l.ws[i]; w != nil {
+		for i := range l.nodes {
+			if w := l.nodes[i].w; w != nil {
 				w.Event(ev)
 			}
 		}
@@ -699,40 +712,36 @@ func (l *List) Event(ev tcell.Event) {
 }
 
 func (l *List) Get(index int) Widget {
-	if index < 0 || len(l.ws) <= index {
+	if index < 0 || len(l.nodes) <= index {
 		// not valid index
 		return nil
 	}
-	return l.ws[index]
+	return l.nodes[index].w
 }
 
 func (l *List) Update(index int, w Widget) {
-	if index < 0 || len(l.ws) <= index {
+	if index < 0 || len(l.nodes) <= index {
 		// not valid index
 		return
 	}
-	l.ws[index] = w
+	l.nodes[index].w = w
 }
 
 func (l *List) Add(w Widget) {
-	l.ws = append(l.ws, w)
+	l.nodes = append(l.nodes, listNode{w: w})
 }
 
 func (l *List) Clear() {
-	l.ws = nil
-	l.heights = nil
+	l.nodes = nil
 }
 
 func (l *List) SetHeight(hmax uint) {
-	if l.IgnoreVerticalFix {
-		return
-	}
 	l.containerVerticalFix.SetHeight(hmax)
-	for i := range l.ws {
-		if l.ws[i] == nil {
+	for i := range l.nodes {
+		if l.nodes[i].w == nil {
 			continue
 		}
-		if vf, ok := l.ws[i].(VerticalFix); ok {
+		if vf, ok := l.nodes[i].w.(VerticalFix); ok {
 			vf.SetHeight(l.getItemHmax())
 		}
 	}
@@ -930,6 +939,10 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		b.StoreSize(width, height)
 	}()
+	if width < 3 {
+		width, height = 0, 0
+		return
+	}
 	// default style
 	st := ButtonStyle
 	if b.focus {
@@ -1265,7 +1278,7 @@ func (rg *RadioGroup) Add(w Widget) {
 	var r radio
 	r.Root = w
 	rg.list.Add(&r)
-	rg.pos = uint(len(rg.list.ws) - 1)
+	rg.pos = uint(len(rg.list.nodes) - 1)
 	if f := rg.OnChange; f != nil {
 		f()
 	}
@@ -1285,7 +1298,7 @@ func (rg *RadioGroup) Clear() {
 
 func (rg *RadioGroup) SetPos(pos uint) {
 	rg.pos = pos
-	if len(rg.list.ws) <= int(rg.pos) {
+	if len(rg.list.nodes) <= int(rg.pos) {
 		rg.pos = 0
 	}
 	if f := rg.OnChange; f != nil {
@@ -1306,15 +1319,15 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		rg.StoreSize(width, height)
 	}()
-	if len(rg.list.ws) <= int(rg.pos) {
+	if len(rg.list.nodes) <= int(rg.pos) {
 		rg.pos = 0
 	}
-	for i := range rg.list.ws {
+	for i := range rg.list.nodes {
 		if uint(i) == rg.pos {
-			rg.list.ws[i].(*radio).choosed = true
+			rg.list.nodes[i].w.(*radio).choosed = true
 			continue
 		}
-		rg.list.ws[i].(*radio).choosed = false
+		rg.list.nodes[i].w.(*radio).choosed = false
 	}
 	height = rg.list.Render(width, dr)
 	return
@@ -1325,8 +1338,8 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 	if rg.list.focus {
 		// change radio position
 		last := rg.pos
-		for i := range rg.list.ws {
-			if rg.list.ws[i].(*radio).focus {
+		for i := range rg.list.nodes {
+			if rg.list.nodes[i].w.(*radio).focus {
 				rg.pos = uint(i)
 			}
 		}
@@ -1612,12 +1625,10 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 				} else {
 					panic(fmt.Errorf("add Compressable widget: %T", l.nodes[i].w))
 				}
-				if c, ok := l.nodes[i].w.(interface{ GetSize() (w, h uint) }); ok {
-					w, _ := c.GetSize()
-					l.nodes[i].to = l.nodes[i].from + int(w)
-					if i+1 != len(l.nodes) {
-						l.nodes[i+1].from = l.nodes[i].to + 1
-					}
+				w, _ := l.nodes[i].w.GetSize()
+				l.nodes[i].to = l.nodes[i].from + int(w)
+				if i+1 != len(l.nodes) {
+					l.nodes[i+1].from = l.nodes[i].to + 1
 				}
 			}
 			l.nodes[len(l.nodes)-1].to = int(width)
@@ -2029,8 +2040,8 @@ func Demo() (demos []Widget) {
 		list   List
 	)
 	defer func() {
-		for i := range list.ws {
-			demos = append(demos, list.ws[i])
+		for i := range list.nodes {
+			demos = append(demos, list.nodes[i].w)
 		}
 	}()
 
@@ -2344,13 +2355,13 @@ func (c *container) Focus(focus bool) {
 	c.focus = focus
 }
 
-	// StoreSize store widget size
+// StoreSize store widget size
 func (c *container) StoreSize(width, height uint) {
 	c.width = width
 	c.height = height
 }
 
-	// GetSize return for widget sizes
+// GetSize return for widget sizes
 func (c container) GetSize() (width, height uint) {
 	return c.width, c.height
 }

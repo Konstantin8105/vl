@@ -290,15 +290,22 @@ func TestRun(t *testing.T) {
 // Benchmark-4   	   16294	     73189 ns/op	     537 B/op	      19 allocs/op
 // Benchmark-4   	   16347	     73162 ns/op	     537 B/op	      19 allocs/op
 // Benchmark-4   	   16138	     74406 ns/op	     537 B/op	      19 allocs/op
+// Benchmark/Size020-4         	   39470	     29108 ns/op	     536 B/op	      19 allocs/op
+// Benchmark/Size040-4         	   33872	     35148 ns/op	     536 B/op	      19 allocs/op
+// Benchmark/Size080-4         	   20626	     56924 ns/op	     536 B/op	      19 allocs/op
+//
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
 	screen.Root = r
-	var size uint = 100
-	screen.SetHeight(size)
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		_ = screen.Render(size, NilDrawer)
+	for _, size := range []uint{20, 40, 80} {
+		b.Run(fmt.Sprintf("Size%03d", size), func(b *testing.B) {
+			screen.SetHeight(size)
+			b.ResetTimer()
+			for n := 0; n < b.N; n++ {
+				_ = screen.Render(size, NilDrawer)
+			}
+		})
 	}
 }
 
