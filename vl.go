@@ -702,7 +702,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		l.nodes[i].w.Render(width, drawerLimit(
 			dr,
 			uint(l.nodes[i].from), 0,
-			uint(l.nodes[i].from), uint(l.nodes[i].to),
+			uint(l.nodes[i].from), uint(l.nodes[i].to)-1,
 			0, width,
 		))
 	}
