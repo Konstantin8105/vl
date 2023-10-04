@@ -128,7 +128,7 @@ func drawerLimit(
 		if row < rowFrom || rowTo < row { // outside roe
 			return
 		}
-		if col < colFrom || colTo+1 < col { // outside col
+		if col < colFrom || colTo < col { // outside col
 			return
 		}
 		dr(row, col, s, r)
@@ -336,6 +336,7 @@ func TextStatic(str string) *Text {
 	t := new(Text)
 	t.content.Text = []rune(str)
 	t.content.NoUpdate = false
+	t.Compress()
 	return t
 }
 
@@ -383,23 +384,8 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if t.style == nil {
 		t.style = &TextStyle
 	}
-	draw := func(row, col uint, r rune) {
-		if maxSize < row {
-			panic(fmt.Errorf("row more max size: %d", row))
-		}
-		if maxSize < col {
-			panic(fmt.Errorf("col more max size: %d", col))
-		}
-		if width < col {
-			return
-		}
-		if 0 < t.maxLines && t.maxLines < row {
-			return
-		}
-		dr(row, col, *t.style, r)
-	}
 	if !t.content.NoUpdate {
-		t.content.SetWidth(width)
+		t.content.SetWidth(width + 1)
 	}
 	var cur func(row, col uint) = nil // hide cursor for not-focus inputbox
 	if t.focus && t.addCursor {
@@ -414,7 +400,8 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 
 	// TODO min width
 
-	height = t.content.Render(draw, cur) // nil - not view cursor
+	draw := func(row, col uint, r rune) {}
+	height = t.content.Render(draw, cur)
 	// added for colorize unvisible lines too
 	h := t.content.GetRenderHeight()
 	if height < h {
@@ -424,8 +411,35 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		height = t.maxLines
 	}
 	if t.compress {
-		width = t.content.GetRenderWidth()
+		width = t.content.GetRenderWidth() + 1
 	}
+
+	// drawing
+	for w := 0; w <= int(width); w++ {
+		for h := 0; h < int(height); h++ {
+			dr(uint(h), uint(w), *t.style, ' ')
+		}
+	}
+	draw = func(row, col uint, r rune) {
+		if maxSize < row {
+			panic(fmt.Errorf("row more max size: %d", row))
+		}
+		if maxSize < col {
+			panic(fmt.Errorf("col more max size: %d", col))
+		}
+		if width < col {
+			return
+		}
+		if 0 < t.maxLines && t.maxLines < row {
+			return
+		}
+		dr(row, col, *t.style, r)
+	}
+	height = t.content.Render(draw, cur)
+	if 0 < t.maxLines && t.maxLines < height {
+		height = t.maxLines
+	}
+
 	return
 }
 
@@ -662,7 +676,14 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 			continue
 		}
 		// initialize sizes of widgets
-		if (l.compress && (l.addlimit && 0 < l.hmax)) || !l.addlimit {
+		if l.compress && (l.addlimit && 0 < l.hmax) {
+			l.nodes[i].w.Render(width, NilDrawer)
+			_, h := l.nodes[i].w.GetSize()
+			if l.hmax < h {
+				h = l.hmax
+			}
+			l.nodes[i].to = l.nodes[i].from + int(h)
+		} else if !l.addlimit {
 			l.nodes[i].w.Render(width, NilDrawer)
 			_, h := l.nodes[i].w.GetSize()
 			l.nodes[i].to = l.nodes[i].from + int(h)
@@ -968,10 +989,6 @@ type Button struct {
 	OnClick func()
 }
 
-func (b *Button) SetText(str string) {
-	b.Text.SetText(str)
-}
-
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		b.StoreSize(width, height)
@@ -986,57 +1003,28 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 		st = ButtonFocusStyle
 	}
 	b.Text.style = &st
-	// show button row
-	var emptyLines int = -1
-	showRow := func(row uint) {
-		if int(row) <= emptyLines {
-			return
-		}
-		// draw empty button
-		var i uint
-		for i = 0; i < width; i++ {
-			dr(row, i, st, ' ')
-		}
-		dr(row, 0, st, '[')
-		dr(row, width-1, st, ']')
-		emptyLines = int(row)
-	}
 	// constant
 	const buttonOffset = 2
-	if width < 2*buttonOffset {
-		width = 2 * buttonOffset
+	// 	if width < 2*buttonOffset {
+	// 		width = 2 * buttonOffset
+	// 	}
+	b.Text.Render(width-2*buttonOffset, drawerLimit(
+		dr,
+		0, buttonOffset,
+		0, maxSize,
+		0, width-buttonOffset,
+	))
+	width, height = b.GetSize()
+	width += 2 * buttonOffset
+	for row := 0; row < int(height); row++ {
+		dr(uint(row), 0, st, '[')
+		dr(uint(row), 1, st, ' ')
+		dr(uint(row), width-2, st, ' ')
+		dr(uint(row), width-1, st, ']')
 	}
-	// update content
-	if !b.content.NoUpdate {
-		b.content.SetWidth(width - 2*buttonOffset)
-	}
-	if b.Text.compress {
-		// added for create buttons with minimal width
-		w := b.content.GetRenderWidth() + 2*buttonOffset
-		if w < width {
-			width = w
-			b.content.SetWidth(width - 2*buttonOffset)
-		}
-	}
-	// draw first line
-	showRow(0)
-	// draw runes
-	draw := func(row, col uint, r rune) {
-		if width < col {
-			return
-		}
-		// draw empty lines
-		var i uint
-		for i = 0; i <= row; i++ {
-			showRow(i)
-		}
-		// draw symbol
-		dr(row, col+buttonOffset, st, r)
-	}
-	height = b.content.Render(draw, nil)
-	if height < 2 {
-		height = 1
-	}
+	// DEBUG : for w := 0; w <= int(width); w++ {
+	// DEBUG : 	dr(0, uint(w), st, '$')
+	// DEBUG : }
 	return
 }
 
@@ -1151,6 +1139,16 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			dr(row, col+2, st, r)
 		}
 		height = f.Header.Render(width-4, draw)
+		// draw line
+		wh, _ := f.Header.GetSize()
+		for i := wh; i <= width; i++ {
+			row := uint(0)
+			if f.focus {
+				draw(row, i, TextStyle, LineHorizontalFocus)
+			} else {
+				draw(row, i, TextStyle, LineHorizontalUnfocus)
+			}
+		}
 	} else {
 		height = 1
 	}
@@ -1170,11 +1168,11 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	f.offsetHeader.col = 2
 	// draw root widget
 	if f.root != nil {
-		h := f.root.Render(width-4, drawerLimit(
+		h := f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
 			dr,
-			height+1, 2,
+			f.offsetRoot.row, f.offsetRoot.col,
 			0, maxSize,
-			0, width-4,
+			0, width-2*f.offsetRoot.col+1,
 		))
 		height += h + 2
 	}
@@ -1455,7 +1453,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col+lenght+1, st, r)
 	}
-	height = ch.Text.Render(width-lenght, draw)
+	height = ch.Text.Render(width-lenght-1, draw)
 	if height < 2 {
 		height = 1
 	}
@@ -1500,21 +1498,7 @@ func (in *InputBox) Render(width uint, dr Drawer) (height uint) {
 	}
 	in.Text.style = &st
 	in.Text.addCursor = true
-	// drawing
-	found := make([]bool, 2)
-	draw := func(row, col uint, st tcell.Style, r rune) {
-		if len(found) <= int(row) {
-			found = append(found, false)
-		}
-		if !found[row] {
-			for i := uint(0); i < width; i++ {
-				dr(row, i, st, ' ')
-			}
-			found[row] = true
-		}
-		dr(row, col, st, r)
-	}
-	return in.Text.Render(width, draw)
+	return in.Text.Render(width, dr)
 }
 
 func (in *InputBox) Event(ev tcell.Event) {
@@ -1592,6 +1576,7 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 		c.cb.OnChange = func() {
 			c.open = !c.open
 		}
+		c.cb.Compress()
 		c.frame.Header = &c.cb
 		c.init = true
 	}
@@ -1932,6 +1917,7 @@ type Tabs struct {
 func (t *Tabs) Add(name string, root Widget) {
 	if len(t.header.nodes) == 0 {
 		t.Header = &t.header
+		t.header.Compress()
 		t.root = root
 	}
 	var btn Button

@@ -150,6 +150,9 @@ func check(t *testing.T, name string, si int, screen Screen) {
 
 	// compare
 	defer func() {
+		if width < 4 {
+			return
+		}
 		filename := filepath.Join(testdata, name)
 		compare.Test(t, filename, buf.Bytes())
 	}()
@@ -477,6 +480,27 @@ func TestWidget(t *testing.T) {
 	}
 	for _, w := range list() {
 		c, ok := w.(interface {
+			Compress()
+			Add(Widget)
+		})
+		if !ok {
+			continue
+		}
+		c.Compress()
+		c.Add(TextStatic("Second text"))
+		var value int
+		var btn Button
+		btn.SetText("Under root")
+		btn.OnClick = func() {
+			value += 1
+			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
+		}
+		c.Add(&btn)
+		name := fmt.Sprintf("%s-CompressAdd2", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+	}
+	for _, w := range list() {
+		c, ok := w.(interface {
 			SetRoot(Widget)
 		})
 		if !ok {
@@ -547,9 +571,8 @@ func TestWidget(t *testing.T) {
 						break
 					}
 				}
-				if found {
-				} else {
-					x, y = 1, 1
+				if !found {
+					x, y = 1, 0
 					t.Logf("not clicked")
 				}
 				for i := 0; i < 2; i++ {

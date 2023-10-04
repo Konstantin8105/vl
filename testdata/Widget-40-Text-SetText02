@@ -1,6 +1,6 @@
-000000001|Instead, they use ModAlt, even for even | width:000000040
-000000002|ts that could possibly have been distin | width:000000040
-000000003|guished from ModAlt.                    | width:000000040
+000000001|Instead, they use ModAlt, even for event| width:000000040
+000000002|s that could possibly have been distingu| width:000000040
+000000003|ished from ModAlt.                      | width:000000040
 000000004|                                        | width:000000040
 000000005|                                        | width:000000040
 000000006|                                        | width:000000040
@@ -40,9 +40,9 @@
 000000040|                                        | width:000000040
 rows  =  40
 width =  40
-000000001|Instead, they use ModAlt, even for even | width:000000040
-000000002|ts that could possibly have been distin | width:000000040
-000000003|guished from ModAlt.                    | width:000000040
+000000001|Instead, they use ModAlt, even for event| width:000000040
+000000002|s that could possibly have been distingu| width:000000040
+000000003|ished from ModAlt.                      | width:000000040
 000000004|                                        | width:000000040
 000000005|                                        | width:000000040
 000000006|                                        | width:000000040
@@ -82,9 +82,9 @@ width =  40
 000000040|                                        | width:000000040
 rows  =  40
 width =  40
-000000001|Instead, they use ModAlt, even for even | width:000000040
-000000002|ts that could possibly have been distin | width:000000040
-000000003|guished from ModAlt.                    | width:000000040
+000000001|Instead, they use ModAlt, even for event| width:000000040
+000000002|s that could possibly have been distingu| width:000000040
+000000003|ished from ModAlt.                      | width:000000040
 000000004|                                        | width:000000040
 000000005|                                        | width:000000040
 000000006|                                        | width:000000040
@@ -124,9 +124,9 @@ width =  40
 000000040|                                        | width:000000040
 rows  =  40
 width =  40
-000000001|Instead, they use ModAlt, even for events t | width:000000044
-000000002|hat could possibly have been distinguished  | width:000000044
-000000003|from ModAlt.                                | width:000000044
+000000001|Instead, they use ModAlt, even for events th| width:000000044
+000000002|at could possibly have been distinguished fr| width:000000044
+000000003|om ModAlt.                                  | width:000000044
 000000004|                                            | width:000000044
 000000005|                                            | width:000000044
 000000006|                                            | width:000000044
@@ -167,8 +167,8 @@ width =  40
 rows  =  40
 width =  44
 000000001|Instead, they use ModAlt, even for even| width:000000039
-000000002|ts that could possibly have been distin| width:000000039
-000000003|guished from ModAlt.                   | width:000000039
+000000002|s that could possibly have been disting| width:000000039
+000000003|ished from ModAlt.                     | width:000000039
 000000004|                                       | width:000000039
 000000005|                                       | width:000000039
 000000006|                                       | width:000000039
