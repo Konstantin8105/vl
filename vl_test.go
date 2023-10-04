@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -76,8 +77,8 @@ func init() {
 				fr.Header = &chfr // TextStatic("Frame header")
 				var secFr Frame
 				secFr.Header = TextStatic("Second header with long multiline\nNo addition options")
-				secFr.Root = TextStatic(texts[ti])
-				fr.Root = &secFr
+				secFr.SetRoot(TextStatic(texts[ti]))
+				fr.SetRoot(&secFr)
 				l.Add(&fr)
 				l.Add(&b)
 
@@ -95,11 +96,11 @@ func init() {
 				ch2.Checked = false
 				l.Add(&ch2)
 
-				var in Inputbox
+				var in InputBox
 				in.SetText("Some inputbox text")
 				l.Add(&in)
 
-				r.Root = &l
+				r.SetRoot(&l)
 				return &r, nil
 			},
 		})
@@ -130,7 +131,7 @@ func Test(t *testing.T) {
 				}
 			}()
 			var screen Screen
-			screen.Root = rt
+			screen.SetRoot(rt)
 			check(t, name, si, screen)
 		})
 	}
@@ -306,11 +307,10 @@ func TestRun(t *testing.T) {
 // Benchmark/Size020-4         	   22135	     51894 ns/op	    2080 B/op	      46 allocs/op
 // Benchmark/Size040-4         	   19011	     62061 ns/op	    2080 B/op	      46 allocs/op
 // Benchmark/Size080-4         	   14752	     88859 ns/op	    2082 B/op	      46 allocs/op
-//
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
-	screen.Root = r
+	screen.SetRoot(r)
 	for _, size := range []uint{20, 40, 80} {
 		b.Run(fmt.Sprintf("Size%03d", size), func(b *testing.B) {
 			screen.SetHeight(size)
@@ -348,6 +348,245 @@ func TestAscii(t *testing.T) {
 				continue
 			}
 			t.Errorf("find unicode: `%s`", string(r))
+		}
+	}
+}
+
+func TestWidget(t *testing.T) {
+	list := func() []Widget {
+		return []Widget{
+			new(Separator),
+			new(Text),
+			new(Scroll),
+			new(List),
+			new(Menu),
+			new(Button),
+			new(Frame),
+			new(RadioGroup),
+			new(CheckBox),
+			new(InputBox),
+			new(CollapsingHeader),
+			new(ListH),
+			new(ComboBox),
+			new(Tabs),
+			new(Tree),
+		}
+	}
+	getName := func(w Widget) string {
+		name := fmt.Sprintf("%T", w)
+		name = strings.ReplaceAll(name, "*vl.", "")
+		return name
+	}
+	type tcase struct {
+		name string
+		w    Widget
+	}
+	var tcs []tcase
+	for _, w := range list() {
+		tcs = append(tcs, tcase{name: getName(w), w: w})
+	}
+	for it := range texts {
+		for _, w := range list() {
+			c, ok := w.(interface {
+				SetText(string)
+				GetText() string
+			})
+			if !ok {
+				continue
+			}
+			c.SetText(texts[it])
+			name := fmt.Sprintf("%s-SetText%02d", getName(w), it)
+			tcs = append(tcs, tcase{name: name, w: w})
+			t.Run(getName(w)+"PrepareGetText", func(t *testing.T) {
+				if texts[it] != c.GetText() {
+					t.Errorf("not same")
+				}
+			})
+		}
+	}
+	for _, w := range list() {
+		if _, ok := w.(*RadioGroup); ok {
+			continue
+		}
+		c, ok := w.(interface {
+			Add(Widget)
+		})
+		if !ok {
+			continue
+		}
+		c.Add(TextStatic("Second text"))
+		name := fmt.Sprintf("%s-Add", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+		t.Run(getName(w)+"PrepareAdd", func(t *testing.T) {
+			c, ok := w.(interface {
+				Size() int
+				Clear()
+			})
+			if !ok {
+				t.Fatalf("Not enought function")
+			}
+			if c.Size() != 1 {
+				t.Errorf("not valid size")
+			}
+		})
+	}
+	for _, w := range list() {
+		if _, ok := w.(*RadioGroup); ok {
+			continue
+		}
+		c, ok := w.(interface {
+			Add(Widget)
+		})
+		if !ok {
+			continue
+		}
+		c.Add(TextStatic("Second text"))
+		var value int
+		var btn Button
+		btn.SetText("Under root")
+		btn.OnClick = func() {
+			value += 1
+			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
+		}
+		c.Add(&btn)
+		name := fmt.Sprintf("%s-Add2", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+		t.Run(getName(w)+"PrepareAdd2", func(t *testing.T) {
+			c, ok := w.(interface {
+				Size() int
+				Clear()
+			})
+			if !ok {
+				t.Fatalf("Not enought function")
+			}
+			if c.Size() != 2 {
+				t.Errorf("not valid size")
+			}
+		})
+	}
+	for _, w := range list() {
+		c, ok := w.(interface {
+			Compress()
+		})
+		if !ok {
+			continue
+		}
+		c.Compress()
+		name := fmt.Sprintf("%s-Compress", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+	}
+	for _, w := range list() {
+		c, ok := w.(interface {
+			SetRoot(Widget)
+		})
+		if !ok {
+			continue
+		}
+		var value int
+		var btn Button
+		btn.SetText("Under root")
+		btn.OnClick = func() {
+			value += 1
+			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
+		}
+		c.SetRoot(&btn)
+		name := fmt.Sprintf("%s-SetRoot", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+	}
+	for _, w := range list() {
+		c, ok := w.(interface {
+			SetRoot(Widget)
+		})
+		if !ok {
+			continue
+		}
+		var rg RadioGroup
+		rg.AddText("radio0", "radio1")
+		c.SetRoot(&rg)
+		name := fmt.Sprintf("%s-SetRootRadiGroup", getName(w))
+		tcs = append(tcs, tcase{name: name, w: w})
+	}
+	for _, tc := range tcs {
+		for _, size := range sizes {
+			name := fmt.Sprintf("Widget-%02d-%s", size, tc.name)
+			t.Run(name, func(t *testing.T) {
+				cells := new([][]Cell)
+				height := size
+				width := size
+				var screen Screen
+				screen.SetRoot(tc.w)
+				screen.SetHeight(size)
+
+				// first shot
+				screen.GetContents(width, cells)
+				if len(*cells) != int(height) {
+					t.Fatalf("height is not valid: %d %d", len(*cells), int(height))
+				}
+				for r := range *cells {
+					if len((*cells)[r]) != int(width) {
+						t.Errorf("width is not valid: %d %d", len((*cells)[r]), int(width))
+					}
+				}
+				var buf bytes.Buffer
+				fmt.Fprintf(&buf, "%s", Convert(*cells))
+
+				// click on field
+				var x, y uint
+				var found bool
+				for x = 0; x < width; x++ {
+					for y = 0; y < height; y++ {
+						if (*cells)[x][y].S == ButtonStyle ||
+							(*cells)[x][y].S == InputBoxStyle {
+							found = true
+						}
+						if found {
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if found {
+				} else {
+					x, y = 1, 1
+					t.Logf("not clicked")
+				}
+				for i := 0; i < 2; i++ {
+					click := tcell.NewEventMouse(
+						int(x), int(y),
+						tcell.Button1, tcell.ModNone)
+					screen.Event(click)
+					screen.GetContents(width, cells)
+					fmt.Fprintf(&buf, "%s", Convert(*cells))
+				}
+
+				// click left at field
+
+				// resize
+				{
+					width += 4
+					height += 4
+					screen.SetHeight(size)
+					screen.GetContents(width, cells)
+					fmt.Fprintf(&buf, "%s", Convert(*cells))
+				}
+				{
+					width -= 4
+					height -= 4
+					screen.SetHeight(size)
+					screen.GetContents(width, cells)
+					fmt.Fprintf(&buf, "%s", Convert(*cells))
+				}
+
+				// testing
+				if width < 4 {
+					return
+				}
+				// fmt.Println(buf.String())
+				filename := filepath.Join(testdata, name)
+				compare.Test(t, filename, buf.Bytes())
+			})
 		}
 	}
 }

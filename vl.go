@@ -26,12 +26,12 @@ var (
 	TextStyle          tcell.Style = ScreenStyle
 	ButtonStyle        tcell.Style = style(black, yellow)
 	ButtonFocusStyle   tcell.Style = style(black, focus)
-	InputboxStyle      tcell.Style = style(black, yellow)
-	InputboxFocusStyle tcell.Style = style(black, focus)
+	InputBoxStyle      tcell.Style = style(black, yellow)
+	InputBoxFocusStyle tcell.Style = style(black, focus)
 	// cursor
 	CursorStyle tcell.Style = style(white, red)
 	// select
-	InputboxSelectStyle tcell.Style = style(black, green)
+	InputBoxSelectStyle tcell.Style = style(black, green)
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
 	}
 }
 
-const maxSize uint = 100000
+const maxSize uint = 10000
 
 func NilDrawer(row, col uint, s tcell.Style, r rune) {}
 
@@ -168,7 +168,7 @@ type Cell struct {
 
 type Screen struct {
 	containerVerticalFix
-	Root Widget
+	rootable
 	//	dialog struct {
 	//		Root             Widget
 	//		offsetX, offsetY uint
@@ -247,8 +247,8 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col, s, r)
 	}
-	if screen.Root != nil {
-		_ = screen.Root.Render(width, draw) // ignore height
+	if screen.root != nil {
+		_ = screen.root.Render(width, draw) // ignore height
 	}
 	// draw dialog
 	// if d := screen.dialog.Root; d != nil {
@@ -263,31 +263,31 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 
 func (screen *Screen) SetHeight(hmax uint) {
 	screen.containerVerticalFix.SetHeight(hmax)
-	if screen.Root != nil {
-		if _, ok := screen.Root.(VerticalFix); ok {
-			screen.Root.(VerticalFix).SetHeight(hmax)
+	if screen.root != nil {
+		if _, ok := screen.root.(VerticalFix); ok {
+			screen.root.(VerticalFix).SetHeight(hmax)
 		}
 	}
-	//	if screen.dialog.Root != nil {
-	//		if _, ok := screen.dialog.Root.(VerticalFix); ok {
-	//			screen.dialog.Root.(VerticalFix).SetHeight(hmax)
+	//	if screen.dialog.root != nil {
+	//		if _, ok := screen.dialog.root.(VerticalFix); ok {
+	//			screen.dialog.root.(VerticalFix).SetHeight(hmax)
 	//		}
 	//	}
 }
 
 func (screen *Screen) Event(ev tcell.Event) {
-	if screen.Root == nil {
+	if screen.root == nil {
 		return
 	}
-	// if screen.dialog.Root != nil {
-	// 	screen.dialog.Root.Event(ev)
+	// if screen.dialog.root != nil {
+	// 	screen.dialog.root.Event(ev)
 	// 	return
 	// }
-	screen.Root.Event(ev)
+	screen.root.Event(ev)
 }
 
 // func (screen *Screen) Close() {
-// 	screen.dialog.Root = nil
+// 	screen.dialog.root = nil
 // }
 //
 // func (screen *Screen) AddDialog(name string, dialog Widget) {
@@ -303,9 +303,9 @@ func (screen *Screen) Event(ev tcell.Event) {
 // 		screen.Close()
 // 	}
 // 	list.Add(&btn)
-// 	frame.Root = &list
+// 	frame.root = &list
 // 	frame.SetHeight(screen.hmax)
-// 	screen.dialog.Root = &frame
+// 	screen.dialog.root = &frame
 // }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -434,24 +434,23 @@ const scrollBarWidth uint = 1
 
 type Scroll struct {
 	containerVerticalFix
-
+	rootable
 	offset uint
-	Root   Widget
 }
 
 func (sc *Scroll) Focus(focus bool) {
-	if sc.Root == nil {
+	if sc.root == nil {
 		return
 	}
 	sc.container.Focus(focus)
-	sc.Root.Focus(focus)
+	sc.root.Focus(focus)
 }
 
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		sc.StoreSize(width, height)
 	}()
-	if sc.Root == nil {
+	if sc.root == nil {
 		return
 	}
 	sc.fixOffset() // fix offset position
@@ -469,7 +468,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		if width < scrollBarWidth {
 			return
 		}
-		height = sc.Root.Render(width-scrollBarWidth, draw)
+		height = sc.root.Render(width-scrollBarWidth, draw)
 		// calculate location
 		if 2 < sc.hmax {
 			var value float32 // 0 ... 1
@@ -500,7 +499,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			dr(pos, width-scrollBarWidth, st, ScrollSquare)
 		}
 	} else {
-		height = sc.Root.Render(width, draw)
+		height = sc.root.Render(width, draw)
 	}
 	return
 }
@@ -525,7 +524,7 @@ func (sc *Scroll) fixOffset() {
 }
 
 func (sc *Scroll) Event(ev tcell.Event) {
-	if sc.Root == nil {
+	if sc.root == nil {
 		return
 	}
 
@@ -568,7 +567,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			}
 			// unfocus
 			sc.Focus(false)
-			sc.Root.Focus(false)
+			sc.root.Focus(false)
 			col, row := ev.Position()
 			if col < 0 {
 				return
@@ -581,7 +580,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				return
 			}
 			sc.Focus(true)
-			sc.Root.Event(tcell.NewEventMouse(
+			sc.root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
 				ev.Modifiers()))
@@ -603,7 +602,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				sc.fixOffset() // fix offset position
 			}
 		default:
-			sc.Root.Event(ev)
+			sc.root.Event(ev)
 		}
 	}
 }
@@ -618,6 +617,10 @@ type List struct {
 
 func (l *List) Size() int {
 	return len(l.nodes)
+}
+
+func (l *List) Clear() {
+	l.nodes = nil
 }
 
 func (l *List) Focus(focus bool) {
@@ -767,10 +770,6 @@ func (l *List) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w})
 }
 
-func (l *List) Clear() {
-	l.nodes = nil
-}
-
 func (l *List) SetHeight(hmax uint) {
 	l.containerVerticalFix.SetHeight(hmax)
 	for i := range l.nodes {
@@ -795,15 +794,15 @@ func (l *List) SetHeight(hmax uint) {
 
 type Menu struct {
 	containerVerticalFix
+	rootable
 	header ListH
-	Root   Widget
 }
 
 func (menu *Menu) SetHeight(hmax uint) {
 	menu.containerVerticalFix.SetHeight(hmax)
-	if menu.Root != nil {
-		if _, ok := menu.Root.(VerticalFix); ok {
-			menu.Root.(VerticalFix).SetHeight(hmax)
+	if menu.root != nil {
+		if _, ok := menu.root.(VerticalFix); ok {
+			menu.root.(VerticalFix).SetHeight(hmax)
 		}
 	}
 }
@@ -837,7 +836,9 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row+h, col, s, r)
 	}
-	height = menu.Root.Render(width, droot)
+	if menu.root != nil {
+		height = menu.root.Render(width, droot)
+	}
 	height += h // for menu
 	return
 }
@@ -866,7 +867,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			menu.header.Event(ev)
 		}
 	}
-	if menu.Root != nil {
+	if menu.root != nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
@@ -877,13 +878,13 @@ func (menu *Menu) Event(ev tcell.Event) {
 			if row < 0 {
 				return
 			}
-			menu.Root.Event(tcell.NewEventMouse(
+			menu.root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
 				ev.Modifiers()))
 
 		case *tcell.EventKey:
-			menu.Root.Event(ev)
+			menu.root.Event(ev)
 		}
 	}
 }
@@ -911,11 +912,11 @@ func (menu *Menu) Event(ev tcell.Event) {
 // 	if width < 6 {
 // 		return 1
 // 	}
-// 	st := InputboxStyle
+// 	st := InputBoxStyle
 // 	if m.focus {
-// 		st = InputboxFocusStyle
+// 		st = InputBoxFocusStyle
 // 	} else {
-// 		st = InputboxStyle
+// 		st = InputBoxStyle
 // 	}
 // 	PrintDrawer(0, 0, st, dr, []rune(" "))
 // 	const banner = 1
@@ -1011,12 +1012,14 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	}
 	if b.Text.compress {
 		// added for create buttons with minimal width
-		w := b.content.GetRenderWidth() + 2*buttonOffset + 2
+		w := b.content.GetRenderWidth() + 2*buttonOffset
 		if w < width {
 			width = w
 			b.content.SetWidth(width - 2*buttonOffset)
 		}
 	}
+	// draw first line
+	showRow(0)
 	// draw runes
 	draw := func(row, col uint, r rune) {
 		if width < col {
@@ -1049,6 +1052,14 @@ func (b *Button) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+type rootable struct{ root Widget }
+
+func (rt *rootable) SetRoot(root Widget) {
+	rt.root = root
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Frame examples
 //
 //	+- Header ---------+
@@ -1056,10 +1067,10 @@ func (b *Button) Event(ev tcell.Event) {
 //	+------------------+
 type Frame struct {
 	containerVerticalFix
+	rootable
 
 	Header       Widget
 	offsetHeader Offset
-	Root         Widget
 	offsetRoot   Offset
 }
 
@@ -1068,7 +1079,7 @@ func (f *Frame) Focus(focus bool) {
 		if w := f.Header; w != nil {
 			w.Focus(focus)
 		}
-		if w := f.Root; w != nil {
+		if w := f.root; w != nil {
 			w.Focus(focus)
 		}
 	}
@@ -1080,6 +1091,12 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		f.StoreSize(width, height)
 	}()
 	dr := func(row, col uint, s tcell.Style, r rune) {
+		if maxSize <= row {
+			panic(fmt.Errorf("row is too big: %d", row))
+		}
+		if maxSize <= col {
+			panic(fmt.Errorf("col is too big: %d", col))
+		}
 		if f.hmax < row && f.addlimit {
 			return
 		}
@@ -1140,9 +1157,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	// add limit of height
 	if f.addlimit {
 		hmax := f.hmax - height - 2
-		if f.Root != nil {
-			if _, ok := f.Root.(VerticalFix); ok {
-				f.Root.(VerticalFix).SetHeight(hmax)
+		if f.root != nil {
+			if _, ok := f.root.(VerticalFix); ok {
+				f.root.(VerticalFix).SetHeight(hmax)
 			}
 		}
 	}
@@ -1152,8 +1169,8 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
 	// draw root widget
-	if f.Root != nil {
-		h := f.Root.Render(width-4, drawerLimit(
+	if f.root != nil {
+		h := f.root.Render(width-4, drawerLimit(
 			dr,
 			height+1, 2,
 			0, maxSize,
@@ -1162,7 +1179,11 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		height += h + 2
 	}
 	if f.addlimit {
-		height = f.hmax - 1
+		if 0 < f.hmax {
+			height = f.hmax - 1
+		} else {
+			height = 0
+		}
 	}
 	return
 }
@@ -1175,19 +1196,19 @@ func (f *Frame) Event(ev tcell.Event) {
 	if !f.focus {
 		return
 	}
-	if f.Root != nil {
+	if f.root != nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
 			col -= int(f.offsetRoot.col)
 			row -= int(f.offsetRoot.row)
-			f.Root.Event(tcell.NewEventMouse(
+			f.root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
 				ev.Modifiers()))
 
 		case *tcell.EventKey:
-			f.Root.Event(ev)
+			f.root.Event(ev)
 		}
 	}
 	if f.Header != nil {
@@ -1211,15 +1232,14 @@ func (f *Frame) Event(ev tcell.Event) {
 
 type radio struct {
 	container
-
+	rootable
 	choosed bool
-	Root    Widget
 }
 
 func (r *radio) Focus(focus bool) {
 	r.container.Focus(focus)
-	if r.Root != nil {
-		r.Root.Focus(focus)
+	if r.root != nil {
+		r.root.Focus(focus)
 	}
 }
 
@@ -1232,20 +1252,20 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	st := InputboxStyle
+	st := InputBoxStyle
 	if r.choosed {
-		st = InputboxSelectStyle
+		st = InputBoxSelectStyle
 	}
 	if r.focus {
-		st = InputboxFocusStyle
+		st = InputBoxFocusStyle
 	}
 	if r.choosed {
 		PrintDrawer(0, 0, st, dr, []rune("(*)"))
 	} else {
 		PrintDrawer(0, 0, st, dr, []rune("( )"))
 	}
-	if r.Root != nil {
-		if ch, ok := r.Root.(*CollapsingHeader); ok {
+	if r.root != nil {
+		if ch, ok := r.root.(*CollapsingHeader); ok {
 			ch.Open(r.choosed)
 		}
 		droot := func(row, col uint, s tcell.Style, r rune) {
@@ -1254,7 +1274,7 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 			}
 			dr(row, col+banner, s, r)
 		}
-		height = r.Root.Render(width-banner, droot)
+		height = r.root.Render(width-banner, droot)
 	}
 	if height < 2 {
 		height = 1
@@ -1273,7 +1293,7 @@ func (r *radio) Event(ev tcell.Event) {
 	if mouse[0] {
 		r.Focus(true)
 	}
-	if r.Root != nil {
+	if r.root != nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
@@ -1287,13 +1307,13 @@ func (r *radio) Event(ev tcell.Event) {
 				return
 			}
 			col -= banner
-			r.Root.Event(tcell.NewEventMouse(
+			r.root.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
 				ev.Modifiers()))
 
 		case *tcell.EventKey:
-			r.Root.Event(ev)
+			r.root.Event(ev)
 		}
 	}
 }
@@ -1313,7 +1333,7 @@ type RadioGroup struct {
 
 func (rg *RadioGroup) Add(w Widget) {
 	var r radio
-	r.Root = w
+	r.root = w
 	rg.list.Add(&r)
 	rg.pos = uint(len(rg.list.nodes) - 1)
 	if f := rg.OnChange; f != nil {
@@ -1405,12 +1425,12 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		ch.width = width
 		ch.height = height
 	}()
-	st := InputboxStyle
+	st := InputBoxStyle
 	if ch.Checked {
-		st = InputboxSelectStyle
+		st = InputBoxSelectStyle
 	}
 	if ch.focus {
-		st = InputboxFocusStyle
+		st = InputBoxFocusStyle
 	}
 	if len(ch.pair[0]) == 0 || len(ch.pair[1]) == 0 {
 		// default values
@@ -1463,20 +1483,20 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-type Inputbox struct {
+type InputBox struct {
 	Text
 }
 
 var Cursor rune = '_'
 
-func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
+func (in *InputBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		in.StoreSize(width, height)
 	}()
 	// set test property
-	st := InputboxStyle
+	st := InputBoxStyle
 	if in.focus {
-		st = InputboxFocusStyle
+		st = InputBoxFocusStyle
 	}
 	in.Text.style = &st
 	in.Text.addCursor = true
@@ -1497,7 +1517,7 @@ func (in *Inputbox) Render(width uint, dr Drawer) (height uint) {
 	return in.Text.Render(width, draw)
 }
 
-func (in *Inputbox) Event(ev tcell.Event) {
+func (in *InputBox) Event(ev tcell.Event) {
 	_, ok := in.onFocus(ev)
 	if ok {
 		in.Focus(true)
@@ -1545,10 +1565,10 @@ func (in *Inputbox) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type CollapsingHeader struct {
+	rootable
 	frame Frame
 	open  bool
 	cb    CheckBox
-	Root  Widget
 	init  bool
 }
 
@@ -1576,9 +1596,9 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 		c.init = true
 	}
 	if c.open {
-		c.frame.Root = c.Root
+		c.frame.root = c.root
 	} else {
-		c.frame.Root = nil
+		c.frame.root = nil
 	}
 	return c.frame.Render(width, dr)
 }
@@ -1683,6 +1703,9 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 				return
 			}
 			col += uint(l.nodes[i].from)
+			if width < col {
+				return
+			}
 			dr(row, col, st, r)
 		}
 		if l.nodes[i].w == nil {
@@ -1770,13 +1793,17 @@ func (l *ListH) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w, from: 0, to: 0})
 }
 
+func (l *ListH) Size() int {
+	return len(l.nodes)
+}
+
 func (l *ListH) Clear() {
 	l.nodes = nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Combobox example
+// ComboBox example
 //
 //	Name03
 //	+-| > | Choose: ----+
@@ -1787,14 +1814,14 @@ func (l *ListH) Clear() {
 //	| ( ) Name 04       |
 //	|                   |
 //	+-------------------+
-type Combobox struct {
+type ComboBox struct {
 	ch       CollapsingHeader
 	rg       RadioGroup
 	ts       []string
 	OnChange func()
 }
 
-func (c *Combobox) Add(ts ...string) {
+func (c *ComboBox) Add(ts ...string) {
 	for _, s := range ts {
 		c.ts = append(c.ts, s)
 		c.rg.Add(TextStatic(s))
@@ -1804,13 +1831,13 @@ func (c *Combobox) Add(ts ...string) {
 	}
 }
 
-func (c *Combobox) Clear() {
+func (c *ComboBox) Clear() {
 	c.rg.Clear()
 	c.ts = []string{}
 	c.OnChange = nil
 }
 
-func (c *Combobox) SetPos(pos uint) {
+func (c *ComboBox) SetPos(pos uint) {
 	c.rg.SetPos(pos)
 	if f := c.OnChange; f != nil {
 		f()
@@ -1820,19 +1847,19 @@ func (c *Combobox) SetPos(pos uint) {
 	}
 }
 
-func (c *Combobox) GetPos() uint {
+func (c *ComboBox) GetPos() uint {
 	return c.rg.GetPos()
 }
 
-func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
+func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		c.StoreSize(width, height)
 	}()
 	if width < 4 {
 		return 1
 	}
-	if c.ch.Root == nil {
-		c.ch.Root = &c.rg
+	if c.ch.root == nil {
+		c.ch.root = &c.rg
 		c.rg.OnChange = func() {
 			if len(c.ts) == 0 {
 				// empty list
@@ -1853,16 +1880,16 @@ func (c *Combobox) Render(width uint, dr Drawer) (height uint) {
 	return c.ch.Render(width, dr)
 }
 
-func (c *Combobox) StoreSize(width, height uint) {
+func (c *ComboBox) StoreSize(width, height uint) {
 	c.ch.StoreSize(width, height)
 }
 
-func (c Combobox) GetSize() (width, height uint) {
+func (c ComboBox) GetSize() (width, height uint) {
 	return c.ch.GetSize()
 }
 
-func (c *Combobox) Focus(focus bool) { c.ch.Focus(focus) }
-func (c *Combobox) Event(ev tcell.Event) {
+func (c *ComboBox) Focus(focus bool) { c.ch.Focus(focus) }
+func (c *ComboBox) Event(ev tcell.Event) {
 	c.ch.Event(ev)
 }
 
@@ -1905,12 +1932,12 @@ type Tabs struct {
 func (t *Tabs) Add(name string, root Widget) {
 	if len(t.header.nodes) == 0 {
 		t.Header = &t.header
-		t.Root = root
+		t.root = root
 	}
 	var btn Button
 	btn.SetText(name)
 	btn.OnClick = func() {
-		t.Root = root
+		t.root = root
 	}
 	btn.Compress()
 	t.header.Add(&btn)
@@ -2067,7 +2094,7 @@ func Demo() (demos []Widget) {
 		}
 	}()
 
-	scroll.Root = &list
+	scroll.SetRoot(&list)
 	{
 		var listh ListH
 		list.Add(&listh)
@@ -2077,7 +2104,7 @@ func Demo() (demos []Widget) {
 			listh.Add(&frame)
 			frame.Header = TextStatic("Checkbox test")
 			var list List
-			frame.Root = &list
+			frame.SetRoot(&list)
 			size := 5
 			option := make([]*bool, size)
 
@@ -2117,7 +2144,7 @@ func Demo() (demos []Widget) {
 			listh.Add(&frame)
 			frame.Header = TextStatic("Radio button test")
 			var list List
-			frame.Root = &list
+			frame.SetRoot(&list)
 
 			size := 5
 			var names []string
@@ -2140,16 +2167,16 @@ func Demo() (demos []Widget) {
 				l.Add(&c0)
 				l.Add(&c1)
 				l.Add(TextStatic("Text example:"))
-				var inp Inputbox
+				var inp InputBox
 				inp.SetText("123456789")
 				l.Add(&inp)
-				ch.Root = &l
+				ch.SetRoot(&l)
 				rg.Add(&ch)
 			}
 			{
 				var ch CollapsingHeader
 				ch.SetText("CollapsingHeader example")
-				ch.Root = TextStatic("Hello inside")
+				ch.SetRoot(TextStatic("Hello inside"))
 				rg.Add(&ch)
 			}
 			rg.OnChange = func() {
@@ -2172,7 +2199,7 @@ func Demo() (demos []Widget) {
 		list.Add(&frame)
 		frame.Header = TextStatic("Button test")
 		var list List
-		frame.Root = &list
+		frame.SetRoot(&list)
 
 		var counter uint
 		view := func() string {
@@ -2216,9 +2243,9 @@ func Demo() (demos []Widget) {
 	{
 		var frame CollapsingHeader
 		list.Add(&frame)
-		frame.SetText("Inputbox test")
+		frame.SetText("InputBox test")
 		var list List
-		frame.Root = &list
+		frame.SetRoot(&list)
 
 		var ibs = []struct {
 			name   string
@@ -2244,7 +2271,7 @@ func Demo() (demos []Widget) {
 		}
 		for i := range ibs {
 			list.Add(TextStatic(ibs[i].name))
-			var text Inputbox
+			var text InputBox
 			text.Filter(ibs[i].filter)
 			list.Add(&text)
 			ibs[i].text = text.GetText
@@ -2273,7 +2300,7 @@ func Demo() (demos []Widget) {
 		var il List
 		il.SetHeight(4)
 
-		ch.Root = &il
+		ch.SetRoot(&il)
 
 		var verylong string
 		for i := 0; i < 100; i++ {
@@ -2321,7 +2348,7 @@ func Demo() (demos []Widget) {
 		for i := 0; i < 10; i++ {
 			var list List
 			list.Add(TextStatic(fmt.Sprintf("Some text %02d", i)))
-			var text Inputbox
+			var text InputBox
 			if i%2 == 0 {
 				text.SetText(fmt.Sprintf("== %d ==", i))
 			}
@@ -2331,13 +2358,13 @@ func Demo() (demos []Widget) {
 		list.Add(&t)
 	}
 	{
-		var c Combobox
+		var c ComboBox
 		c.Add([]string{"A", "BB", "CCC"}...)
 		list.Add(&c)
 	}
 
 	var menu Menu
-	menu.Root = &scroll
+	menu.SetRoot(&scroll)
 
 	{
 		var btn Button
