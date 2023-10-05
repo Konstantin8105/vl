@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Konstantin8105/compare v0.0.0-20230404132328-f605c0d757de
-	github.com/Konstantin8105/tf v0.0.0-20231005120826-3017ed9a839d
+	github.com/Konstantin8105/tf v0.0.0-20231005135824-0862f8395510
 	github.com/gdamore/tcell/v2 v2.6.0
 )
 

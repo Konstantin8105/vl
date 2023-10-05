@@ -1,7 +1,7 @@
 github.com/Konstantin8105/compare v0.0.0-20230404132328-f605c0d757de h1:0nMcmCvcjJke50WgghlksdphJTcTLghcel+O2ElX68w=
 github.com/Konstantin8105/compare v0.0.0-20230404132328-f605c0d757de/go.mod h1:XGSFdvzoOETquMtKC1+e/pjbwq7a2Gp1vv4G2HJxRPA=
-github.com/Konstantin8105/tf v0.0.0-20231005120826-3017ed9a839d h1:gCqNNEySVk5b1+5nlHckwbwlRYZbyy27uo6b0czJehQ=
-github.com/Konstantin8105/tf v0.0.0-20231005120826-3017ed9a839d/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
+github.com/Konstantin8105/tf v0.0.0-20231005135824-0862f8395510 h1:yqOvoc4C1ZC47maZUkGZZo3vd0gnlmjPiXKogj+wPRU=
+github.com/Konstantin8105/tf v0.0.0-20231005135824-0862f8395510/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
 github.com/gdamore/encoding v1.0.0 h1:+7OoQ1Bc6eTm5niUzBa0Ctsh6JbMW6Ra+YNuAtDBdko=
 github.com/gdamore/encoding v1.0.0/go.mod h1:alR0ol34c49FCSBLjhosxzcPHQbf2trDkoo5dl+VrEg=
 github.com/gdamore/tcell/v2 v2.6.0 h1:OKbluoP9VYmJwZwq/iLb4BxwKcwGthaa1YNBJIyCySg=
