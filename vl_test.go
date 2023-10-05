@@ -310,6 +310,14 @@ func TestRun(t *testing.T) {
 // Benchmark/Size020-4         	   22135	     51894 ns/op	    2080 B/op	      46 allocs/op
 // Benchmark/Size040-4         	   19011	     62061 ns/op	    2080 B/op	      46 allocs/op
 // Benchmark/Size080-4         	   14752	     88859 ns/op	    2082 B/op	      46 allocs/op
+//
+// Benchmark/Size020-4         	   16173	     76793 ns/op	    2145 B/op	      47 allocs/op
+// Benchmark/Size040-4         	   13602	     87016 ns/op	    2145 B/op	      47 allocs/op
+// Benchmark/Size080-4         	    9872	    119570 ns/op	    2145 B/op	      47 allocs/op
+//
+// Benchmark/Size020-4         	   18955	     63914 ns/op	    2145 B/op	      47 allocs/op
+// Benchmark/Size040-4         	   15909	     74452 ns/op	    2145 B/op	      47 allocs/op
+// Benchmark/Size080-4         	   10000	    108412 ns/op	    2146 B/op	      47 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
@@ -576,6 +584,7 @@ func TestWidget(t *testing.T) {
 					t.Logf("not clicked")
 				}
 				for i := 0; i < 2; i++ {
+					fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, x, y)
 					click := tcell.NewEventMouse(
 						int(x), int(y),
 						tcell.Button1, tcell.ModNone)
@@ -588,6 +597,7 @@ func TestWidget(t *testing.T) {
 
 				// resize
 				{
+					fmt.Fprintf(&buf, "Size more\n")
 					width += 4
 					height += 4
 					screen.SetHeight(size)
@@ -595,6 +605,7 @@ func TestWidget(t *testing.T) {
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 				}
 				{
+					fmt.Fprintf(&buf, "Size less\n")
 					width -= 4
 					height -= 4
 					screen.SetHeight(size)

@@ -7,6 +7,7 @@
 000000007|    Mod| width:000000007
 rows  =   7
 width =   7
+Click00 1, 0
 000000001|[v] Ins| width:000000007
 000000002|    tea| width:000000007
 000000003|    d, | width:000000007
@@ -16,6 +17,7 @@ width =   7
 000000007|    Mod| width:000000007
 rows  =   7
 width =   7
+Click01 1, 0
 000000001|[ ] Ins| width:000000007
 000000002|    tea| width:000000007
 000000003|    d, | width:000000007
@@ -25,6 +27,7 @@ width =   7
 000000007|    Mod| width:000000007
 rows  =   7
 width =   7
+Size more
 000000001|[ ] Instead| width:000000011
 000000002|    , they | width:000000011
 000000003|    use Mod| width:000000011
@@ -34,6 +37,7 @@ width =   7
 000000007|    that co| width:000000011
 rows  =   7
 width =  11
+Size less
 000000001|[ ] In| width:000000006
 000000002|    te| width:000000006
 000000003|    d,| width:000000006

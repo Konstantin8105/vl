@@ -334,42 +334,38 @@ var DefaultMaxTextLines uint = 5
 
 func TextStatic(str string) *Text {
 	t := new(Text)
-	t.content.Text = []rune(str)
-	t.content.NoUpdate = false
+	t.content.SetText([]rune(str))
 	t.Compress()
 	return t
 }
 
 // SetMaxLines set maximal visible lines of text
 func (t *Text) SetMaxLines(limit uint) {
-	t.content.NoUpdate = false
 	t.maxLines = limit
 }
 
 // SetLinesLimit set minimal visible lines of text
 func (t *Text) SetLinesLimit(limit uint) {
-	t.content.NoUpdate = false
 	t.content.SetLinesLimit(limit)
 }
 
 // SetText set to new widget text
 func (t *Text) SetText(str string) {
-	t.content.Text = []rune(str)
-	t.content.NoUpdate = false
+	t.content.SetText([]rune(str))
 }
 
 // GetText return widget text
 func (t *Text) GetText() string {
-	return string(t.content.Text)
+	return string(t.content.GetText())
 }
 
 func (t *Text) Compress() {
-	t.compress = true
-	t.content.NoUpdate = false
+	if !t.compress {
+		t.compress = true
+	}
 }
 
 func (t *Text) Filter(f func(r rune) (insert bool)) {
-	t.content.NoUpdate = false
 	t.content.Filter = f
 }
 
@@ -384,9 +380,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if t.style == nil {
 		t.style = &TextStyle
 	}
-	if !t.content.NoUpdate {
-		t.content.SetWidth(width + 1)
-	}
+	t.content.SetWidth(width + 1)
 	var cur func(row, col uint) = nil // hide cursor for not-focus inputbox
 	if t.focus && t.addCursor {
 		cur = func(row, col uint) {
