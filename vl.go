@@ -1255,15 +1255,17 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	f.offsetHeader.col = 2
 	// draw root widget
 	if f.root != nil {
-		_ = f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
-			func(row, col uint, s tcell.Style, r rune) {
-				// create empty background for menu
-				dr(row, col, s, r)
-			},
-			f.offsetRoot.row, f.offsetRoot.col,
-			0, maxSize,
-			0, width-2*f.offsetRoot.col+1,
-		))
+		// TODO create empty cell at background
+		//
+		// _ = f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
+		// 	func(row, col uint, s tcell.Style, r rune) {
+		// 		// create empty background for menu
+		// 		dr(row, col, s, r)
+		// 	},
+		// 	f.offsetRoot.row, f.offsetRoot.col,
+		// 	0, maxSize,
+		// 	0, width-2*f.offsetRoot.col+1,
+		// ))
 		h := f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
 			dr,
 			f.offsetRoot.row, f.offsetRoot.col,
