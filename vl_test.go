@@ -617,10 +617,68 @@ func TestWidget(t *testing.T) {
 				if width < 4 {
 					return
 				}
-				// fmt.Println(buf.String())
 				filename := filepath.Join(testdata, name)
 				compare.Test(t, filename, buf.Bytes())
 			})
+		}
+	}
+}
+
+func TestMenuList(t *testing.T) {
+	txts := [][]string{
+		[]string{},
+		[]string{"One"},
+		[]string{"One", "Two"},
+		[]string{"One", "Long long text", "Tree"},
+		[]string{"Long long text 1", "Long long text 2"},
+	}
+	{
+		var ls []string
+		for i := 0; i < 10; i++ {
+			ls = append(ls, fmt.Sprintf("Long long text %d", i))
+		}
+		txts = append(txts, ls)
+	}
+
+	var screen Screen
+	for _, col := range []uint{5, 10, 20, 25} {
+		for it := range txts {
+			submenu := Menu{
+				isSubMenu: true,
+				offset: Offset{
+					row: 2,
+					col: col,
+				},
+			}
+			for k, t := range txts[it] {
+				if k%2 == 0 {
+					var btn Button
+					btn.SetText(t)
+					submenu.Add(&btn)
+				} else {
+					submenu.Add(TextStatic(t))
+				}
+			}
+			for _, size := range sizes {
+				name := fmt.Sprintf("MenuList-%02d-%02d-COL%02d", it, size, col)
+				t.Run(name, func(t *testing.T) {
+					screen.SetRoot(&submenu)
+					screen.SetHeight(size)
+
+					cells := new([][]Cell)
+					var buf bytes.Buffer
+					width := size
+					screen.GetContents(width, cells)
+					fmt.Fprintf(&buf, "%s", Convert(*cells))
+
+					// testing
+					if size < 4 {
+						return
+					}
+					filename := filepath.Join(testdata, name)
+					compare.Test(t, filename, buf.Bytes())
+				})
+			}
 		}
 	}
 }

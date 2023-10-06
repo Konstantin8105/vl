@@ -799,18 +799,32 @@ func (l *List) SetHeight(hmax uint) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Example of menu line:
+// Menu line example:
 // [ File ] [ Edit ] [ Select ] [ Groups ] [ Help ]
 //
 // Elements for submenu:
-//	* Button
-//	* Checkbox
-//	* RadioGroup
-
+//   - Button
+//   - Checkbox
+//   - RadioGroup
 type Menu struct {
 	containerVerticalFix
 	rootable
+
 	header ListH
+
+	scroll Scroll
+	frame  Frame
+	list   List
+
+	subs      []*submenu
+	isSubMenu bool
+	offset    Offset
+}
+
+type submenu struct {
+	menu         *Menu
+	readyForOpen bool
+	opened       bool
 }
 
 func (menu *Menu) SetHeight(hmax uint) {
@@ -827,7 +841,6 @@ func (menu *Menu) Add(nodes ...interface {
 	Compressable
 }) {
 	for i := range nodes {
-		nodes[i].Compress()
 		if c, ok := nodes[i].(interface {
 			SetMaxLines(limit uint)
 			SetLinesLimit(limit uint)
@@ -835,26 +848,87 @@ func (menu *Menu) Add(nodes ...interface {
 			c.SetMaxLines(1)
 			c.SetLinesLimit(1)
 		}
+		nodes[i].Compress()
+		menu.list.Add(nodes[i])
 		menu.header.Add(nodes[i])
 	}
 }
+
+func (menu *Menu) AddMenu(name string, sub Menu) {
+	var data submenu
+	data.menu = &sub
+	data.menu.isSubMenu = true
+	menu.subs = append(menu.subs, &data)
+	var btn Button
+	btn.SetText(name)
+	btn.OnClick = func() {
+		if data.menu == nil {
+			return
+		}
+		data.readyForOpen = true
+	}
+	menu.Add(&btn)
+}
+
+var SubMenuWidth uint = 20
 
 func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		menu.StoreSize(width, height)
 	}()
-	menu.header.Compress()
-	h := menu.header.Render(width, dr)
-	droot := func(row, col uint, s tcell.Style, r rune) {
-		if menu.hmax < row && menu.addlimit {
+	if menu.isSubMenu {
+		menu.scroll.SetRoot(&menu.list)
+		menu.frame.SetRoot(&menu.scroll)
+		// menu.frame.SetHeight(23) // TODO
+		// menu.list.Compress()
+		droot := func(row, col uint, s tcell.Style, r rune) {
+			dr(row+menu.offset.row, col+menu.offset.col, s, r)
+		}
+		var w uint
+		if menu.offset.col+SubMenuWidth < width {
+			w = SubMenuWidth
+		} else {
+			if menu.offset.col < width {
+				w = width - menu.offset.col
+			}
+		}
+		if w < 2 {
 			return
 		}
-		dr(row+h, col, s, r)
+		menu.frame.Render(w, droot)
+	} else {
+		menu.header.Compress()
+		h := menu.header.Render(width, dr)
+		droot := func(row, col uint, s tcell.Style, r rune) {
+			if menu.hmax < row && menu.addlimit {
+				return
+			}
+			dr(row+h, col, s, r)
+		}
+		if menu.root != nil {
+			height = menu.root.Render(width, droot)
+		}
+		height += h // for menu
+		// render menu only after render Root
+		for _, m := range menu.subs {
+			if m.menu == nil {
+				continue
+			}
+			if !m.opened {
+				continue
+			}
+			droot := func(row, col uint, s tcell.Style, r rune) {
+				//	if menu.hmax < row && menu.addlimit {
+				//		return
+				//	}
+				//
+				// dr(row+h, col, s, r)
+				dr(m.menu.offset.row+row, m.menu.offset.col+col, s, r)
+			}
+			m.menu.Render(width-m.menu.offset.col, droot)
+			// TODO render submenu
+		}
 	}
-	if menu.root != nil {
-		height = menu.root.Render(width, droot)
-	}
-	height += h // for menu
 	return
 }
 
@@ -867,6 +941,49 @@ func (menu *Menu) Event(ev tcell.Event) {
 		return
 	}
 	{
+		// submenu
+		found := false
+		for _, m := range menu.subs {
+			if m.menu == nil {
+				continue
+			}
+			if !m.opened {
+				continue
+			}
+			switch ev := ev.(type) {
+			case *tcell.EventMouse:
+				col, row := ev.Position()
+				col -= int(m.menu.offset.col)
+				row -= int(m.menu.offset.row)
+				if col < 0 {
+					break
+				}
+				if row < 0 {
+					break
+				}
+				w, h := m.menu.frame.GetSize()
+				// debugs = append(debugs, fmt.Sprintln(w, col))
+				// debugs = append(debugs, fmt.Sprintln(h, row, m.menu.offset))
+				if int(w) < col {
+					break
+				}
+				if int(h) < row {
+					break
+				}
+				found = true
+				m.menu.frame.Event(tcell.NewEventMouse(
+					col, row,
+					ev.Buttons(),
+					ev.Modifiers()))
+			}
+		}
+		if !found {
+			menu.resetSubmenu()
+		} else {
+			return
+		}
+	}
+	{
 		// menu
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
@@ -876,10 +993,34 @@ func (menu *Menu) Event(ev tcell.Event) {
 					col, row,
 					ev.Buttons(),
 					ev.Modifiers()))
+				// 				found := false
+				for im, m := range menu.subs {
+					if m.menu == nil {
+						continue
+					}
+					if !m.readyForOpen {
+						continue
+					}
+					// 					found = true
+					// store submenu coordinates
+					m.readyForOpen = false
+					m.opened = true
+					if 0 <= col && 0 <= row {
+						menu.subs[im].menu.offset = Offset{
+							col: uint(col),
+							row: uint(row),
+						}
+						// debugs = append(debugs, fmt.Sprintln(menu.subs[im].menu.offset))
+					}
+				}
+				// 				if !found {
+				// 					menu.resetSubmenu()
+				// 				}
 			}
 
 		case *tcell.EventKey:
-			menu.header.Event(ev)
+			menu.resetSubmenu()
+			// menu.header.Event(ev)
 		}
 	}
 	if menu.root != nil {
@@ -904,64 +1045,15 @@ func (menu *Menu) Event(ev tcell.Event) {
 	}
 }
 
-// func (m *Menu) AddMenu(menu *Menu)               {
-// 	m.nodes = append(m.nodes, menu)
-// }
-
-// type MenuItem struct {
-// 	container
-// 	w Widget
-// 	a func()
-// }
-//
-// func (m *MenuItem) Create(name string, action func()) {
-// 	m.w = TextStatic(name)
-// 	m.a = action
-// }
-//
-// func (m *MenuItem) Render(width uint, dr Drawer) (height uint) {
-// 	defer func() {
-// 		m.width = width
-// 		m.height = height
-// 	}()
-// 	if width < 6 {
-// 		return 1
-// 	}
-// 	st := InputBoxStyle
-// 	if m.focus {
-// 		st = InputBoxFocusStyle
-// 	} else {
-// 		st = InputBoxStyle
-// 	}
-// 	PrintDrawer(0, 0, st, dr, []rune(" "))
-// 	const banner = 1
-// 	draw := func(row, col uint, s tcell.Style, r rune) {
-// 		if width < col {
-// 			panic("Text width")
-// 		}
-// 		dr(row, col+banner, TextStyle, r)
-// 	}
-// 	if m.w != nil {
-// 		height = m.w.Render(width-banner, draw)
-// 	}
-// 	if height < 2 {
-// 		height = 1
-// 	}
-// 	return
-//
-// }
-//
-// func (m *MenuItem) Event(ev tcell.Event) {
-// 	mouse, ok := m.onFocus(ev)
-// 	if ok {
-// 		m.Focus(true)
-// 	} else {
-// 		m.Focus(false)
-// 	}
-// 	if mouse[0] && m.a != nil {
-// 		m.a()
-// 	}
-// }
+func (menu *Menu) resetSubmenu() {
+	for _, m := range menu.subs {
+		if m.menu == nil {
+			continue
+		}
+		m.readyForOpen = false
+		m.opened = false
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2352,9 +2444,21 @@ func Demo() (demos []Widget) {
 		menu.Add(&btn)
 	}
 	{
-		var btn Button
-		btn.SetText("Edit")
-		menu.Add(&btn)
+		var sub Menu
+		for i := 0; i < 10; i++ {
+			name := fmt.Sprintf("Text%02d", i)
+			if i%3 == 0 {
+				var btn Button
+				btn.SetText(name)
+				btn.OnClick = func(){
+					debugs = append(debugs, fmt.Sprintln("Click:" + name))
+				}
+				sub.Add(&btn)
+			} else {
+				sub.Add(TextStatic(name))
+			}
+		}
+		menu.AddMenu("Edit", sub)
 	}
 	{
 		var cb CheckBox
