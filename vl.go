@@ -812,9 +812,9 @@ type Menu struct {
 
 	header ListH
 
-	scroll Scroll
-	frame  Frame
-	list   List
+	// 	scroll Scroll
+	frame Frame
+	list  List
 
 	subs      []*submenu
 	isSubMenu bool
@@ -877,8 +877,8 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		menu.StoreSize(width, height)
 	}()
 	if menu.isSubMenu {
-		menu.scroll.SetRoot(&menu.list)
-		menu.frame.SetRoot(&menu.scroll)
+		// menu.scroll.SetRoot(&menu.list)
+		menu.frame.SetRoot(&menu.list) // scroll)
 		// menu.frame.SetHeight(23) // TODO
 		// menu.list.Compress()
 		droot := func(row, col uint, s tcell.Style, r rune) {
@@ -923,7 +923,8 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 				//	}
 				//
 				// dr(row+h, col, s, r)
-				dr(m.menu.offset.row+row, m.menu.offset.col+col, s, r)
+				// dr(m.menu.offset.row+row, m.menu.offset.col+col, s, r)
+				dr(row, col, s, r)
 			}
 			m.menu.Render(width-m.menu.offset.col, droot)
 			// TODO render submenu
@@ -1008,7 +1009,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 					if 0 <= col && 0 <= row {
 						menu.subs[im].menu.offset = Offset{
 							col: uint(col),
-							row: uint(row),
+							row: uint(row) + 1, // TODO step for submenu
 						}
 						// debugs = append(debugs, fmt.Sprintln(menu.subs[im].menu.offset))
 					}
@@ -1254,6 +1255,15 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	f.offsetHeader.col = 2
 	// draw root widget
 	if f.root != nil {
+		_ = f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
+			func(row, col uint, s tcell.Style, r rune) {
+				// create empty background for menu
+				dr(row, col, s, r)
+			},
+			f.offsetRoot.row, f.offsetRoot.col,
+			0, maxSize,
+			0, width-2*f.offsetRoot.col+1,
+		))
 		h := f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
 			dr,
 			f.offsetRoot.row, f.offsetRoot.col,
@@ -2450,8 +2460,8 @@ func Demo() (demos []Widget) {
 			if i%3 == 0 {
 				var btn Button
 				btn.SetText(name)
-				btn.OnClick = func(){
-					debugs = append(debugs, fmt.Sprintln("Click:" + name))
+				btn.OnClick = func() {
+					debugs = append(debugs, fmt.Sprintln("Click:"+name))
 				}
 				sub.Add(&btn)
 			} else {
