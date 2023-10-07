@@ -1081,11 +1081,11 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	// default style
-	st := ButtonStyle
+	st := &ButtonStyle
 	if b.focus {
-		st = ButtonFocusStyle
+		st = &ButtonFocusStyle
 	}
-	b.Text.style = &st
+	b.Text.style = st
 	// constant
 	const buttonOffset = 2
 	// 	if width < 2*buttonOffset {
@@ -1100,10 +1100,10 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	width, height = b.GetSize()
 	width += 2 * buttonOffset
 	for row := 0; row < int(height); row++ {
-		dr(uint(row), 0, st, '[')
-		dr(uint(row), 1, st, ' ')
-		dr(uint(row), width-2, st, ' ')
-		dr(uint(row), width-1, st, ']')
+		dr(uint(row), 0, *st, '[')
+		dr(uint(row), 1, *st, ' ')
+		dr(uint(row), width-2, *st, ' ')
+		dr(uint(row), width-1, *st, ']')
 	}
 	// DEBUG : for w := 0; w <= int(width); w++ {
 	// DEBUG : 	dr(0, uint(w), st, '$')
@@ -1143,6 +1143,8 @@ type Frame struct {
 	Header       Widget
 	offsetHeader Offset
 	offsetRoot   Offset
+
+	cleaned []bool
 }
 
 func (f *Frame) Focus(focus bool) {
@@ -1161,7 +1163,11 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.StoreSize(width, height)
 	}()
-	cleaned := make([]bool, 5)
+	{ // default cleaner
+		for i := range f.cleaned {
+			f.cleaned[i] = false
+		}
+	}
 	dr := func(row, col uint, s tcell.Style, r rune) {
 		if maxSize <= row {
 			panic(fmt.Errorf("row is too big: %d", row))
@@ -1169,17 +1175,17 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		if maxSize <= col {
 			panic(fmt.Errorf("col is too big: %d", col))
 		}
-		if len(cleaned) <= int(row) {
-			cleaned = append(cleaned, make([]bool, int(row)-len(cleaned)+1)...)
+		if len(f.cleaned) <= int(row) {
+			f.cleaned = append(f.cleaned, make([]bool, int(row)-len(f.cleaned)+1)...)
 		}
 		for r := uint(0); r <= row; r++ {
-			if cleaned[r] {
+			if f.cleaned[r] {
 				continue
 			}
 			for w := uint(0); w < width; w++ {
 				drg(r, w, TextStyle, ' ')
 			}
-			cleaned[r] = true
+			f.cleaned[r] = true
 		}
 		if f.hmax < row && f.addlimit {
 			return
@@ -1531,12 +1537,12 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		ch.width = width
 		ch.height = height
 	}()
-	st := InputBoxStyle
+	st := &InputBoxStyle
 	if ch.Checked {
-		st = InputBoxSelectStyle
+		st = &InputBoxSelectStyle
 	}
 	if ch.focus {
-		st = InputBoxFocusStyle
+		st = &InputBoxFocusStyle
 	}
 	if len(ch.pair[0]) == 0 || len(ch.pair[1]) == 0 {
 		// default values
@@ -1548,10 +1554,10 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	}
 	var lenght uint = 0
 	if ch.Checked {
-		PrintDrawer(0, 0, st, dr, []rune(ch.pair[0]))
+		PrintDrawer(0, 0, *st, dr, []rune(ch.pair[0]))
 		lenght = uint(len(ch.pair[0]))
 	} else {
-		PrintDrawer(0, 0, st, dr, []rune(ch.pair[1]))
+		PrintDrawer(0, 0, *st, dr, []rune(ch.pair[1]))
 		lenght = uint(len(ch.pair[1]))
 	}
 	dr(0, lenght, TextStyle, ' ')
@@ -1600,11 +1606,11 @@ func (in *InputBox) Render(width uint, dr Drawer) (height uint) {
 		in.StoreSize(width, height)
 	}()
 	// set test property
-	st := InputBoxStyle
+	st := &InputBoxStyle
 	if in.focus {
-		st = InputBoxFocusStyle
+		st = &InputBoxFocusStyle
 	}
-	in.Text.style = &st
+	in.Text.style = st
 	in.Text.addCursor = true
 	return in.Text.Render(width, dr)
 }
@@ -2490,7 +2496,7 @@ func Demo() (demos []Widget) {
 					}
 					ss.Add(&btn)
 				}
-				sub.AddMenu("Submenu",ss)
+				sub.AddMenu("Submenu", ss)
 			}
 		}
 		menu.AddMenu("Edit", sub)

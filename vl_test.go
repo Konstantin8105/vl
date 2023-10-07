@@ -323,6 +323,28 @@ func TestRun(t *testing.T) {
 // Benchmark/Size040-8         	    6475	    210451 ns/op	    2681 B/op	      63 allocs/op
 // Benchmark/Size080-8         	    4423	    271537 ns/op	    2683 B/op	      63 allocs/op
 //
+// Benchmark/Size020-8         	    5998	    197053 ns/op	    2051 B/op	      45 allocs/op
+// Benchmark/Size040-8         	    5430	    207056 ns/op	    2052 B/op	      45 allocs/op
+// Benchmark/Size080-8         	    4108	    253947 ns/op	    2050 B/op	      45 allocs/op
+//
+// Benchmark/Size020-8         	    6180	    194175 ns/op	    2052 B/op	      45 allocs/op
+// Benchmark/Size040-8         	    4893	    206666 ns/op	    2053 B/op	      45 allocs/op
+// Benchmark/Size080-8         	    3670	    281945 ns/op	    2050 B/op	      45 allocs/op
+// Benchmark/Separato-8        	   23418	     54807 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Text-8            	   21466	     53051 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Scroll-8          	   22903	     52856 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/List-8            	   23420	     51074 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Menu-8            	   22417	     51086 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Button-8          	   22557	     54279 ns/op	      96 B/op	       2 allocs/op
+// Benchmark/Frame-8           	   19860	     58808 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/RadioGro-8        	   22983	     52854 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/CheckBox-8        	   21762	     53880 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/InputBox-8        	   21427	     53540 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Collapsi-8        	   19938	     60839 ns/op	      88 B/op	       3 allocs/op
+// Benchmark/ListH-8           	   22177	     51075 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ComboBox-8        	   19702	     59992 ns/op	      88 B/op	       3 allocs/op
+// Benchmark/Tabs-8            	   20982	     58993 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Tree-8            	   22326	     51231 ns/op	      40 B/op	       2 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
@@ -331,6 +353,21 @@ func Benchmark(b *testing.B) {
 		b.Run(fmt.Sprintf("Size%03d", size), func(b *testing.B) {
 			screen.SetHeight(size)
 			b.ResetTimer()
+			for n := 0; n < b.N; n++ {
+				_ = screen.Render(size, NilDrawer)
+			}
+		})
+	}
+	size := uint(100)
+	for _, w := range list() {
+		screen.SetHeight(size)
+		b.ResetTimer()
+		screen.SetRoot(w)
+		name := getName(w)
+		if 8 < len(name) {
+			name = name[:8]
+		}
+		b.Run(name, func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				_ = screen.Render(size, NilDrawer)
 			}
@@ -368,31 +405,33 @@ func TestAscii(t *testing.T) {
 	}
 }
 
+func list() []Widget {
+	return []Widget{
+		new(Separator),
+		new(Text),
+		new(Scroll),
+		new(List),
+		new(Menu),
+		new(Button),
+		new(Frame),
+		new(RadioGroup),
+		new(CheckBox),
+		new(InputBox),
+		new(CollapsingHeader),
+		new(ListH),
+		new(ComboBox),
+		new(Tabs),
+		new(Tree),
+	}
+}
+
+func getName(w Widget) string {
+	name := fmt.Sprintf("%T", w)
+	name = strings.ReplaceAll(name, "*vl.", "")
+	return name
+}
+
 func TestWidget(t *testing.T) {
-	list := func() []Widget {
-		return []Widget{
-			new(Separator),
-			new(Text),
-			new(Scroll),
-			new(List),
-			new(Menu),
-			new(Button),
-			new(Frame),
-			new(RadioGroup),
-			new(CheckBox),
-			new(InputBox),
-			new(CollapsingHeader),
-			new(ListH),
-			new(ComboBox),
-			new(Tabs),
-			new(Tree),
-		}
-	}
-	getName := func(w Widget) string {
-		name := fmt.Sprintf("%T", w)
-		name = strings.ReplaceAll(name, "*vl.", "")
-		return name
-	}
 	type tcase struct {
 		name string
 		w    Widget
