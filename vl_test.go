@@ -318,6 +318,11 @@ func TestRun(t *testing.T) {
 // Benchmark/Size020-4         	   18955	     63914 ns/op	    2145 B/op	      47 allocs/op
 // Benchmark/Size040-4         	   15909	     74452 ns/op	    2145 B/op	      47 allocs/op
 // Benchmark/Size080-4         	   10000	    108412 ns/op	    2146 B/op	      47 allocs/op
+//
+// Benchmark/Size020-8         	    6565	    207867 ns/op	    2810 B/op	      67 allocs/op
+// Benchmark/Size040-8         	    6475	    210451 ns/op	    2681 B/op	      63 allocs/op
+// Benchmark/Size080-8         	    4423	    271537 ns/op	    2683 B/op	      63 allocs/op
+//
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r, _ := roots[len(roots)-1].generate()
