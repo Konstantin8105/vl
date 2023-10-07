@@ -231,9 +231,9 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	// draw default spaces
-	var col, row uint
-	for col = 0; col < width; col++ {
-		for row = 0; row < screen.hmax; row++ {
+	// take a lot of resouses by performance
+	for col := uint(0); col < width; col++ {
+		for row := uint(0); row < screen.hmax; row++ {
 			dr(row, col, ScreenStyle, ' ')
 		}
 	}
