@@ -1020,7 +1020,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			// menu.header.Event(ev)
 		}
 	}
-	if menu.root != nil {
+	if menu.root != nil && !menu.isSubMenu {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()

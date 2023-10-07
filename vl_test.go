@@ -607,23 +607,8 @@ func TestWidget(t *testing.T) {
 				fmt.Fprintf(&buf, "%s", Convert(*cells))
 
 				// click on field
-				var x, y uint
-				var found bool
-				for x = 0; x < width; x++ {
-					for y = 0; y < height; y++ {
-						if (*cells)[x][y].S == ButtonStyle ||
-							(*cells)[x][y].S == InputBoxStyle {
-							found = true
-						}
-						if found {
-							break
-						}
-					}
-					if found {
-						break
-					}
-				}
-				if !found {
+				x, y, ok := findClick(*cells, width, height)
+				if !ok {
 					x, y = 1, 0
 					t.Logf("not clicked")
 				}
@@ -668,6 +653,21 @@ func TestWidget(t *testing.T) {
 	}
 }
 
+func findClick(cells [][]Cell, width, height uint) (x, y uint, found bool) {
+	for x = 0; x < width; x++ {
+		for y = 0; y < height; y++ {
+			if cells[x][y].S == ButtonStyle ||
+				cells[x][y].S == InputBoxStyle {
+				found = true
+			}
+			if found {
+				return
+			}
+		}
+	}
+	return
+}
+
 func TestMenuList(t *testing.T) {
 	txts := [][]string{
 		[]string{},
@@ -694,26 +694,45 @@ func TestMenuList(t *testing.T) {
 					col: col,
 				},
 			}
+			submenu.Focus(true)
 			for k, t := range txts[it] {
 				if k%2 == 0 {
+					var sub Menu
 					var btn Button
 					btn.SetText(t)
-					submenu.Add(&btn)
+					sub.Add(&btn)
+					submenu.AddMenu(t, sub)
 				} else {
 					submenu.Add(TextStatic(t))
 				}
 			}
 			for _, size := range sizes {
+				width, height := size, size
 				name := fmt.Sprintf("MenuList-%02d-%02d-COL%02d", it, size, col)
 				t.Run(name, func(t *testing.T) {
 					screen.SetRoot(&submenu)
-					screen.SetHeight(size)
+					screen.SetHeight(height)
 
 					cells := new([][]Cell)
 					var buf bytes.Buffer
-					width := size
 					screen.GetContents(width, cells)
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
+
+					// click on field
+					x, y, ok := findClick(*cells, width, height)
+					if !ok {
+						x, y = 1, 0
+						t.Logf("not clicked")
+					}
+					for i := 0; i < 2; i++ {
+						fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, x, y)
+						click := tcell.NewEventMouse(
+							int(x), int(y),
+							tcell.Button1, tcell.ModNone)
+						screen.Event(click)
+						screen.GetContents(width, cells)
+						fmt.Fprintf(&buf, "%s", Convert(*cells))
+					}
 
 					// testing
 					if size < 4 {
