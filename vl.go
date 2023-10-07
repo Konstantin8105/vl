@@ -1011,12 +1011,8 @@ func (menu *Menu) Event(ev tcell.Event) {
 							col: uint(col),
 							row: uint(row) + 1, // TODO step for submenu
 						}
-						// debugs = append(debugs, fmt.Sprintln(menu.subs[im].menu.offset))
 					}
 				}
-				// 				if !found {
-				// 					menu.resetSubmenu()
-				// 				}
 			}
 
 		case *tcell.EventKey:
@@ -1165,12 +1161,25 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.StoreSize(width, height)
 	}()
+	cleaned := make([]bool, 5)
 	dr := func(row, col uint, s tcell.Style, r rune) {
 		if maxSize <= row {
 			panic(fmt.Errorf("row is too big: %d", row))
 		}
 		if maxSize <= col {
 			panic(fmt.Errorf("col is too big: %d", col))
+		}
+		if len(cleaned) <= int(row) {
+			cleaned = append(cleaned, make([]bool, int(row)-len(cleaned)+1)...)
+		}
+		for r := uint(0); r <= row; r++ {
+			if cleaned[r] {
+				continue
+			}
+			for w := uint(0); w < width; w++ {
+				drg(r, w, TextStyle, ' ')
+			}
+			cleaned[r] = true
 		}
 		if f.hmax < row && f.addlimit {
 			return
@@ -1191,6 +1200,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			}
 		}
 	}
+	// draw border
 	drawRow(0)
 	defer func() {
 		drawRow(height)
@@ -2457,7 +2467,7 @@ func Demo() (demos []Widget) {
 	}
 	{
 		var sub Menu
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 30; i++ {
 			name := fmt.Sprintf("Text%02d", i)
 			if i%3 == 0 {
 				var btn Button
@@ -2468,6 +2478,19 @@ func Demo() (demos []Widget) {
 				sub.Add(&btn)
 			} else {
 				sub.Add(TextStatic(name))
+			}
+			if i%4 == 0 {
+				name += "Sub"
+				var ss Menu
+				for k := 0; k < 5; k++ {
+					var btn Button
+					btn.SetText(name)
+					btn.OnClick = func() {
+						debugs = append(debugs, fmt.Sprintln("Click Sub:"+name))
+					}
+					ss.Add(&btn)
+				}
+				sub.AddMenu("Submenu",ss)
 			}
 		}
 		menu.AddMenu("Edit", sub)
