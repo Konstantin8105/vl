@@ -425,6 +425,15 @@ func list() []Widget {
 	}
 }
 
+// func TestPanic(t *testing.T) {
+// 	for _, w := range list() {
+// 		t.Run(getName(w), func(t *testing.T) {
+// 			w.Render(10, func(row, col uint, s tcell.Style, r rune) {
+// 			})
+// 		})
+// 	}
+// }
+
 func getName(w Widget) string {
 	name := fmt.Sprintf("%T", w)
 	name = strings.ReplaceAll(name, "*vl.", "")
