@@ -693,11 +693,12 @@ func TestMenuList(t *testing.T) {
 		txts = append(txts, ls)
 	}
 
+	var main Menu
 	var screen Screen
 	for _, col := range []uint{5, 10, 20, 25} {
 		for it := range txts {
 			submenu := Menu{
-				isSubMenu: true,
+				parent: &main,
 				offset: Offset{
 					row: 2,
 					col: col,

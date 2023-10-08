@@ -817,7 +817,6 @@ type Menu struct {
 	frame Frame
 	list  List
 
-	isSubMenu    bool
 	readyForOpen bool
 	opened       bool
 	offset       Offset
@@ -867,7 +866,6 @@ func (menu *Menu) AddText(name string) {
 func (menu *Menu) AddMenu(name string, sub Menu) {
 	// prepare menu
 	sub.parent = menu
-	sub.isSubMenu = true
 	menu.subs = append(menu.subs, &sub)
 	pos := len(menu.subs) - 1
 	// debugs = append(debugs, fmt.Sprintf(">>>> %s %p %p\n", name, data.menu, sub.parent))
@@ -892,7 +890,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		menu.StoreSize(width, height)
 	}()
 	// debugs = append(debugs, fmt.Sprintf("Menu: %p %v %#v ", menu, menu.opened, menu.parent))
-	if menu.isSubMenu && menu.opened {
+	if menu.opened && menu.parent != nil {
 		// menu.scroll.SetRoot(&menu.list)
 		menu.frame.SetRoot(&menu.list) // scroll)
 		// menu.frame.SetHeight(23) // TODO
@@ -913,7 +911,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		}
 		menu.frame.Render(w, droot)
 	}
-	if !menu.isSubMenu {
+	if menu.parent == nil {
 		menu.header.Compress()
 		h := menu.header.Render(width, dr)
 		droot := func(row, col uint, s tcell.Style, r rune) {
@@ -1034,7 +1032,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			// menu.header.Event(ev)
 		}
 	}
-	if menu.root != nil && !menu.isSubMenu {
+	if menu.root != nil && menu.parent == nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
