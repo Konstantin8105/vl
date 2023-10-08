@@ -849,7 +849,7 @@ func (menu *Menu) AddButton(name string, OnClick func()) {
 			f()
 		}
 		menu.resetSubmenu()
-		// debugs = append(debugs, fmt.Sprintln("> resetSubmenu button"))
+		debugs = append(debugs, fmt.Sprintln(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> resetSubmenu button"))
 	}
 	// adding
 	menu.list.Add(&btn)
@@ -868,16 +868,16 @@ func (menu *Menu) AddMenu(name string, sub Menu) {
 	// prepare menu
 	sub.parent = menu
 	menu.subs = append(menu.subs, &sub)
-	pos := len(menu.subs) - 1
 	// debugs = append(debugs, fmt.Sprintf(">>>> %s %p %p\n", name, data.menu, sub.parent))
 	// prepare element
 	var btn Button
 	btn.SetMaxLines(1)
 	btn.SetLinesLimit(1)
-	btn.SetText("< " + name) // TODO
+	btn.SetText(name)
 	btn.Compress()
 	btn.OnClick = func() {
-		menu.subs[pos].readyForOpen = true
+		sub.readyForOpen = true
+		debugs = append(debugs, fmt.Sprintf(">>>> %s %v\n", name, sub.readyForOpen))
 	}
 	// adding
 	menu.list.Add(&btn)
@@ -911,12 +911,6 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			return
 		}
 		menu.frame.Render(w, droot)
-		for _, m := range menu.subs {
-			if m == nil {
-				continue
-			}
-			m.Render(width, dr)
-		}
 	}
 	if menu.parent == nil {
 		menu.header.Compress()
@@ -931,123 +925,185 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			height = menu.root.Render(width, droot)
 		}
 		height += h // for menu
-		// render menu only after render Root
-		for _, m := range menu.subs {
-			if m == nil {
-				continue
-			}
-			if !m.opened {
-				continue
-			}
-			// debugs = append(debugs, fmt.Sprintf("Render : %p with parent %p", m, m.menu.parent))
-			m.Render(width-m.offset.col, dr)
+	}
+	// render menu only after render Root
+	for _, m := range menu.subs {
+		if m == nil {
+			continue
 		}
+		if !m.opened {
+			continue
+		}
+		// debugs = append(debugs, fmt.Sprintf("Render : %p with parent %p", m, m.menu.parent))
+		m.Render(width-m.offset.col, dr)
 	}
 	return
 }
 
 func (menu *Menu) Event(ev tcell.Event) {
-	if menu.parent != nil {
-		// recursive event
-		menu.parent.Event(ev)
-	}
-	_, ok := menu.onFocus(ev)
-	if ok {
-		menu.Focus(true)
-	}
-	if !menu.focus {
-		return
-	}
-	{
-		// submenu
-		found := false
-		for _, m := range menu.subs {
-			if m == nil {
-				continue
-			}
-			if !m.opened {
-				continue
-			}
-			switch ev := ev.(type) {
-			case *tcell.EventMouse:
-				col, row := ev.Position()
-				col -= int(m.offset.col)
-				row -= int(m.offset.row)
-				if col < 0 {
-					break
-				}
-				if row < 0 {
-					break
-				}
-				w, h := m.frame.GetSize()
-				if int(w) < col {
-					break
-				}
-				if int(h) < row {
-					break
-				}
-				found = true
-				m.frame.Event(tcell.NewEventMouse(
-					col, row,
-					ev.Buttons(),
-					ev.Modifiers()))
-			}
-		}
-		if !found {
-			menu.resetSubmenu()
-		} else {
-			return
-		}
-	}
-	if menu.parent == nil {
-		// menu
+	// 	_, ok := menu.onFocus(ev)
+	// 	if ok {
+	// 		menu.Focus(true)
+	// 	}
+	// 	if !menu.focus {
+	// 		return
+	// 	}
+
+	debugs = append(debugs, fmt.Sprintln("// EVENT /////////////////////////////////////////////////////////"))
+	defer func() {
+	debugs = append(debugs, fmt.Sprintln("// EVENT END /////////////////////////////////////////////////////"))
+}()
+	////////////////////////
+
+	debugs = append(debugs, fmt.Sprintln("STEP 3"))
+
+	var found bool
+	{ // if !found { // && menu.parent == nil {
+		debugs = append(debugs, fmt.Sprintln("Main menu"))
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			if row < int(menu.height) {
-				menu.header.Event(tcell.NewEventMouse(
-					col, row,
-					ev.Buttons(),
-					ev.Modifiers()))
-				// 				found := false
-				for _, m := range menu.subs {
-					if m == nil {
-						continue
-					}
-					if !m.readyForOpen {
-						continue
-					}
-					if m.opened {
-						continue
-					}
-					// 					found = true
-					// store submenu coordinates
-					m.readyForOpen = false
-					if 0 <= col && 0 <= row {
-						m.opened = true
-						m.offset = Offset{
-							col: uint(col),
-							row: uint(row) + 1, // TODO step for submenu
-						}
-					}
+			debugs = append(debugs, fmt.Sprintln("Main menu:::: ", col, row, "::::", menu.header.height))
+			if int(menu.header.height) < row {
+				break // return
+			}
+			// debugs = append(debugs, fmt.Sprintln("Main menu: ", col, row))
+			// 			row -= int(menu.header.height)
+			// 			if row < 0 {
+			// 				return
+			// 			}
+			debugs = append(debugs, fmt.Sprintln("Main menu ---> to header"))
+			menu.header.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+			found = true
+
+			// case *tcell.EventKey:
+			// 	menu.root.Event(ev)
+		}
+	}
+
+	////////////////////////
+
+	var isInside func(menu *Menu) (found bool)
+	isInside = func(menu *Menu) (found bool) {
+		defer func() {
+			// debugs = append(debugs, fmt.Sprintf("isInside: %p %v", menu, found))
+			menu.Focus(found)
+		}()
+		if menu == nil {
+			return
+		}
+		if !menu.opened {
+			return
+		}
+		for i := range menu.subs {
+			if found = isInside(menu.subs[i]); found {
+				menu.subs[i].Focus(true)
+				return
+			}
+		}
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			col -= int(menu.offset.col)
+			row -= int(menu.offset.row)
+			if col < 0 {
+				break
+			}
+			if row < 0 {
+				break
+			}
+			w, h := menu.frame.GetSize()
+			if int(w) < col {
+				break
+			}
+			if int(h) < row {
+				break
+			}
+			found = true
+			menu.frame.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+		}
+		if !found {
+			menu.opened = false
+		}
+		return
+	}
+	// 	found = isInside(menu)
+	for i := range menu.subs {
+		found = found || isInside(menu.subs[i])
+	}
+	if !found {
+		menu.resetSubmenu()
+	}
+	debugs = append(debugs, fmt.Sprintln("STEP 0 : Found = ", found))
+
+	////////////////////////
+
+	debugs = append(debugs, fmt.Sprintln("STEP 1"))
+	var readyForOpen func(menu *Menu)
+	readyForOpen = func(menu *Menu) {
+		// debugs = append(debugs, fmt.Sprintf("readyForOpen: %p BEGIN : %v", menu, menu.readyForOpen))
+		// defer func() {
+		// 	debugs = append(debugs, fmt.Sprintf("readyForOpen: %p END   : %v", menu, menu.readyForOpen))
+		// }()
+		if menu == nil {
+			return
+		}
+		// 		if !menu.opened && menu.parent != nil {
+		// 			return
+		// 		}
+		for i := range menu.subs {
+			readyForOpen(menu.subs[i])
+		}
+		// 		if menu.opened {
+		// 			return
+		// 		}
+		// debugs = append(debugs, fmt.Sprintf("readyForOpen: %p %v", menu, menu.readyForOpen))
+		if !menu.readyForOpen {
+			return
+		}
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			// store submenu coordinates
+			menu.readyForOpen = false
+			if 0 <= col && 0 <= row {
+				menu.opened = true
+				menu.offset = Offset{
+					col: uint(col),
+					row: uint(row), // TODO step for submenu
 				}
 			}
 
-		case *tcell.EventKey:
-			menu.resetSubmenu()
-			// menu.header.Event(ev)
+			// case *tcell.EventKey:
+			// 	menu.resetSubmenu()
+			// 	// menu.header.Event(ev)
 		}
 	}
-	if menu.root != nil && menu.parent == nil { // main menu
+	readyForOpen(menu)
+	for i := range menu.subs {
+		readyForOpen(menu.subs[i])
+	}
+
+	////////////////////////
+
+	debugs = append(debugs, fmt.Sprintln("STEP 2"))
+	if !found && menu.root != nil && menu.parent == nil { // main menu
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			if int(menu.height) < row {
-				return
+			if row < int(menu.header.height) {
+				break // return
 			}
 			row -= int(menu.header.height)
 			if row < 0 {
-				return
+				break
+				// return
 			}
 			menu.root.Event(tcell.NewEventMouse(
 				col, row,
@@ -1065,27 +1121,27 @@ func (menu *Menu) resetSubmenu() {
 		// recursive event
 		menu.parent.resetSubmenu()
 	}
-	// debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
-	// defer func() {
-	// 	var view func(m *Menu)
-	// 	view = func(m *Menu) {
-	// 		debugs = append(debugs, fmt.Sprintf("Menu:%p ---> parent:%p:::: %v", m, m.parent, m.opened))
-	// 		for i := range m.subs {
-	// 			debugs = append(debugs, fmt.Sprintf("i:%d %p parent:%p :::: %v",
-	// 				i, m.subs[i], m.subs[i].parent, m.subs[i].opened))
-	// 			view(m.subs[i])
-	// 		}
-	// 	}
-	// 	view(menu)
-	// }()
+	defer func() {
+		debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
+		var view func(m *Menu)
+		view = func(m *Menu) {
+			debugs = append(debugs, fmt.Sprintf("Menu:%p ---> parent:%p:::: %v", m, m.parent, m.opened))
+			for i := range m.subs {
+				debugs = append(debugs, fmt.Sprintf("i:%d %p parent:%p :::: %v",
+					i, m.subs[i], m.subs[i].parent, m.subs[i].opened))
+				view(m.subs[i])
+			}
+		}
+		view(menu)
+	}()
 
-	menu.readyForOpen = false
+	// menu.readyForOpen = false
 	menu.opened = false
 	for i := range menu.subs {
 		if menu.subs[i] == nil {
 			continue
 		}
-		menu.subs[i].readyForOpen = false
+		// menu.subs[i].readyForOpen = false
 		menu.subs[i].opened = false
 		// m := menu.subs[i]
 		// debugs = append(debugs, fmt.Sprintf("> RESET SUB > %p parent:%p\n", m, m.parent))
@@ -2534,7 +2590,7 @@ func Demo() (demos []Widget) {
 						debugs = append(debugs, fmt.Sprintln("Click Sub:"+name))
 					})
 				}
-				sub.AddMenu("Submenu", ss)
+				sub.AddMenu(fmt.Sprintf("Submenu%02d", i), ss)
 			}
 		}
 		menu.AddMenu("Edit", sub)
