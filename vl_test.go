@@ -698,12 +698,10 @@ func TestMenuList(t *testing.T) {
 			for k, t := range txts[it] {
 				if k%2 == 0 {
 					var sub Menu
-					var btn Button
-					btn.SetText(t)
-					sub.Add(&btn)
+					sub.AddButton(t, nil)
 					submenu.AddMenu(t, sub)
 				} else {
-					submenu.Add(TextStatic(t))
+					submenu.AddText(t)
 				}
 			}
 			for _, size := range sizes {

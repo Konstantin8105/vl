@@ -817,9 +817,10 @@ type Menu struct {
 	frame Frame
 	list  List
 
-	subs      []*submenu
 	isSubMenu bool
 	offset    Offset
+	parent    *Menu
+	subs      []*submenu
 }
 
 type submenu struct {
@@ -837,38 +838,59 @@ func (menu *Menu) SetHeight(hmax uint) {
 	}
 }
 
-func (menu *Menu) Add(nodes ...interface {
-	Widget
-	Compressable
-}) {
-	for i := range nodes {
-		if c, ok := nodes[i].(interface {
-			SetMaxLines(limit uint)
-			SetLinesLimit(limit uint)
-		}); ok {
-			c.SetMaxLines(1)
-			c.SetLinesLimit(1)
-		}
-		nodes[i].Compress()
-		menu.list.Add(nodes[i])
-		menu.header.Add(nodes[i])
+func (menu *Menu) AddButton(name string, OnClick func()) {
+	if OnClick == nil {
+		menu.AddText(name)
+		return
 	}
+	// prepare element
+	var btn Button
+	btn.SetMaxLines(1)
+	btn.SetLinesLimit(1)
+	btn.SetText(name)
+	btn.Compress()
+	btn.OnClick = func() {
+		if f := OnClick; f != nil {
+			f()
+		}
+		menu.resetSubmenu()
+	}
+	// adding
+	menu.list.Add(&btn)
+	menu.header.Add(&btn)
+}
+
+func (menu *Menu) AddText(name string) {
+	// prepare element
+	txt := TextStatic(name)
+	// adding
+	menu.list.Add(txt)
+	menu.header.Add(txt)
 }
 
 func (menu *Menu) AddMenu(name string, sub Menu) {
+	// prepare menu
 	var data submenu
 	data.menu = &sub
+	data.menu.parent = menu
 	data.menu.isSubMenu = true
 	menu.subs = append(menu.subs, &data)
+	// debugs = append(debugs, fmt.Sprintf(">>>> %s %p %p\n", name, data.menu, sub.parent))
+	// prepare element
 	var btn Button
+	btn.SetMaxLines(1)
+	btn.SetLinesLimit(1)
 	btn.SetText(name)
+	btn.Compress()
 	btn.OnClick = func() {
 		if data.menu == nil {
 			return
 		}
 		data.readyForOpen = true
 	}
-	menu.Add(&btn)
+	// adding
+	menu.list.Add(&btn)
+	menu.header.Add(&btn)
 }
 
 var SubMenuWidth uint = 20
@@ -918,6 +940,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			if !m.opened {
 				continue
 			}
+			// debugs = append(debugs, fmt.Sprintf("Render : %p with parent %p", m, m.menu.parent))
 			droot := func(row, col uint, s tcell.Style, r rune) {
 				//	if menu.hmax < row && menu.addlimit {
 				//		return
@@ -1044,13 +1067,24 @@ func (menu *Menu) Event(ev tcell.Event) {
 }
 
 func (menu *Menu) resetSubmenu() {
+	// debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
 	for _, m := range menu.subs {
 		if m.menu == nil {
 			continue
 		}
 		m.readyForOpen = false
 		m.opened = false
+		// debugs = append(debugs, fmt.Sprintf("> RESET SUB > %p\n", m.menu))
 	}
+	// debugs = append(debugs, fmt.Sprintf("1 : %#v", menu.parent))
+	if menu.parent == nil {
+		return
+	}
+	// debugs = append(debugs, fmt.Sprintf("2"))
+	// 	if !menu.parent.isSubMenu {
+	// 		return
+	// 	}
+	menu.parent.resetSubmenu()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2466,52 +2500,37 @@ func Demo() (demos []Widget) {
 
 	var menu Menu
 	menu.SetRoot(&scroll)
-
-	{
-		var btn Button
-		btn.SetText("File")
-		menu.Add(&btn)
-	}
+	menu.AddButton("File", nil)
 	{
 		var sub Menu
 		for i := 0; i < 30; i++ {
 			name := fmt.Sprintf("Text%02d", i)
 			if i%3 == 0 {
-				var btn Button
-				btn.SetText(name)
-				btn.OnClick = func() {
+				sub.AddButton(name, func() {
 					debugs = append(debugs, fmt.Sprintln("Click:"+name))
-				}
-				sub.Add(&btn)
+				})
 			} else {
-				sub.Add(TextStatic(name))
+				sub.AddText(name)
 			}
 			if i%4 == 0 {
 				name += "Sub"
 				var ss Menu
 				for k := 0; k < 5; k++ {
-					var btn Button
-					btn.SetText(name)
-					btn.OnClick = func() {
+					ss.AddButton(name, func() {
 						debugs = append(debugs, fmt.Sprintln("Click Sub:"+name))
-					}
-					ss.Add(&btn)
+					})
 				}
 				sub.AddMenu("Submenu", ss)
 			}
 		}
 		menu.AddMenu("Edit", sub)
 	}
-	{
-		var cb CheckBox
-		cb.SetText("Line")
-		menu.Add(&cb)
-	}
-	{
-		var btn Button
-		btn.SetText("Help")
-		menu.Add(&btn)
-	}
+	// 	{
+	// 		var cb CheckBox
+	// 		cb.SetText("Line")
+	// 		menu.Add(&cb)
+	// 	}
+	menu.AddButton("Help", nil)
 
 	demos = append(demos, &menu)
 	return
