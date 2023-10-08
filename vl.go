@@ -849,6 +849,7 @@ func (menu *Menu) AddButton(name string, OnClick func()) {
 			f()
 		}
 		menu.resetSubmenu()
+		// debugs = append(debugs, fmt.Sprintln("> resetSubmenu button"))
 	}
 	// adding
 	menu.list.Add(&btn)
@@ -873,7 +874,7 @@ func (menu *Menu) AddMenu(name string, sub Menu) {
 	var btn Button
 	btn.SetMaxLines(1)
 	btn.SetLinesLimit(1)
-	btn.SetText(name)
+	btn.SetText("< " + name) // TODO
 	btn.Compress()
 	btn.OnClick = func() {
 		menu.subs[pos].readyForOpen = true
@@ -910,6 +911,12 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			return
 		}
 		menu.frame.Render(w, droot)
+		for _, m := range menu.subs {
+			if m == nil {
+				continue
+			}
+			m.Render(width, dr)
+		}
 	}
 	if menu.parent == nil {
 		menu.header.Compress()
@@ -940,6 +947,10 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (menu *Menu) Event(ev tcell.Event) {
+	if menu.parent != nil {
+		// recursive event
+		menu.parent.Event(ev)
+	}
 	_, ok := menu.onFocus(ev)
 	if ok {
 		menu.Focus(true)
@@ -954,12 +965,6 @@ func (menu *Menu) Event(ev tcell.Event) {
 			if m == nil {
 				continue
 			}
-			// TODO : for i := range m.subs {
-			// TODO : 	if m.subs[i] == nil {
-			// TODO : 		continue
-			// TODO : 	}
-			// TODO : 	m.subs[i].Event(ev)
-			// TODO : }
 			if !m.opened {
 				continue
 			}
@@ -975,8 +980,6 @@ func (menu *Menu) Event(ev tcell.Event) {
 					break
 				}
 				w, h := m.frame.GetSize()
-				// debugs = append(debugs, fmt.Sprintln(w, col))
-				// debugs = append(debugs, fmt.Sprintln(h, row, m.menu.offset))
 				if int(w) < col {
 					break
 				}
@@ -996,7 +999,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			return
 		}
 	}
-	{
+	if menu.parent == nil {
 		// menu
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
@@ -1007,19 +1010,22 @@ func (menu *Menu) Event(ev tcell.Event) {
 					ev.Buttons(),
 					ev.Modifiers()))
 				// 				found := false
-				for im, m := range menu.subs {
+				for _, m := range menu.subs {
 					if m == nil {
 						continue
 					}
 					if !m.readyForOpen {
 						continue
 					}
+					if m.opened {
+						continue
+					}
 					// 					found = true
 					// store submenu coordinates
 					m.readyForOpen = false
-					m.opened = true
 					if 0 <= col && 0 <= row {
-						menu.subs[im].offset = Offset{
+						m.opened = true
+						m.offset = Offset{
 							col: uint(col),
 							row: uint(row) + 1, // TODO step for submenu
 						}
@@ -1032,7 +1038,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			// menu.header.Event(ev)
 		}
 	}
-	if menu.root != nil && menu.parent == nil {
+	if menu.root != nil && menu.parent == nil { // main menu
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
@@ -1055,6 +1061,10 @@ func (menu *Menu) Event(ev tcell.Event) {
 }
 
 func (menu *Menu) resetSubmenu() {
+	if menu.parent != nil {
+		// recursive event
+		menu.parent.resetSubmenu()
+	}
 	// debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
 	// defer func() {
 	// 	var view func(m *Menu)
@@ -1081,11 +1091,11 @@ func (menu *Menu) resetSubmenu() {
 		// debugs = append(debugs, fmt.Sprintf("> RESET SUB > %p parent:%p\n", m, m.parent))
 	}
 	// debugs = append(debugs, fmt.Sprintf("1 : %#v", menu.parent))
-	if menu.parent != nil {
-		// debugs = append(debugs, fmt.Sprintf("2"))
-		menu.parent.resetSubmenu()
-		// return
-	}
+	// 	if menu.parent != nil {
+	// 		// debugs = append(debugs, fmt.Sprintf("2"))
+	// 		menu.parent.resetSubmenu()
+	// 		// return
+	// 	}
 	// 	if !menu.parent.isSubMenu {
 	// 		return
 	// 	}
