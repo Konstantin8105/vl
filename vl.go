@@ -3,6 +3,7 @@ package vl
 import (
 	"fmt"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -206,21 +207,21 @@ func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
 }
 
 func Convert(cells [][]Cell) string {
-	var str string
+	var buf strings.Builder
 	var w int
 	for r := range cells {
-		str += fmt.Sprintf("%09d|", r+1)
+		fmt.Fprintf(&buf, "%09d|", r+1)
 		for c := range cells[r] {
-			str += string(cells[r][c].R)
+			buf.WriteRune(cells[r][c].R)
 		}
 		if width := len(cells[r]); w < width {
 			w = width
 		}
-		str += fmt.Sprintf("| width:%09d\n", len(cells[r]))
+		fmt.Fprintf(&buf, "| width:%09d\n", len(cells[r]))
 	}
-	str += fmt.Sprintf("rows  = %3d\n", len(cells))
-	str += fmt.Sprintf("width = %3d\n", w)
-	return str
+	fmt.Fprintf(&buf, "rows  = %3d\n", len(cells))
+	fmt.Fprintf(&buf, "width = %3d\n", w)
+	return buf.String()
 }
 
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
