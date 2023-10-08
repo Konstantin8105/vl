@@ -877,7 +877,7 @@ func (menu *Menu) AddMenu(name string, sub Menu) {
 	btn.Compress()
 	btn.OnClick = func() {
 		sub.readyForOpen = true
-		debugs = append(debugs, fmt.Sprintf(">>>> %s %v\n", name, sub.readyForOpen))
+		// debugs = append(debugs, fmt.Sprintf(">>>> %s %v\n", name, sub.readyForOpen))
 	}
 	// adding
 	menu.list.Add(&btn)
@@ -949,21 +949,21 @@ func (menu *Menu) Event(ev tcell.Event) {
 	// 		return
 	// 	}
 
-	debugs = append(debugs, fmt.Sprintln("// EVENT /////////////////////////////////////////////////////////"))
-	defer func() {
-	debugs = append(debugs, fmt.Sprintln("// EVENT END /////////////////////////////////////////////////////"))
-}()
+	// debugs = append(debugs, fmt.Sprintln("// EVENT /////////////////////////////////////////////////////////"))
+	// defer func() {
+	// 	debugs = append(debugs, fmt.Sprintln("// EVENT END /////////////////////////////////////////////////////"))
+	// }()
 	////////////////////////
 
-	debugs = append(debugs, fmt.Sprintln("STEP 3"))
+	// debugs = append(debugs, fmt.Sprintln("STEP 3"))
 
 	var found bool
 	{ // if !found { // && menu.parent == nil {
-		debugs = append(debugs, fmt.Sprintln("Main menu"))
+		// debugs = append(debugs, fmt.Sprintln("Main menu"))
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
-			debugs = append(debugs, fmt.Sprintln("Main menu:::: ", col, row, "::::", menu.header.height))
+			// debugs = append(debugs, fmt.Sprintln("Main menu:::: ", col, row, "::::", menu.header.height))
 			if int(menu.header.height) < row {
 				break // return
 			}
@@ -972,7 +972,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 			// 			if row < 0 {
 			// 				return
 			// 			}
-			debugs = append(debugs, fmt.Sprintln("Main menu ---> to header"))
+			// debugs = append(debugs, fmt.Sprintln("Main menu ---> to header"))
 			menu.header.Event(tcell.NewEventMouse(
 				col, row,
 				ev.Buttons(),
@@ -1040,11 +1040,11 @@ func (menu *Menu) Event(ev tcell.Event) {
 	if !found {
 		menu.resetSubmenu()
 	}
-	debugs = append(debugs, fmt.Sprintln("STEP 0 : Found = ", found))
+	// debugs = append(debugs, fmt.Sprintln("STEP 0 : Found = ", found))
 
 	////////////////////////
 
-	debugs = append(debugs, fmt.Sprintln("STEP 1"))
+	// debugs = append(debugs, fmt.Sprintln("STEP 1"))
 	var readyForOpen func(menu *Menu)
 	readyForOpen = func(menu *Menu) {
 		// debugs = append(debugs, fmt.Sprintf("readyForOpen: %p BEGIN : %v", menu, menu.readyForOpen))
@@ -1092,7 +1092,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 
 	////////////////////////
 
-	debugs = append(debugs, fmt.Sprintln("STEP 2"))
+	// debugs = append(debugs, fmt.Sprintln("STEP 2"))
 	if !found && menu.root != nil && menu.parent == nil { // main menu
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
@@ -1121,19 +1121,19 @@ func (menu *Menu) resetSubmenu() {
 		// recursive event
 		menu.parent.resetSubmenu()
 	}
-	defer func() {
-		debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
-		var view func(m *Menu)
-		view = func(m *Menu) {
-			debugs = append(debugs, fmt.Sprintf("Menu:%p ---> parent:%p:::: %v", m, m.parent, m.opened))
-			for i := range m.subs {
-				debugs = append(debugs, fmt.Sprintf("i:%d %p parent:%p :::: %v",
-					i, m.subs[i], m.subs[i].parent, m.subs[i].opened))
-				view(m.subs[i])
-			}
-		}
-		view(menu)
-	}()
+	// defer func() {
+	// 	debugs = append(debugs, fmt.Sprintf("> RESET > %p %p\n", menu, menu.parent))
+	// 	var view func(m *Menu)
+	// 	view = func(m *Menu) {
+	// 		debugs = append(debugs, fmt.Sprintf("Menu:%p ---> parent:%p:::: %v", m, m.parent, m.opened))
+	// 		for i := range m.subs {
+	// 			debugs = append(debugs, fmt.Sprintf("i:%d %p parent:%p :::: %v",
+	// 				i, m.subs[i], m.subs[i].parent, m.subs[i].opened))
+	// 			view(m.subs[i])
+	// 		}
+	// 	}
+	// 	view(menu)
+	// }()
 
 	// menu.readyForOpen = false
 	menu.opened = false
