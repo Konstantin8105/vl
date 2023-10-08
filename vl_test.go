@@ -713,6 +713,7 @@ func TestMenuList(t *testing.T) {
 
 					cells := new([][]Cell)
 					var buf bytes.Buffer
+					submenu.opened = true // TODO ???
 					screen.GetContents(width, cells)
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 
@@ -728,6 +729,7 @@ func TestMenuList(t *testing.T) {
 							int(x), int(y),
 							tcell.Button1, tcell.ModNone)
 						screen.Event(click)
+						submenu.opened = true // TODO ???
 						screen.GetContents(width, cells)
 						fmt.Fprintf(&buf, "%s", Convert(*cells))
 					}
