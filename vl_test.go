@@ -732,24 +732,24 @@ func TestMenuList(t *testing.T) {
 	var screen Screen
 	for _, col := range []uint{5, 10, 20, 25} {
 		for it := range txts {
-			submenu := Menu{
-				parent: &main,
-				offset: Offset{
-					row: 2,
-					col: col,
-				},
-			}
-			submenu.Focus(true)
-			for k, t := range txts[it] {
-				if k%2 == 0 {
-					var sub Menu
-					sub.AddButton(t, nil)
-					submenu.AddMenu(t, &sub)
-				} else {
-					submenu.AddText(t)
-				}
-			}
 			for _, size := range sizes {
+				submenu := Menu{
+					parent: &main,
+					offset: Offset{
+						row: 2,
+						col: col,
+					},
+				}
+				submenu.Focus(true)
+				for k, t := range txts[it] {
+					if k%2 == 0 {
+						var sub Menu
+						sub.AddButton(t, nil)
+						submenu.AddMenu(t, &sub)
+					} else {
+						submenu.AddText(t)
+					}
+				}
 				width, height := size, size
 				if 10 < height {
 					height = 10

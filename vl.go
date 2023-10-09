@@ -920,19 +920,28 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		// menu.frame.SetRoot(&menu.list) // scroll)
 		// menu.frame.SetHeight(23) // TODO
 		// menu.list.Compress()
-		droot := func(row, col uint, s tcell.Style, r rune) {
-			dr(row+menu.offset.row, col+menu.offset.col, s, r)
-		}
-		var w uint
-		if menu.offset.col+SubMenuWidth < width {
-			w = SubMenuWidth
-		} else {
-			if menu.offset.col < width {
-				w = width - menu.offset.col
+		if width < menu.offset.col+SubMenuWidth {
+			if SubMenuWidth < width {
+				menu.offset.col = width - SubMenuWidth
+			} else {
+				menu.offset.col = 0
 			}
 		}
-		if w < 2 {
-			return
+		var w uint
+		if menu.offset.col < width {
+			w = width - menu.offset.col
+		} else {
+			if SubMenuWidth < width {
+				w = SubMenuWidth
+			} else {
+				w = width
+			}
+		}
+		if SubMenuWidth < w {
+			w = SubMenuWidth
+		}
+		droot := func(row, col uint, s tcell.Style, r rune) {
+			dr(row+menu.offset.row, col+menu.offset.col, s, r)
 		}
 		menu.frame.Render(w, droot)
 	}
@@ -958,7 +967,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		if !m.opened {
 			continue
 		}
-		m.Render(width-m.offset.col, dr)
+		m.Render(width, dr)
 	}
 	return
 }
