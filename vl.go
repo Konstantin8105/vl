@@ -871,6 +871,8 @@ func (menu *Menu) AddButton(name string, OnClick func()) {
 	// adding
 	menu.list.Add(&btn)
 	menu.header.Add(&btn)
+
+	menu.frame.SetRoot(&menu.list)
 }
 
 func (menu *Menu) AddText(name string) {
@@ -879,6 +881,8 @@ func (menu *Menu) AddText(name string) {
 	// adding
 	menu.list.Add(txt)
 	menu.header.Add(txt)
+
+	menu.frame.SetRoot(&menu.list)
 }
 
 func (menu *Menu) AddMenu(name string, sub *Menu) {
@@ -900,6 +904,9 @@ func (menu *Menu) AddMenu(name string, sub *Menu) {
 	// adding
 	menu.list.Add(&btn)
 	menu.header.Add(&btn)
+
+	// menu.frame.Header = TextStatic(name)
+	menu.frame.SetRoot(&menu.list)
 }
 
 var SubMenuWidth uint = 20
@@ -910,7 +917,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	}()
 	if menu.opened && menu.parent != nil {
 		// menu.scroll.SetRoot(&menu.list)
-		menu.frame.SetRoot(&menu.list) // scroll)
+		// menu.frame.SetRoot(&menu.list) // scroll)
 		// menu.frame.SetHeight(23) // TODO
 		// menu.list.Compress()
 		droot := func(row, col uint, s tcell.Style, r rune) {
@@ -958,11 +965,12 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 
 func (menu *Menu) Event(ev tcell.Event) {
 	var found bool
-	{ 
+	{
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
 			col, row := ev.Position()
 			if row < int(menu.header.height) {
+				menu.resetSubmenu()
 				menu.header.Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
@@ -1053,8 +1061,10 @@ func (menu *Menu) Event(ev tcell.Event) {
 				menu.opened = true
 				menu.offset = Offset{
 					col: uint(col),
-					row: uint(row), // TODO step for submenu
+					row: uint(row),
 				}
+				// offser of submenu for good view
+				menu.offset.row += 1
 			}
 
 			// TODO case *tcell.EventKey:
@@ -1063,9 +1073,9 @@ func (menu *Menu) Event(ev tcell.Event) {
 		}
 	}
 	readyForOpen(menu)
-	for i := range menu.subs {
-		readyForOpen(menu.subs[i])
-	}
+	// 	for i := range menu.subs {
+	// 		readyForOpen(menu.subs[i])
+	// 	}
 
 	////////////////////////
 
@@ -2555,6 +2565,14 @@ func Demo() (demos []Widget) {
 			}
 		}
 		menu.AddMenu("Edit", &sub)
+	}
+	{
+		var sub Menu
+		for i := 0; i < 5; i++ {
+			name := fmt.Sprintf("SecondText%02d", i)
+			sub.AddText(name)
+		}
+		menu.AddMenu("View", &sub)
 	}
 	// 	{
 	// 		var cb CheckBox
