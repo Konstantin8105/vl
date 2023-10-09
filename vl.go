@@ -858,8 +858,8 @@ func (menu *Menu) AddButton(name string, OnClick func()) {
 	}
 	// prepare element
 	var btn Button
-	btn.SetMaxLines(1)
-	btn.SetLinesLimit(1)
+	// btn.SetMaxLines(1)
+	// btn.SetLinesLimit(1)
 	btn.SetText(name)
 	btn.Compress()
 	btn.OnClick = func() {
@@ -2584,7 +2584,7 @@ func Demo() (demos []Widget) {
 			name := fmt.Sprintf("SecondText%02d", i)
 			sub.AddText(name)
 		}
-		sub.AddText("long long long long long long long long long long long long")
+		sub.AddButton("long long long long long long long long long long long long", func(){})
 		menu.AddMenu("View", &sub)
 	}
 	// 	{
