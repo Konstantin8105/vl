@@ -8,7 +8,7 @@
 rows  =   7
 width =   7
 Click00 0, 0
-0001|[ C)  ]|YYYYYYY|
+0001|V C)  ]|YYYYYYY|
 0002|[ Und ]|YYYYYYY|
 0003|[ er  ]|YYYYYYY|
 0004|[ roo ]|YYYYYYY|
@@ -18,7 +18,7 @@ Click00 0, 0
 rows  =   7
 width =   7
 Click01 0, 0
-0001|[ C)  ]|YYYYYYY|
+0001|V C)  ]|YYYYYYY|
 0002|[ Und ]|YYYYYYY|
 0003|[ er  ]|YYYYYYY|
 0004|[ roo ]|YYYYYYY|
@@ -42,11 +42,12 @@ Size more
 rows  =  11
 width =  11
 Size less
-0001|[ C)  |YYYYYY|
-0002|[ Und |YYYYYY|
-0003|[ er  |YYYYYY|
-0004|[ roo |YYYYYY|
-0005|[ t   |YYYYYY|
-0006|      |......|
-rows  =   6
-width =   6
+0001|[ C)  ]|YYYYYYY|
+0002|[ Und ]|YYYYYYY|
+0003|[ er  ]|YYYYYYY|
+0004|[ roo ]|YYYYYYY|
+0005|[ t   ]|YYYYYYY|
+0006|       |.......|
+0007|       |.......|
+rows  =   7
+width =   7

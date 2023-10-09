@@ -8,7 +8,7 @@
 rows  =   7
 width =   7
 Click00 0, 0
-0001|[ C) ]-|FFFFFF.|
+0001|V C) ]-|FFFFFF.|
 0002|[  U ]*|FFFFFF.|
 0003|[ nd ]||FFFFFF.|
 0004|[ er ]||FFFFFF.|
@@ -18,7 +18,7 @@ Click00 0, 0
 rows  =   7
 width =   7
 Click01 0, 0
-0001|[ C) ]-|FFFFFF.|
+0001|V C) ]-|FFFFFF.|
 0002|[  U ]*|FFFFFF.|
 0003|[ nd ]||FFFFFF.|
 0004|[ er ]||FFFFFF.|
@@ -42,11 +42,12 @@ Size more
 rows  =  11
 width =  11
 Size less
-0001|[ C) ]|FFFFFF|
-0002|[  U ]|FFFFFF|
-0003|[ nd ]|FFFFFF|
-0004|[ er ]|FFFFFF|
-0005|[  r ]|FFFFFF|
-0006|[ oo ]|FFFFFF|
-rows  =   6
-width =   6
+0001|[ C) ]-|FFFFFF.|
+0002|[  U ]*|FFFFFF.|
+0003|[ nd ]||FFFFFF.|
+0004|[ er ]||FFFFFF.|
+0005|[  r ]||FFFFFF.|
+0006|[ oo ]||FFFFFF.|
+0007|[ t1 ]-|FFFFFF.|
+rows  =   7
+width =   7

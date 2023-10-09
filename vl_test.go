@@ -627,18 +627,23 @@ func TestWidget(t *testing.T) {
 				fmt.Fprintf(&buf, "%s", Convert(*cells))
 
 				// click on field
-				x, y, ok := findClick(*cells, width, height)
-				if !ok {
-					x, y = 1, 0
-					t.Logf("not clicked")
-				}
 				for i := 0; i < 2; i++ {
-					fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, x, y)
+					col, row, ok := findClick(cells, width, height)
+					if !ok {
+						col, row = 0, 1
+						t.Logf("not clicked")
+					}
+					fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, col, row)
 					click := tcell.NewEventMouse(
-						int(x), int(y),
+						int(col), int(row),
 						tcell.Button1, tcell.ModNone)
 					screen.Event(click)
 					screen.GetContents(width, cells)
+					if int(row) < len(*cells) {
+						if int(col) < len((*cells)[row]) {
+							(*cells)[row][col].R = 'V' // click indicator
+						}
+					}
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 				}
 
@@ -673,30 +678,32 @@ func TestWidget(t *testing.T) {
 	}
 }
 
-func findClick(cells [][]Cell, width, height uint) (x, y uint, found bool) {
-	if len(cells) != int(height) {
-		panic(fmt.Errorf("Height %d != %d", len(cells), height))
+func findClick(cells *[][]Cell, width, height uint) (col, row uint, found bool) {
+	if len(*cells) != int(height) {
+		panic(fmt.Errorf("Height %d != %d", len(*cells), height))
 	}
 	if height == 0 {
 		return
 	}
-	if len(cells[0]) != int(width) {
-		panic(fmt.Errorf("Width %d != %d", len(cells[0]), width))
+	if len((*cells)[0]) != int(width) {
+		panic(fmt.Errorf("Width %d != %d", len((*cells)[0]), width))
 	}
 	if width == 0 {
 		return
 	}
-	for x = 0; x < height; x++ {
-		for y = 0; y < width; y++ {
-			if cells[x][y].S == ButtonStyle || cells[x][y].S == InputBoxStyle {
+	for row = 0; row < height; row++ {
+		for col = 0; col < width; col++ {
+			if (*cells)[row][col].S == ButtonStyle ||
+				(*cells)[row][col].S == InputBoxStyle {
 				found = true
 				return
 			}
 		}
 	}
-	for x = 0; x < height; x++ {
-		for y = 0; y < width; y++ {
-			if cells[x][y].S == ButtonFocusStyle || cells[x][y].S == InputBoxFocusStyle {
+	for row = 0; row < height; row++ {
+		for col = 0; col < width; col++ {
+			if (*cells)[row][col].S == ButtonFocusStyle ||
+				(*cells)[row][col].S == InputBoxFocusStyle {
 				found = true
 				return
 			}
@@ -764,15 +771,15 @@ func TestMenuList(t *testing.T) {
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 
 					// click on field
-					x, y, ok := findClick(*cells, width, height)
+					col, row, ok := findClick(cells, width, height)
 					if !ok {
-						x, y = 1, 0
+						col, row = 0, 1
 						t.Logf("not clicked")
 					}
 					for i := 0; i < 2; i++ {
-						fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, x, y)
+						fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, col, row)
 						click := tcell.NewEventMouse(
-							int(x), int(y),
+							int(col), int(row),
 							tcell.Button1, tcell.ModNone)
 						screen.Event(click)
 						submenu.opened = true // TODO ???

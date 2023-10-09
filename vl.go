@@ -177,32 +177,32 @@ type Screen struct {
 }
 
 func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
-	var ar, ac uint
+	screen.width = width
+	// zero width
+	if screen.width == 0 {
+		(*cells) = make([][]Cell, screen.hmax)
+	}
+	// preliminary allocation of rows/height
+	switch {
+	case len(*cells) < int(screen.hmax):
+		(*cells) = append(*cells, make([][]Cell, int(screen.hmax)-len(*cells))...)
+	case int(screen.hmax) < len(*cells):
+		(*cells) = (*cells)[:screen.hmax]
+	}
+	// preliminary allocation of col/width
+	for i := range *cells {
+		switch {
+		case len((*cells)[i]) < int(screen.width):
+			(*cells)[i] = append((*cells)[i], make([]Cell, int(screen.width)-len((*cells)[i]))...)
+		case int(screen.width) < len((*cells)[i]):
+			(*cells)[i] = (*cells)[i][:screen.width]
+		}
+	}
+	// var cleaned []bool
 	drawer := func(row, col uint, s tcell.Style, r rune) {
-		for i := len(*cells); i <= int(row); i++ {
-			*cells = append(*cells, make([]Cell, 0))
-		}
-		for i := len((*cells)[row]); i <= int(col); i++ {
-			(*cells)[row] = append((*cells)[row], Cell{R: ' '})
-		}
-		if ar < row {
-			ar = row
-		}
-		if ac < col {
-			ac = col
-		}
 		(*cells)[row][col] = Cell{S: s, R: r}
 	}
-	_ = screen.Render(width, drawer) // ignore height
-	// resize cells matrix
-	if len(*cells)-1 != int(ar) {
-		*cells = (*cells)[:int(ar)]
-	}
-	for i := range *cells {
-		if len((*cells)[i])-1 != int(ac) {
-			(*cells)[i] = (*cells)[i][:int(ac)]
-		}
-	}
+	_ = screen.Render(screen.width, drawer) // ignore height
 	return
 }
 
@@ -245,6 +245,9 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 		screen.StoreSize(width, height)
 	}()
 	if width == 0 {
+		return
+	}
+	if screen.hmax == 0 {
 		return
 	}
 	// draw default spaces

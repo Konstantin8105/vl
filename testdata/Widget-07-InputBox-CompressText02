@@ -8,7 +8,7 @@
 rows  =   7
 width =   7
 Click00 0, 0
-0001|_nstead|XFFFFFF|
+0001|Vnstead|XFFFFFF|
 0002|, they |FFFFFFF|
 0003|use Mod|FFFFFFF|
 0004|Alt, ev|FFFFFFF|
@@ -17,8 +17,8 @@ Click00 0, 0
 0007|that co|FFFFFFF|
 rows  =   7
 width =   7
-Click01 0, 0
-0001|_nstead|XFFFFFF|
+Click01 1, 0
+0001|IVstead|FXFFFFF|
 0002|, they |FFFFFFF|
 0003|use Mod|FFFFFFF|
 0004|Alt, ev|FFFFFFF|
@@ -28,7 +28,7 @@ Click01 0, 0
 rows  =   7
 width =   7
 Size more
-0001|_nstead, th|XFFFFFFFFFF|
+0001|I_stead, th|FXFFFFFFFFF|
 0002|ey use ModA|FFFFFFFFFFF|
 0003|lt, even fo|FFFFFFFFFFF|
 0004|r events th|FFFFFFFFFFF|
@@ -42,11 +42,12 @@ Size more
 rows  =  11
 width =  11
 Size less
-0001|_nstea|XFFFFF|
-0002|, they|FFFFFF|
-0003|use Mo|FFFFFF|
-0004|Alt, e|FFFFFF|
-0005|en for|FFFFFF|
-0006|events|FFFFFF|
-rows  =   6
-width =   6
+0001|I_stead|FXFFFFF|
+0002|, they |FFFFFFF|
+0003|use Mod|FFFFFFF|
+0004|Alt, ev|FFFFFFF|
+0005|en for |FFFFFFF|
+0006|events |FFFFFFF|
+0007|that co|FFFFFFF|
+rows  =   7
+width =   7
