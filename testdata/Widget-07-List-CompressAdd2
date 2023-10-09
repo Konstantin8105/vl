@@ -1,49 +1,52 @@
-000000001|Second | width:000000007
-000000002|text   | width:000000007
-000000003|[ Und ]| width:000000007
-000000004|[ er  ]| width:000000007
-000000005|[ roo ]| width:000000007
-000000006|[ t   ]| width:000000007
-000000007|       | width:000000007
+0001|Second |.......|
+0002|text   |.......|
+0003|[ B)  ]|YYYYYYY|
+0004|[ Und ]|YYYYYYY|
+0005|[ er  ]|YYYYYYY|
+0006|[ roo ]|YYYYYYY|
+0007|[ t   ]|YYYYYYY|
 rows  =   7
 width =   7
 Click00 2, 0
-000000001|Second | width:000000007
-000000002|text   | width:000000007
-000000003|[ Und ]| width:000000007
-000000004|[ er  ]| width:000000007
-000000005|[ roo ]| width:000000007
-000000006|[ t   ]| width:000000007
-000000007|       | width:000000007
+0001|Second |.......|
+0002|text   |.......|
+0003|[ B)  ]|YYYYYYY|
+0004|[ Und ]|YYYYYYY|
+0005|[ er  ]|YYYYYYY|
+0006|[ roo ]|YYYYYYY|
+0007|[ t   ]|YYYYYYY|
 rows  =   7
 width =   7
 Click01 2, 0
-000000001|Second | width:000000007
-000000002|text   | width:000000007
-000000003|[ Und ]| width:000000007
-000000004|[ er  ]| width:000000007
-000000005|[ roo ]| width:000000007
-000000006|[ t   ]| width:000000007
-000000007|       | width:000000007
+0001|Second |.......|
+0002|text   |.......|
+0003|[ B)  ]|YYYYYYY|
+0004|[ Und ]|YYYYYYY|
+0005|[ er  ]|YYYYYYY|
+0006|[ roo ]|YYYYYYY|
+0007|[ t   ]|YYYYYYY|
 rows  =   7
 width =   7
 Size more
-000000001|Second text| width:000000011
-000000002|           | width:000000011
-000000003|[ Under r ]| width:000000011
-000000004|[ oot     ]| width:000000011
-000000005|           | width:000000011
-000000006|           | width:000000011
-000000007|           | width:000000011
-rows  =   7
+0001|Second text|...........|
+0002|           |...........|
+0003|[ B) Unde ]|YYYYYYYYYYY|
+0004|[ r root  ]|YYYYYYYYYYY|
+0005|           |...........|
+0006|           |...........|
+0007|           |...........|
+0008|           |...........|
+0009|           |...........|
+0010|           |...........|
+0011|           |...........|
+rows  =  11
 width =  11
 Size less
-000000001|Second| width:000000006
-000000002|text  | width:000000006
-000000003|[ Und | width:000000006
-000000004|[ er  | width:000000006
-000000005|[ roo | width:000000006
-000000006|[ t   | width:000000006
-000000007|      | width:000000006
-rows  =   7
+0001|Second|......|
+0002|text  |......|
+0003|[ B)  |YYYYYY|
+0004|[ Und |YYYYYY|
+0005|[ er  |YYYYYY|
+0006|[ roo |YYYYYY|
+rows  =   6
 width =   6

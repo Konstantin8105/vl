@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"testing"
 	"time"
@@ -445,173 +446,183 @@ func TestWidget(t *testing.T) {
 		name string
 		w    Widget
 	}
-	var tcs []tcase
-	for _, w := range list() {
-		tcs = append(tcs, tcase{name: getName(w), w: w})
-	}
-	for it := range texts {
+	widgets := func() (tcs []tcase) {
 		for _, w := range list() {
+			tcs = append(tcs, tcase{name: getName(w), w: w})
+		}
+		for it := range texts {
+			for _, w := range list() {
+				c, ok := w.(interface {
+					SetText(string)
+					GetText() string
+				})
+				if !ok {
+					continue
+				}
+				c.SetText(texts[it])
+				name := fmt.Sprintf("%s-SetText%02d", getName(w), it)
+				tcs = append(tcs, tcase{name: name, w: w})
+				t.Run(getName(w)+"PrepareGetText", func(t *testing.T) {
+					if texts[it] != c.GetText() {
+						t.Errorf("not same")
+					}
+				})
+			}
+			for _, w := range list() {
+				c, ok := w.(interface {
+					Compress()
+					SetText(string)
+				})
+				if !ok {
+					continue
+				}
+				c.Compress()
+				c.SetText(texts[it])
+				name := fmt.Sprintf("%s-CompressText%02d", getName(w), it)
+				tcs = append(tcs, tcase{name: name, w: w})
+			}
+		}
+		for _, w := range list() {
+			if _, ok := w.(*RadioGroup); ok {
+				continue
+			}
 			c, ok := w.(interface {
-				SetText(string)
-				GetText() string
+				Add(Widget)
 			})
 			if !ok {
 				continue
 			}
-			c.SetText(texts[it])
-			name := fmt.Sprintf("%s-SetText%02d", getName(w), it)
+			c.Add(TextStatic("Second text"))
+			name := fmt.Sprintf("%s-Add", getName(w))
 			tcs = append(tcs, tcase{name: name, w: w})
-			t.Run(getName(w)+"PrepareGetText", func(t *testing.T) {
-				if texts[it] != c.GetText() {
-					t.Errorf("not same")
+			t.Run(getName(w)+"PrepareAdd", func(t *testing.T) {
+				c, ok := w.(interface {
+					Size() int
+					Clear()
+				})
+				if !ok {
+					t.Fatalf("Not enought function")
+				}
+				if c.Size() != 1 {
+					t.Errorf("not valid size")
 				}
 			})
 		}
-	}
-	for _, w := range list() {
-		if _, ok := w.(*RadioGroup); ok {
-			continue
-		}
-		c, ok := w.(interface {
-			Add(Widget)
-		})
-		if !ok {
-			continue
-		}
-		c.Add(TextStatic("Second text"))
-		name := fmt.Sprintf("%s-Add", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-		t.Run(getName(w)+"PrepareAdd", func(t *testing.T) {
+		for _, w := range list() {
+			if _, ok := w.(*RadioGroup); ok {
+				continue
+			}
 			c, ok := w.(interface {
-				Size() int
-				Clear()
+				Add(Widget)
 			})
 			if !ok {
-				t.Fatalf("Not enought function")
+				continue
 			}
-			if c.Size() != 1 {
-				t.Errorf("not valid size")
+			c.Add(TextStatic("Second text"))
+			var value int
+			var btn Button
+			btn.SetText("A) Under root")
+			btn.OnClick = func() {
+				value += 1
+				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
 			}
-		})
-	}
-	for _, w := range list() {
-		if _, ok := w.(*RadioGroup); ok {
-			continue
+			c.Add(&btn)
+			name := fmt.Sprintf("%s-Add2", getName(w))
+			tcs = append(tcs, tcase{name: name, w: w})
+			t.Run(getName(w)+"PrepareAdd2", func(t *testing.T) {
+				c, ok := w.(interface {
+					Size() int
+					Clear()
+				})
+				if !ok {
+					t.Fatalf("Not enought function")
+				}
+				if c.Size() != 2 {
+					t.Errorf("not valid size")
+				}
+			})
 		}
-		c, ok := w.(interface {
-			Add(Widget)
-		})
-		if !ok {
-			continue
-		}
-		c.Add(TextStatic("Second text"))
-		var value int
-		var btn Button
-		btn.SetText("Under root")
-		btn.OnClick = func() {
-			value += 1
-			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
-		}
-		c.Add(&btn)
-		name := fmt.Sprintf("%s-Add2", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-		t.Run(getName(w)+"PrepareAdd2", func(t *testing.T) {
+		for _, w := range list() {
 			c, ok := w.(interface {
-				Size() int
-				Clear()
+				Compress()
 			})
 			if !ok {
-				t.Fatalf("Not enought function")
+				continue
 			}
-			if c.Size() != 2 {
-				t.Errorf("not valid size")
+			c.Compress()
+			name := fmt.Sprintf("%s-Compress", getName(w))
+			tcs = append(tcs, tcase{name: name, w: w})
+		}
+		for _, w := range list() {
+			c, ok := w.(interface {
+				Compress()
+				Add(Widget)
+			})
+			if !ok {
+				continue
 			}
-		})
+			c.Compress()
+			c.Add(TextStatic("Second text"))
+			var value int
+			var btn Button
+			btn.SetText("B) Under root")
+			btn.OnClick = func() {
+				value += 1
+				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
+			}
+			c.Add(&btn)
+			name := fmt.Sprintf("%s-CompressAdd2", getName(w))
+			tcs = append(tcs, tcase{name: name, w: w})
+		}
+		for _, w := range list() {
+			c, ok := w.(interface {
+				SetRoot(Widget)
+			})
+			if !ok {
+				continue
+			}
+			var value int
+			var btn Button
+			btn.SetText("C) Under root")
+			btn.OnClick = func() {
+				value += 1
+				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
+			}
+			c.SetRoot(&btn)
+			name := fmt.Sprintf("%s-SetRoot", getName(w))
+			tcs = append(tcs, tcase{name: name, w: w})
+		}
+		for _, w := range list() {
+			c, ok := w.(interface {
+				SetRoot(Widget)
+			})
+			if !ok {
+				continue
+			}
+			var rg RadioGroup
+			rg.AddText("radio0", "radio1")
+			c.SetRoot(&rg)
+			name := fmt.Sprintf("%s-SetRootRadiGroup", getName(w))
+			tcs = append(tcs, tcase{name: name, w: w})
+		}
+		return
 	}
-	for _, w := range list() {
-		c, ok := w.(interface {
-			Compress()
-		})
-		if !ok {
-			continue
+	for _, size := range sizes {
+		height := size
+		width := size
+		if 10 < height {
+			height = 10
 		}
-		c.Compress()
-		name := fmt.Sprintf("%s-Compress", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-	}
-	for _, w := range list() {
-		c, ok := w.(interface {
-			Compress()
-			Add(Widget)
-		})
-		if !ok {
-			continue
-		}
-		c.Compress()
-		c.Add(TextStatic("Second text"))
-		var value int
-		var btn Button
-		btn.SetText("Under root")
-		btn.OnClick = func() {
-			value += 1
-			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
-		}
-		c.Add(&btn)
-		name := fmt.Sprintf("%s-CompressAdd2", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-	}
-	for _, w := range list() {
-		c, ok := w.(interface {
-			SetRoot(Widget)
-		})
-		if !ok {
-			continue
-		}
-		var value int
-		var btn Button
-		btn.SetText("Under root")
-		btn.OnClick = func() {
-			value += 1
-			btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
-		}
-		c.SetRoot(&btn)
-		name := fmt.Sprintf("%s-SetRoot", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-	}
-	for _, w := range list() {
-		c, ok := w.(interface {
-			SetRoot(Widget)
-		})
-		if !ok {
-			continue
-		}
-		var rg RadioGroup
-		rg.AddText("radio0", "radio1")
-		c.SetRoot(&rg)
-		name := fmt.Sprintf("%s-SetRootRadiGroup", getName(w))
-		tcs = append(tcs, tcase{name: name, w: w})
-	}
-	for _, tc := range tcs {
-		for _, size := range sizes {
+		for _, tc := range widgets() {
 			name := fmt.Sprintf("Widget-%02d-%s", size, tc.name)
 			t.Run(name, func(t *testing.T) {
 				cells := new([][]Cell)
-				height := size
-				width := size
 				var screen Screen
 				screen.SetRoot(tc.w)
-				screen.SetHeight(size)
+				screen.SetHeight(height)
 
 				// first shot
 				screen.GetContents(width, cells)
-				if len(*cells) != int(height) {
-					t.Fatalf("height is not valid: %d %d", len(*cells), int(height))
-				}
-				for r := range *cells {
-					if len((*cells)[r]) != int(width) {
-						t.Errorf("width is not valid: %d %d", len((*cells)[r]), int(width))
-					}
-				}
 				var buf bytes.Buffer
 				fmt.Fprintf(&buf, "%s", Convert(*cells))
 
@@ -638,7 +649,7 @@ func TestWidget(t *testing.T) {
 					fmt.Fprintf(&buf, "Size more\n")
 					width += 4
 					height += 4
-					screen.SetHeight(size)
+					screen.SetHeight(height)
 					screen.GetContents(width, cells)
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 				}
@@ -646,7 +657,7 @@ func TestWidget(t *testing.T) {
 					fmt.Fprintf(&buf, "Size less\n")
 					width -= 4
 					height -= 4
-					screen.SetHeight(size)
+					screen.SetHeight(height)
 					screen.GetContents(width, cells)
 					fmt.Fprintf(&buf, "%s", Convert(*cells))
 				}
@@ -663,13 +674,30 @@ func TestWidget(t *testing.T) {
 }
 
 func findClick(cells [][]Cell, width, height uint) (x, y uint, found bool) {
-	for x = 0; x < width; x++ {
-		for y = 0; y < height; y++ {
-			if cells[x][y].S == ButtonStyle ||
-				cells[x][y].S == InputBoxStyle {
+	if len(cells) != int(height) {
+		panic(fmt.Errorf("Height %d != %d", len(cells), height))
+	}
+	if height == 0 {
+		return
+	}
+	if len(cells[0]) != int(width) {
+		panic(fmt.Errorf("Width %d != %d", len(cells[0]), width))
+	}
+	if width == 0 {
+		return
+	}
+	for x = 0; x < height; x++ {
+		for y = 0; y < width; y++ {
+			if cells[x][y].S == ButtonStyle || cells[x][y].S == InputBoxStyle {
 				found = true
+				return
 			}
-			if found {
+		}
+	}
+	for x = 0; x < height; x++ {
+		for y = 0; y < width; y++ {
+			if cells[x][y].S == ButtonFocusStyle || cells[x][y].S == InputBoxFocusStyle {
+				found = true
 				return
 			}
 		}
@@ -716,8 +744,16 @@ func TestMenuList(t *testing.T) {
 			}
 			for _, size := range sizes {
 				width, height := size, size
+				if 10 < height {
+					height = 10
+				}
 				name := fmt.Sprintf("MenuList-%02d-%02d-COL%02d", it, size, col)
 				t.Run(name, func(t *testing.T) {
+					defer func() {
+						if r := recover(); r != nil {
+							t.Errorf("%v\n%s", r, string(debug.Stack()))
+						}
+					}()
 					screen.SetRoot(&submenu)
 					screen.SetHeight(height)
 

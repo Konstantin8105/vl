@@ -1,1130 +1,1130 @@
 Pos 0000. Move: none
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|YYYYYY.|
+0002|[ st ]*|YYYYYY.|
+0003|[ ea ]||YYYYYY.|
+0004|[ d, ]||YYYYYY.|
+0005|[  t ]||YYYYYY.|
+0006|[ he ]||YYYYYY.|
+0007|[ y  ]-|YYYYYY.|
 rows  =   7
 width =   7
 Pos 0001. Move: WheelUp
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|YYYYYY.|
+0002|[ st ]*|YYYYYY.|
+0003|[ ea ]||YYYYYY.|
+0004|[ d, ]||YYYYYY.|
+0005|[  t ]||YYYYYY.|
+0006|[ he ]||YYYYYY.|
+0007|[ y  ]-|YYYYYY.|
 rows  =   7
 width =   7
 Pos 0002. Move: WheelDown
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|YYYYYY.|
+0002|[ ea ]*|YYYYYY.|
+0003|[ d, ]||YYYYYY.|
+0004|[  t ]||YYYYYY.|
+0005|[ he ]||YYYYYY.|
+0006|[ y  ]||YYYYYY.|
+0007|[ us ]-|YYYYYY.|
 rows  =   7
 width =   7
 Pos 0003. Move: Click
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0004. Move: InputRune
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0005. Move: Right
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0006. Move: Left
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0007. Move: WheelDown
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0008. Move: WheelDown
-000000001|[ d, ]-| width:000000007
-000000002|[  t ]*| width:000000007
-000000003|[ he ]|| width:000000007
-000000004|[ y  ]|| width:000000007
-000000005|[ us ]|| width:000000007
-000000006|[ e  ]|| width:000000007
-000000007|[ Mo ]-| width:000000007
+0001|[ d, ]-|FFFFFF.|
+0002|[  t ]*|FFFFFF.|
+0003|[ he ]||FFFFFF.|
+0004|[ y  ]||FFFFFF.|
+0005|[ us ]||FFFFFF.|
+0006|[ e  ]||FFFFFF.|
+0007|[ Mo ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0009. Move: WheelDown
-000000001|[  t ]-| width:000000007
-000000002|[ he ]*| width:000000007
-000000003|[ y  ]|| width:000000007
-000000004|[ us ]|| width:000000007
-000000005|[ e  ]|| width:000000007
-000000006|[ Mo ]|| width:000000007
-000000007|[ dA ]-| width:000000007
+0001|[  t ]-|FFFFFF.|
+0002|[ he ]*|FFFFFF.|
+0003|[ y  ]||FFFFFF.|
+0004|[ us ]||FFFFFF.|
+0005|[ e  ]||FFFFFF.|
+0006|[ Mo ]||FFFFFF.|
+0007|[ dA ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0010. Move: WheelDown
-000000001|[ he ]-| width:000000007
-000000002|[ y  ]*| width:000000007
-000000003|[ us ]|| width:000000007
-000000004|[ e  ]|| width:000000007
-000000005|[ Mo ]|| width:000000007
-000000006|[ dA ]|| width:000000007
-000000007|[ lt ]-| width:000000007
+0001|[ he ]-|FFFFFF.|
+0002|[ y  ]*|FFFFFF.|
+0003|[ us ]||FFFFFF.|
+0004|[ e  ]||FFFFFF.|
+0005|[ Mo ]||FFFFFF.|
+0006|[ dA ]||FFFFFF.|
+0007|[ lt ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0011. Move: WheelDown
-000000001|[ y  ]-| width:000000007
-000000002|[ us ]*| width:000000007
-000000003|[ e  ]|| width:000000007
-000000004|[ Mo ]|| width:000000007
-000000005|[ dA ]|| width:000000007
-000000006|[ lt ]|| width:000000007
-000000007|[ ,  ]-| width:000000007
+0001|[ y  ]-|FFFFFF.|
+0002|[ us ]*|FFFFFF.|
+0003|[ e  ]||FFFFFF.|
+0004|[ Mo ]||FFFFFF.|
+0005|[ dA ]||FFFFFF.|
+0006|[ lt ]||FFFFFF.|
+0007|[ ,  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0012. Move: WheelDown
-000000001|[ us ]-| width:000000007
-000000002|[ e  ]*| width:000000007
-000000003|[ Mo ]|| width:000000007
-000000004|[ dA ]|| width:000000007
-000000005|[ lt ]|| width:000000007
-000000006|[ ,  ]|| width:000000007
-000000007|[ ev ]-| width:000000007
+0001|[ us ]-|FFFFFF.|
+0002|[ e  ]*|FFFFFF.|
+0003|[ Mo ]||FFFFFF.|
+0004|[ dA ]||FFFFFF.|
+0005|[ lt ]||FFFFFF.|
+0006|[ ,  ]||FFFFFF.|
+0007|[ ev ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0013. Move: WheelUp
-000000001|[ y  ]-| width:000000007
-000000002|[ us ]*| width:000000007
-000000003|[ e  ]|| width:000000007
-000000004|[ Mo ]|| width:000000007
-000000005|[ dA ]|| width:000000007
-000000006|[ lt ]|| width:000000007
-000000007|[ ,  ]-| width:000000007
+0001|[ y  ]-|FFFFFF.|
+0002|[ us ]*|FFFFFF.|
+0003|[ e  ]||FFFFFF.|
+0004|[ Mo ]||FFFFFF.|
+0005|[ dA ]||FFFFFF.|
+0006|[ lt ]||FFFFFF.|
+0007|[ ,  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0014. Move: WheelUp
-000000001|[ he ]-| width:000000007
-000000002|[ y  ]*| width:000000007
-000000003|[ us ]|| width:000000007
-000000004|[ e  ]|| width:000000007
-000000005|[ Mo ]|| width:000000007
-000000006|[ dA ]|| width:000000007
-000000007|[ lt ]-| width:000000007
+0001|[ he ]-|FFFFFF.|
+0002|[ y  ]*|FFFFFF.|
+0003|[ us ]||FFFFFF.|
+0004|[ e  ]||FFFFFF.|
+0005|[ Mo ]||FFFFFF.|
+0006|[ dA ]||FFFFFF.|
+0007|[ lt ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0015. Move: WheelUp
-000000001|[  t ]-| width:000000007
-000000002|[ he ]*| width:000000007
-000000003|[ y  ]|| width:000000007
-000000004|[ us ]|| width:000000007
-000000005|[ e  ]|| width:000000007
-000000006|[ Mo ]|| width:000000007
-000000007|[ dA ]-| width:000000007
+0001|[  t ]-|FFFFFF.|
+0002|[ he ]*|FFFFFF.|
+0003|[ y  ]||FFFFFF.|
+0004|[ us ]||FFFFFF.|
+0005|[ e  ]||FFFFFF.|
+0006|[ Mo ]||FFFFFF.|
+0007|[ dA ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0016. Move: WheelUp
-000000001|[ d, ]-| width:000000007
-000000002|[  t ]*| width:000000007
-000000003|[ he ]|| width:000000007
-000000004|[ y  ]|| width:000000007
-000000005|[ us ]|| width:000000007
-000000006|[ e  ]|| width:000000007
-000000007|[ Mo ]-| width:000000007
+0001|[ d, ]-|FFFFFF.|
+0002|[  t ]*|FFFFFF.|
+0003|[ he ]||FFFFFF.|
+0004|[ y  ]||FFFFFF.|
+0005|[ us ]||FFFFFF.|
+0006|[ e  ]||FFFFFF.|
+0007|[ Mo ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0017. Move: WheelUp
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0018. Move: WheelUp
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0019. Move: WheelUp
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|FFFFFF.|
+0002|[ st ]*|FFFFFF.|
+0003|[ ea ]||FFFFFF.|
+0004|[ d, ]||FFFFFF.|
+0005|[  t ]||FFFFFF.|
+0006|[ he ]||FFFFFF.|
+0007|[ y  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0020. Move: WheelUp
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|FFFFFF.|
+0002|[ st ]*|FFFFFF.|
+0003|[ ea ]||FFFFFF.|
+0004|[ d, ]||FFFFFF.|
+0005|[  t ]||FFFFFF.|
+0006|[ he ]||FFFFFF.|
+0007|[ y  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0021. Move: Click
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|FFFFFF.|
+0002|[ st ]*|FFFFFF.|
+0003|[ ea ]||FFFFFF.|
+0004|[ d, ]||FFFFFF.|
+0005|[  t ]||FFFFFF.|
+0006|[ he ]||FFFFFF.|
+0007|[ y  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0022. Move: InputRune
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|FFFFFF.|
+0002|[ st ]*|FFFFFF.|
+0003|[ ea ]||FFFFFF.|
+0004|[ d, ]||FFFFFF.|
+0005|[  t ]||FFFFFF.|
+0006|[ he ]||FFFFFF.|
+0007|[ y  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0023. Move: InputRune
-000000001|[ In ]-| width:000000007
-000000002|[ st ]*| width:000000007
-000000003|[ ea ]|| width:000000007
-000000004|[ d, ]|| width:000000007
-000000005|[  t ]|| width:000000007
-000000006|[ he ]|| width:000000007
-000000007|[ y  ]-| width:000000007
+0001|[ In ]-|FFFFFF.|
+0002|[ st ]*|FFFFFF.|
+0003|[ ea ]||FFFFFF.|
+0004|[ d, ]||FFFFFF.|
+0005|[  t ]||FFFFFF.|
+0006|[ he ]||FFFFFF.|
+0007|[ y  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0024. Move: WheelDown
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0025. Move: Click
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0026. Move: InputRune
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0027. Move: InputRune
-000000001|[ st ]-| width:000000007
-000000002|[ ea ]*| width:000000007
-000000003|[ d, ]|| width:000000007
-000000004|[  t ]|| width:000000007
-000000005|[ he ]|| width:000000007
-000000006|[ y  ]|| width:000000007
-000000007|[ us ]-| width:000000007
+0001|[ st ]-|FFFFFF.|
+0002|[ ea ]*|FFFFFF.|
+0003|[ d, ]||FFFFFF.|
+0004|[  t ]||FFFFFF.|
+0005|[ he ]||FFFFFF.|
+0006|[ y  ]||FFFFFF.|
+0007|[ us ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0028. Move: WheelDown
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0029. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0030. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0031. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0032. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0033. Move: Click-2--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0034. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0035. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0036. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0037. Move: Click-2-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0038. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0039. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0040. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0041. Move: Click-1--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0042. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0043. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0044. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0045. Move: Click-1-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0046. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0047. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0048. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0049. Move: Click00--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0050. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0051. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0052. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0053. Move: Click00-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0054. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0055. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0056. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0057. Move: Click01--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0058. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0059. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0060. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0061. Move: Click01-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0062. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0063. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0064. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0065. Move: Click02--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0066. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0067. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0068. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0069. Move: Click02-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0070. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0071. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0072. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0073. Move: Click03--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0074. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0075. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0076. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0077. Move: Click03-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0078. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0079. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0080. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0081. Move: Click04--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0082. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0083. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0084. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0085. Move: Click04-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0086. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0087. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0088. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0089. Move: Click05--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0090. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0091. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0092. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0093. Move: Click05-03
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0094. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0095. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0096. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0097. Move: Click06--2
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0098. Move: InputRune
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0099. Move: Right
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0100. Move: Left
-000000001|[ ea ]-| width:000000007
-000000002|[ d, ]*| width:000000007
-000000003|[  t ]|| width:000000007
-000000004|[ he ]|| width:000000007
-000000005|[ y  ]|| width:000000007
-000000006|[ us ]|| width:000000007
-000000007|[ e  ]-| width:000000007
+0001|[ ea ]-|FFFFFF.|
+0002|[ d, ]*|FFFFFF.|
+0003|[  t ]||FFFFFF.|
+0004|[ he ]||FFFFFF.|
+0005|[ y  ]||FFFFFF.|
+0006|[ us ]||FFFFFF.|
+0007|[ e  ]-|FFFFFF.|
 rows  =   7
 width =   7
 Pos 0101. Move: Click06-03
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0102. Move: InputRune
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0103. Move: Right
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0104. Move: Left
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0105. Move: Click07--2
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0106. Move: InputRune
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0107. Move: Right
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0108. Move: Left
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0109. Move: Click07-03
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0110. Move: InputRune
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0111. Move: Right
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7
 Pos 0112. Move: Left
-000000001|ould p-| width:000000007
-000000002|ossibl|| width:000000007
-000000003|y have*| width:000000007
-000000004| been || width:000000007
-000000005|distin|| width:000000007
-000000006|guishe|| width:000000007
-000000007|d from-| width:000000007
+0001|ould p-|.......|
+0002|ossibl||.......|
+0003|y have*|.......|
+0004| been ||.......|
+0005|distin||.......|
+0006|guishe||.......|
+0007|d from-|.......|
 rows  =   7
 width =   7

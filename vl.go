@@ -210,14 +210,30 @@ func Convert(cells [][]Cell) string {
 	var buf strings.Builder
 	var w int
 	for r := range cells {
-		fmt.Fprintf(&buf, "%09d|", r+1)
+		// draw runes
+		fmt.Fprintf(&buf, "%04d|", r+1)
 		for c := range cells[r] {
 			buf.WriteRune(cells[r][c].R)
 		}
 		if width := len(cells[r]); w < width {
 			w = width
 		}
-		fmt.Fprintf(&buf, "| width:%09d\n", len(cells[r]))
+		buf.WriteString("|")
+		// draw backgrounds
+		for c := range cells[r] {
+			_, bg, _ := cells[r][c].S.Decompose()
+			switch bg {
+			case yellow:
+				buf.WriteString("Y")
+			case focus:
+				buf.WriteString("F")
+			case white:
+				buf.WriteString(".")
+			default:
+				buf.WriteString("X")
+			}
+		}
+		buf.WriteString("|\n")
 	}
 	fmt.Fprintf(&buf, "rows  = %3d\n", len(cells))
 	fmt.Fprintf(&buf, "width = %3d\n", w)
@@ -1250,6 +1266,15 @@ type Frame struct {
 	offsetRoot   Offset
 
 	cleaned []bool
+}
+
+func (f *Frame) SetHeight(hmax uint) {
+	f.containerVerticalFix.SetHeight(hmax)
+	if f.root != nil {
+		if _, ok := f.root.(VerticalFix); ok {
+			f.root.(VerticalFix).SetHeight(hmax)
+		}
+	}
 }
 
 func (f *Frame) Focus(focus bool) {
