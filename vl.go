@@ -2562,6 +2562,9 @@ func Demo() (demos []Widget) {
 			} else {
 				sub.AddText(name)
 			}
+			if 0 < i && i%5 == 0 {
+				sub.AddText("long long long long long long long long long long long long")
+			}
 			if i%4 == 0 {
 				name += "Sub"
 				var ss Menu
@@ -2581,6 +2584,7 @@ func Demo() (demos []Widget) {
 			name := fmt.Sprintf("SecondText%02d", i)
 			sub.AddText(name)
 		}
+		sub.AddText("long long long long long long long long long long long long")
 		menu.AddMenu("View", &sub)
 	}
 	// 	{
