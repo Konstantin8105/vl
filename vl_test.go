@@ -744,7 +744,7 @@ func TestMenuList(t *testing.T) {
 				if k%2 == 0 {
 					var sub Menu
 					sub.AddButton(t, nil)
-					submenu.AddMenu(t, sub)
+					submenu.AddMenu(t, &sub)
 				} else {
 					submenu.AddText(t)
 				}
