@@ -492,9 +492,15 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		row -= sc.offset
 		dr(row, col, st, r)
 	}
+	if width < 2 {
+		return
+	}
 	if sc.addlimit {
 		if width < scrollBarWidth {
-			return
+			panic(fmt.Errorf("too small width %d %d", width, scrollBarWidth))
+		}
+		if maxSize < sc.hmax {
+			panic(fmt.Errorf("too big sc.hmax: %d", sc.hmax))
 		}
 		height = sc.root.Render(width-scrollBarWidth, draw)
 		// calculate location
@@ -844,9 +850,16 @@ type Menu struct {
 
 func (menu *Menu) SetHeight(hmax uint) {
 	menu.containerVerticalFix.SetHeight(hmax)
+	menu.fixRootHeight()
+}
+
+func (menu *Menu) fixRootHeight() {
 	if menu.root != nil {
+		h := menu.header.height
 		if _, ok := menu.root.(VerticalFix); ok {
-			menu.root.(VerticalFix).SetHeight(hmax)
+			if h <= menu.hmax {
+				menu.root.(VerticalFix).SetHeight(menu.hmax - h)
+			}
 		}
 	}
 }
@@ -940,24 +953,29 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		if SubMenuWidth < w {
 			w = SubMenuWidth
 		}
-		droot := func(row, col uint, s tcell.Style, r rune) {
-			dr(row+menu.offset.row, col+menu.offset.col, s, r)
-		}
-		menu.frame.Render(w, droot)
+		menu.frame.Render(w, drawerLimit(
+			dr,
+			menu.offset.row, menu.offset.col,
+			0, maxSize,
+			0, width,
+		))
 	}
 	if menu.parent == nil {
 		menu.header.Compress()
 		h := menu.header.Render(width, dr)
-		droot := func(row, col uint, s tcell.Style, r rune) {
-			if menu.hmax < row && menu.addlimit {
-				return
-			}
-			dr(row+h, col, s, r)
-		}
 		if menu.root != nil {
-			height = menu.root.Render(width, droot)
+			menu.fixRootHeight() // fix root
+			height = menu.root.Render(width, drawerLimit(
+				dr,
+				h, 0,
+				0, menu.hmax,
+				0, width,
+			))
 		}
 		height += h // for menu
+		if 0 < menu.hmax {
+			height = menu.hmax
+		}
 	}
 	// render menu only after render Root
 	for _, m := range menu.subs {
@@ -968,6 +986,9 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			continue
 		}
 		m.Render(width, dr)
+	}
+	if menu.addlimit && 0 < menu.height {
+		height = menu.hmax
 	}
 	return
 }
@@ -1320,12 +1341,12 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}()
 	// draw text
 	if f.Header != nil {
-		draw := func(row, col uint, st tcell.Style, r rune) {
-			if width < col {
-				panic("Text width")
-			}
-			dr(row, col+2, st, r)
-		}
+		draw := drawerLimit(
+			dr, 
+			0, 2,
+			0, maxSize,
+			0, width,
+		)		
 		height = f.Header.Render(width-4, draw)
 		// draw line
 		wh, _ := f.Header.GetSize()
@@ -1465,13 +1486,12 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 		if ch, ok := r.root.(*CollapsingHeader); ok {
 			ch.Open(r.choosed)
 		}
-		droot := func(row, col uint, s tcell.Style, r rune) {
-			if width < col {
-				panic("Text width")
-			}
-			dr(row, col+banner, s, r)
-		}
-		height = r.root.Render(width-banner, droot)
+		height = r.root.Render(width-banner, drawerLimit(
+			dr,
+			0, banner,
+			0, maxSize,
+			0, width,
+		))
 	}
 	if height < 2 {
 		height = 1
@@ -1646,13 +1666,12 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		lenght = uint(len(ch.pair[1]))
 	}
 	dr(0, lenght, TextStyle, ' ')
-	draw := func(row, col uint, st tcell.Style, r rune) {
-		if width < col {
-			panic("Text width")
-		}
-		dr(row, col+lenght+1, st, r)
-	}
-	height = ch.Text.Render(width-lenght-1, draw)
+	height = ch.Text.Render(width-lenght-1, drawerLimit(
+		dr,
+		0, lenght+1,
+		0, maxSize,
+		lenght+1, width,
+	))
 	if height < 2 {
 		height = 1
 	}
@@ -2584,7 +2603,7 @@ func Demo() (demos []Widget) {
 			name := fmt.Sprintf("SecondText%02d", i)
 			sub.AddText(name)
 		}
-		sub.AddButton("long long long long long long long long long long long long", func(){})
+		sub.AddButton("long long long long long long long long long long long long", func() {})
 		menu.AddMenu("View", &sub)
 	}
 	// 	{

@@ -27,11 +27,11 @@ var (
 
 type Root struct {
 	name     string
-	generate func() (root Widget, action chan func())
+	generate func() (root Widget) // , action chan func())
 }
 
 var roots = []Root{
-	{"nil", func() (Widget, chan func()) { return nil, nil }},
+	{"nil", func() Widget { return nil }},
 }
 
 func init() {
@@ -41,9 +41,9 @@ func init() {
 			i := i
 			roots = append(roots, Root{
 				name: fmt.Sprintf("Demo%03d", i),
-				generate: func() (Widget, chan func()) {
-					action := make(chan func(), 10)
-					return ws[i], action
+				generate: func() Widget {
+					// action := make(chan func(), 10)
+					return ws[i] // , action
 				},
 			})
 			break
@@ -52,15 +52,17 @@ func init() {
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
-			name:     fmt.Sprintf("justtext%03d", ti),
-			generate: func() (Widget, chan func()) { return TextStatic(texts[ti]), nil },
+			name: fmt.Sprintf("justtext%03d", ti),
+			generate: func() Widget { //, chan func()) {
+				return TextStatic(texts[ti])
+			}, // , nil },
 		})
 	}
 	for ti := range texts {
 		ti := ti
 		roots = append(roots, Root{
 			name: fmt.Sprintf("ScrollWithDoubleText%03d", ti),
-			generate: func() (Widget, chan func()) {
+			generate: func() Widget { // , chan func()) {
 				var (
 					r Scroll
 					l List
@@ -102,7 +104,7 @@ func init() {
 				l.Add(&in)
 
 				r.SetRoot(&l)
-				return &r, nil
+				return &r // , nil
 			},
 		})
 	}
@@ -112,25 +114,25 @@ func Test(t *testing.T) {
 	run := func(si, ri int) {
 		name := fmt.Sprintf("%03d-%03d-%s", sizes[si], ri, roots[ri].name)
 		t.Run(name, func(t *testing.T) {
-			rt, ac := roots[ri].generate()
+			rt := roots[ri].generate()
 			if _, ok := rt.(*Separator); ok {
 				return
 			}
-			go func() {
-				for {
-					isbreak := false
-					select {
-					case f, ok := <-ac:
-						if !ok {
-							isbreak = true
-						}
-						f()
-					}
-					if isbreak {
-						break
-					}
-				}
-			}()
+			// go func() {
+			// 	for {
+			// 		isbreak := false
+			// 		select {
+			// 		case f, ok := <-ac:
+			// 			if !ok {
+			// 				isbreak = true
+			// 			}
+			// 			f()
+			// 		}
+			// 		if isbreak {
+			// 			break
+			// 		}
+			// 	}
+			// }()
 			var screen Screen
 			screen.SetRoot(rt)
 			check(t, name, si, screen)
@@ -346,9 +348,28 @@ func TestRun(t *testing.T) {
 // Benchmark/ComboBox-8        	   19702	     59992 ns/op	      88 B/op	       3 allocs/op
 // Benchmark/Tabs-8            	   20982	     58993 ns/op	      64 B/op	       2 allocs/op
 // Benchmark/Tree-8            	   22326	     51231 ns/op	      40 B/op	       2 allocs/op
+//
+// Benchmark/Size020-4         	   10000	    118478 ns/op	    1795 B/op	      41 allocs/op
+// Benchmark/Size040-4         	    8124	    130859 ns/op	    1795 B/op	      41 allocs/op
+// Benchmark/Size080-4         	    6294	    172075 ns/op	    1794 B/op	      41 allocs/op
+// Benchmark/Separato-4        	   31983	     38224 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Text-4            	   30786	     41011 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Scroll-4          	   31495	     39544 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/List-4            	   30926	     38390 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Menu-4            	   30685	     38228 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Button-4          	   28232	     40346 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Frame-4           	   28732	     42876 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/RadioGro-4        	   31024	     38564 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/CheckBox-4        	   29526	     39660 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/InputBox-4        	   29588	     38979 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Collapsi-4        	   27289	     43714 ns/op	      88 B/op	       3 allocs/op
+// Benchmark/ListH-4           	   31335	     39069 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ComboBox-4        	   27135	     43895 ns/op	      88 B/op	       3 allocs/op
+// Benchmark/Tabs-4            	   28226	     43049 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Tree-4            	   30840	     37779 ns/op	      40 B/op	       2 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
-	r, _ := roots[len(roots)-1].generate()
+	r := roots[len(roots)-1].generate()
 	screen.SetRoot(r)
 	for _, size := range []uint{20, 40, 80} {
 		b.Run(fmt.Sprintf("Size%03d", size), func(b *testing.B) {
@@ -462,7 +483,7 @@ func TestWidget(t *testing.T) {
 				c.SetText(texts[it])
 				name := fmt.Sprintf("%s-SetText%02d", getName(w), it)
 				tcs = append(tcs, tcase{name: name, w: w})
-				t.Run(getName(w)+"PrepareGetText", func(t *testing.T) {
+				t.Run(fmt.Sprintf("%sPrerareGetText%d", getName(w), it), func(t *testing.T) {
 					if texts[it] != c.GetText() {
 						t.Errorf("not same")
 					}
