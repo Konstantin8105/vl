@@ -1262,6 +1262,7 @@ func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
 }
 
 func (v *Viewer) SetText(str string) {
+	v.words = nil
 	str = strings.ReplaceAll(str, "\r", "")
 	str = strings.ReplaceAll(str, "  ", "")
 	lines := strings.Split(str, "\n")
@@ -1311,6 +1312,32 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 		height += 2
 	}
 	height--
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+var _ Widget = (*Image)(nil)
+
+type Image struct {
+	containerVerticalFix
+	data [][]Cell
+}
+
+func (img *Image) SetImage(data [][]Cell) {
+	img.data = data
+}
+
+func (img *Image) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		img.StoreSize(width, height)
+	}()
+	for row := range img.data {
+		for col := range img.data[row] {
+			dr(uint(row), uint(col), img.data[row][col].S, img.data[row][col].R)
+		}
+	}
+	height = uint(len(img.data))
 	return
 }
 
@@ -2536,33 +2563,69 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	}
 	list.Add(new(Separator))
 	{
-		var frame Frame
-		list.Add(&frame)
-		frame.Header = TextStatic("Button test")
-		var list List
-		frame.SetRoot(&list)
+		var listh ListH
 
-		var counter uint
-		view := func() string {
-			return fmt.Sprintf("Counter : %02d", counter)
-		}
+		{
+			var frame Frame
+			listh.Add(&frame)
+			frame.Header = TextStatic("Button test")
 
-		list.Add(TextStatic("Counter button"))
-		var b Button
-		b.SetText(view())
+			var list List
+			frame.SetRoot(&list)
 
-		var short Button
-		short.Compress()
-		short.SetText(view())
-		short.OnClick = func() {
-			counter++
-			short.SetText(view())
+			var counter uint
+			view := func() string {
+				return fmt.Sprintf("Counter : %02d", counter)
+			}
+
+			list.Add(TextStatic("Counter button"))
+			var b Button
 			b.SetText(view())
+
+			var short Button
+			short.Compress()
 			short.SetText(view())
+			short.OnClick = func() {
+				counter++
+				short.SetText(view())
+				b.SetText(view())
+				short.SetText(view())
+			}
+			b.OnClick = short.OnClick
+			list.Add(&b)
+			list.Add(&short)
 		}
-		b.OnClick = short.OnClick
-		list.Add(&b)
-		list.Add(&short)
+		{
+			var frame Frame
+			listh.Add(&frame)
+			frame.Header = TextStatic("Image")
+			data := make([][]Cell, 4)
+			for i := range data {
+				data[i] = make([]Cell, 15)
+			}
+			for i := range data {
+				for j := range data[i] {
+					var c Cell
+					if (i+j)%2 == 0 {
+						c.R = rune('F')
+					} else {
+						c.R = rune('Q')
+					}
+					if (i+j)%3 == 0 {
+						c.S = style(tcell.ColorBlack, tcell.ColorRed)
+					} else {
+						c.S = style(tcell.ColorYellow, tcell.ColorGreen)
+					}
+					data[i][j] = c
+				}
+			}
+			var img Image
+			img.SetImage(data)
+			frame.SetRoot(&img)
+		}
+
+		list.Add(&listh)
+
 	}
 	list.Add(new(Separator))
 	// 	{

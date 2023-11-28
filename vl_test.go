@@ -473,6 +473,7 @@ func list() []Widget {
 			v.SetText("Hello, World")
 			return v
 		}(),
+		new(Image),
 	}
 }
 
