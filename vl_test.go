@@ -367,6 +367,26 @@ func TestRun(t *testing.T) {
 // Benchmark/ComboBox-4        	   27135	     43895 ns/op	      88 B/op	       3 allocs/op
 // Benchmark/Tabs-4            	   28226	     43049 ns/op	      64 B/op	       2 allocs/op
 // Benchmark/Tree-4            	   30840	     37779 ns/op	      40 B/op	       2 allocs/op
+//
+// Benchmark/Size020-4         	    8266	    131666 ns/op	    2434 B/op	      41 allocs/op
+// Benchmark/Size040-4         	    9135	    145425 ns/op	    2434 B/op	      41 allocs/op
+// Benchmark/Size080-4         	    5845	    180644 ns/op	    2438 B/op	      41 allocs/op
+// Benchmark/Separato-4        	   27798	     44193 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Text-4            	   29014	     43097 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Scroll-4          	   28222	     40916 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/List-4            	   28788	     40608 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Menu-4            	   30699	     40568 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Button-4          	   29787	     42412 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Frame-4           	   27374	     46007 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/RadioGro-4        	   29445	     41844 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/CheckBox-4        	   29716	     40744 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/InputBox-4        	   28488	     41075 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Collapsi-4        	   24603	     47008 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/ListH-4           	   28605	     39280 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ComboBox-4        	   25687	     46629 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/Tabs-4            	   27115	     45441 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Tree-4            	   28879	     40285 ns/op	      40 B/op	       2 allocs/op
+// Benchmark/Viewer-4          	   28900	     42974 ns/op	      32 B/op	       1 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
@@ -430,7 +450,11 @@ func TestAscii(t *testing.T) {
 func list() []Widget {
 	return []Widget{
 		new(Separator),
-		new(Text),
+		func() Widget {
+			t := new(Text)
+			t.SetText("Hello, World")
+			return t
+		}(),
 		new(Scroll),
 		new(List),
 		new(Menu),
@@ -444,6 +468,11 @@ func list() []Widget {
 		new(ComboBox),
 		new(Tabs),
 		new(Tree),
+		func() Widget {
+			v := new(Viewer)
+			v.SetText("Hello, World")
+			return v
+		}(),
 	}
 }
 

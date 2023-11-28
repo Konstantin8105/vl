@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/Konstantin8105/tf"
 	"github.com/gdamore/tcell/v2"
@@ -1228,6 +1229,93 @@ func (rt *rootable) SetRoot(root Widget) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+var _ Widget = (*Viewer)(nil)
+
+type word struct {
+	S *tcell.Style
+	R []rune
+}
+
+type Viewer struct {
+	containerVerticalFix
+	converters []func(word []rune) *tcell.Style
+	words      [][]word
+}
+
+func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
+	v.converters = converters
+	// use convertors
+	for i := range v.converters {
+		if converters[i] == nil {
+			continue
+		}
+		for k := range v.words {
+			for n := range v.words[k] {
+				t := v.converters[i](v.words[k][n].R)
+				if t == nil {
+					continue
+				}
+				v.words[k][n].S = t
+			}
+		}
+	}
+}
+
+func (v *Viewer) SetText(str string) {
+	str = strings.ReplaceAll(str, "\r", "")
+	str = strings.ReplaceAll(str, "  ", "")
+	lines := strings.Split(str, "\n")
+	for i := range lines {
+		lines[i] = strings.TrimSpace(lines[i])
+	}
+	// set default styles
+	for i := range lines {
+		if len(lines[i]) == 0 {
+			continue
+		}
+		runes := []rune(lines[i])
+		var ws []word
+		ws = append(ws, word{S: &TextStyle, R: []rune{runes[0]}})
+		for ilet := 1; ilet < len(runes); ilet++ {
+			if !unicode.IsLetter(runes[ilet]) {
+				ws = append(ws, word{S: &TextStyle, R: []rune{runes[ilet]}})
+				continue
+			}
+			if unicode.IsLetter(runes[ilet-1]) {
+				ws[len(ws)-1].R = append(ws[len(ws)-1].R, runes[ilet])
+				continue
+			}
+			ws = append(ws, word{S: &TextStyle, R: []rune{runes[ilet]}})
+		}
+		v.words = append(v.words, ws)
+	}
+	v.SetColorize(v.converters)
+}
+
+func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		v.StoreSize(width, height)
+	}()
+	for l := range v.words {
+		pos := uint(0)
+		for k := range v.words[l] {
+			for ir := range v.words[l][k].R {
+				dr(height, pos, *v.words[l][k].S, v.words[l][k].R[ir])
+				pos++
+				if width < pos+1 {
+					height++
+					pos = 0
+				}
+			}
+		}
+		height += 2
+	}
+	height--
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Frame examples
 //
 //	+- Header ---------+
@@ -1342,11 +1430,11 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	// draw text
 	if f.Header != nil {
 		draw := drawerLimit(
-			dr, 
+			dr,
 			0, 2,
 			0, maxSize,
 			0, width,
-		)		
+		)
 		height = f.Header.Render(width-4, draw)
 		// draw line
 		wh, _ := f.Header.GetSize()
@@ -2339,6 +2427,55 @@ func Demo() (demos []Widget) {
 			}
 
 			list.Add(&optionInfo)
+			list.Add(new(Separator))
+			{
+				var viewer Viewer
+				viewer.SetText(`In according to https://en.wikipedia.org/wiki/Representational_systems_(NLP)
+According to Bandler and Grinder our chosen words, phrases and sentences are indicative of our referencing of each of the representational systems.[4] So for example the words "black", "clear", "spiral" and "image" reference the visual representation system; similarly the words "tinkling", "silent", "squeal" and "blast" reference the auditory representation system.[4] Bandler and Grinder also propose that ostensibly metaphorical or figurative language indicates a reference to a representational system such that it is actually literal. For example, the comment "I see what you're saying" is taken to indicate a visual representation.[5]`)
+
+				clean := func(word []rune) string {
+					str := string(word)
+					str = strings.ToLower(str)
+					return str
+				}
+				viewer.SetColorize([]func(word []rune) *tcell.Style{
+					func(word []rune) *tcell.Style {
+						s := clean(word)
+						if s == "see" || s == "visual" || s == "black" || s == "white" ||
+							s == "image" || s == "indicate" {
+							st := style(
+								tcell.ColorWhite,
+								tcell.ColorGreen,
+							)
+							return &st
+						}
+						return nil
+					},
+					func(word []rune) *tcell.Style {
+						s := clean(word)
+						if s == "bandler" || s == "i" || s == "you" || s == "grinder" {
+							st := style(
+								tcell.ColorDeepPink,
+								tcell.ColorYellow,
+							)
+							return &st
+						}
+						return nil
+					},
+					func(word []rune) *tcell.Style {
+						s := clean(word)
+						if s == "silent" || s == "saying" {
+							st := style(
+								tcell.ColorBlack,
+								tcell.ColorBlue,
+							)
+							return &st
+						}
+						return nil
+					},
+				})
+				list.Add(&viewer)
+			}
 		}
 
 		{
