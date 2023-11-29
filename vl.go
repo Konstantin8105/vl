@@ -161,6 +161,11 @@ type Widget interface {
 	GetSize() (width, height uint)
 }
 
+type WidgetVerticalFix interface {
+	Widget
+	VerticalFix
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 type Cell struct {
@@ -2260,6 +2265,49 @@ func (t *Tabs) Add(name string, root Widget) {
 	}
 	btn.Compress()
 	t.header.Add(&btn)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type Stack struct {
+	widgets []WidgetVerticalFix
+}
+
+func (s *Stack) Push(w WidgetVerticalFix) {
+	s.widgets = append(s.widgets, w)
+}
+func (s *Stack) Pop() {
+	if len(s.widgets) == 0 {
+		return
+	}
+	s.widgets = s.widgets[:len(s.widgets)-1]
+}
+
+func (s *Stack) present() WidgetVerticalFix {
+	if len(s.widgets) == 0 {
+		sc := new(Scroll)
+		sc.SetRoot(TextStatic("stack is empty"))
+		return sc
+	}
+	return s.widgets[len(s.widgets)-1]
+}
+func (s *Stack) Focus(focus bool) {
+	s.present().Focus(focus)
+}
+func (s *Stack) Render(width uint, dr Drawer) (height uint) {
+	return s.present().Render(width, dr)
+}
+func (s *Stack) Event(ev tcell.Event) {
+	s.present().Event(ev)
+}
+func (s *Stack) StoreSize(width, height uint) {
+	s.present().StoreSize(width, height)
+}
+func (s *Stack) GetSize() (width, height uint) {
+	return s.present().GetSize()
+}
+func (s *Stack) SetHeight(hmax uint) {
+	s.present().SetHeight(hmax)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
