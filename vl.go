@@ -28,6 +28,7 @@ var (
 	TextStyle          tcell.Style = ScreenStyle
 	ButtonStyle        tcell.Style = style(black, yellow)
 	ButtonFocusStyle   tcell.Style = style(black, focus)
+	ButtonSelectStyle  tcell.Style = style(black, green)
 	InputBoxStyle      tcell.Style = style(black, yellow)
 	InputBoxFocusStyle tcell.Style = style(black, focus)
 	// cursor
@@ -1595,12 +1596,12 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	if width < 6 {
 		return 1
 	}
-	st := InputBoxStyle
+	st := ButtonStyle
 	if r.choosed {
-		st = InputBoxSelectStyle
+		st = ButtonSelectStyle
 	}
 	if r.focus {
-		st = InputBoxFocusStyle
+		st = ButtonFocusStyle
 	}
 	if r.choosed {
 		PrintDrawer(0, 0, st, dr, []rune("(*)"))
@@ -1767,12 +1768,12 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		ch.width = width
 		ch.height = height
 	}()
-	st := &InputBoxStyle
+	st := &ButtonStyle
 	if ch.Checked {
-		st = &InputBoxSelectStyle
+		st = &ButtonSelectStyle
 	}
 	if ch.focus {
-		st = &InputBoxFocusStyle
+		st = &ButtonFocusStyle
 	}
 	if len(ch.pair[0]) == 0 || len(ch.pair[1]) == 0 {
 		// default values
