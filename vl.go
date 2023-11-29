@@ -1476,7 +1476,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		height = f.Header.Render(width-4, draw)
 		// draw line
 		wh, _ := f.Header.GetSize()
-		for i := wh; i <= width; i++ {
+		for i := wh; i < width-2; i++ {
 			row := uint(0)
 			if f.focus {
 				draw(row, i, TextStyle, LineHorizontalFocus)
