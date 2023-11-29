@@ -370,6 +370,11 @@ func (t *Text) SetMaxLines(limit uint) {
 	t.maxLines = limit
 }
 
+// SetStyle set style of text
+func (t *Text) SetStyle(style *tcell.Style) {
+	t.style = style
+}
+
 // SetLinesLimit set minimal visible lines of text
 func (t *Text) SetLinesLimit(limit uint) {
 	t.content.SetLinesLimit(limit)
