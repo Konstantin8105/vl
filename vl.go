@@ -1275,7 +1275,7 @@ func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
 func (v *Viewer) SetText(str string) {
 	v.words = nil
 	str = strings.ReplaceAll(str, "\r", "")
-	str = strings.ReplaceAll(str, "  ", "")
+	str = strings.ReplaceAll(str, "  ", " ")
 	lines := strings.Split(str, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
