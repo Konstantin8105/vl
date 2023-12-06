@@ -175,7 +175,7 @@ type Cell struct {
 }
 
 type Screen struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	rootable
 	//	dialog struct {
 	//		Root             Widget
@@ -289,7 +289,7 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (screen *Screen) SetHeight(hmax uint) {
-	screen.containerVerticalFix.SetHeight(hmax)
+	screen.ContainerVerticalFix.SetHeight(hmax)
 	if screen.root != nil {
 		if _, ok := screen.root.(VerticalFix); ok {
 			screen.root.(VerticalFix).SetHeight(hmax)
@@ -473,7 +473,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 const scrollBarWidth uint = 1
 
 type Scroll struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	rootable
 	offset uint
 }
@@ -656,7 +656,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 ///////////////////////////////////////////////////////////////////////////////
 
 type List struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	nodes    []listNode
 	compress bool
 }
@@ -823,7 +823,7 @@ func (l *List) Add(w Widget) {
 }
 
 func (l *List) SetHeight(hmax uint) {
-	l.containerVerticalFix.SetHeight(hmax)
+	l.ContainerVerticalFix.SetHeight(hmax)
 	for i := range l.nodes {
 		if l.nodes[i].w == nil {
 			continue
@@ -844,7 +844,7 @@ func (l *List) SetHeight(hmax uint) {
 //   - Checkbox
 //   - RadioGroup
 type Menu struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	rootable
 
 	header ListH
@@ -861,7 +861,7 @@ type Menu struct {
 }
 
 func (menu *Menu) SetHeight(hmax uint) {
-	menu.containerVerticalFix.SetHeight(hmax)
+	menu.ContainerVerticalFix.SetHeight(hmax)
 	menu.fixRootHeight()
 }
 
@@ -1248,7 +1248,7 @@ type word struct {
 }
 
 type Viewer struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	converters []func(word []rune) *tcell.Style
 	words      [][]word
 }
@@ -1331,7 +1331,7 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 var _ Widget = (*Image)(nil)
 
 type Image struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	data [][]Cell
 }
 
@@ -1360,7 +1360,7 @@ func (img *Image) Render(width uint, dr Drawer) (height uint) {
 //	|      Root        |
 //	+------------------+
 type Frame struct {
-	containerVerticalFix
+	ContainerVerticalFix
 	rootable
 
 	Header       Widget
@@ -1371,7 +1371,7 @@ type Frame struct {
 }
 
 func (f *Frame) SetHeight(hmax uint) {
-	f.containerVerticalFix.SetHeight(hmax)
+	f.ContainerVerticalFix.SetHeight(hmax)
 	if f.root != nil {
 		if _, ok := f.root.(VerticalFix); ok {
 			f.root.(VerticalFix).SetHeight(hmax)
@@ -1955,7 +1955,7 @@ type listNode struct {
 
 // Widget: Horizontal list
 type ListH struct {
-	containerVerticalFix
+	ContainerVerticalFix
 
 	nodes    []listNode
 	compress bool
@@ -2049,7 +2049,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 }
 
 func (l *ListH) SetHeight(hmax uint) {
-	l.containerVerticalFix.SetHeight(hmax)
+	l.ContainerVerticalFix.SetHeight(hmax)
 	if len(l.nodes) == 0 {
 		return
 	}
@@ -2935,15 +2935,19 @@ func (c *container) onFocus(ev tcell.Event) (button [3]bool, ok bool) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-type containerVerticalFix struct {
+type ContainerVerticalFix struct {
 	container
 	hmax     uint
 	addlimit bool
 }
 
-func (c *containerVerticalFix) SetHeight(hmax uint) {
+func (c *ContainerVerticalFix) SetHeight(hmax uint) {
 	c.hmax = hmax
 	c.addlimit = true
+}
+
+func (c *ContainerVerticalFix) GetLimit() (addlimit bool, hmax uint) {
+	return c.addlimit, c.hmax
 }
 
 ///////////////////////////////////////////////////////////////////////////////
