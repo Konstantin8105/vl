@@ -113,7 +113,7 @@ const maxSize uint = 10000
 
 func NilDrawer(row, col uint, s tcell.Style, r rune) {}
 
-func drawerLimit(
+func DrawerLimit(
 	dr Drawer,
 	drow, dcol uint,
 	rowFrom, rowTo uint,
@@ -731,7 +731,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 			break
 		}
 		// drawing
-		l.nodes[i].w.Render(width, drawerLimit(
+		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
 			uint(l.nodes[i].from), 0,
 			uint(l.nodes[i].from), uint(l.nodes[i].to)-1,
@@ -965,7 +965,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		if SubMenuWidth < w {
 			w = SubMenuWidth
 		}
-		menu.frame.Render(w, drawerLimit(
+		menu.frame.Render(w, DrawerLimit(
 			dr,
 			menu.offset.row, menu.offset.col,
 			0, maxSize,
@@ -977,7 +977,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		h := menu.header.Render(width, dr)
 		if menu.root != nil {
 			menu.fixRootHeight() // fix root
-			height = menu.root.Render(width, drawerLimit(
+			height = menu.root.Render(width, DrawerLimit(
 				dr,
 				h, 0,
 				0, menu.hmax,
@@ -1200,7 +1200,7 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	// 	if width < 2*buttonOffset {
 	// 		width = 2 * buttonOffset
 	// 	}
-	b.Text.Render(width-2*buttonOffset, drawerLimit(
+	b.Text.Render(width-2*buttonOffset, DrawerLimit(
 		dr,
 		0, buttonOffset,
 		0, maxSize,
@@ -1467,7 +1467,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}()
 	// draw text
 	if f.Header != nil {
-		draw := drawerLimit(
+		draw := DrawerLimit(
 			dr,
 			0, 2,
 			0, maxSize,
@@ -1505,7 +1505,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	if f.root != nil {
 		// TODO create empty cell at background
 		//
-		// _ = f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
+		// _ = f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
 		// 	func(row, col uint, s tcell.Style, r rune) {
 		// 		// create empty background for menu
 		// 		dr(row, col, s, r)
@@ -1514,7 +1514,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		// 	0, maxSize,
 		// 	0, width-2*f.offsetRoot.col+1,
 		// ))
-		h := f.root.Render(width-2*f.offsetRoot.col, drawerLimit(
+		h := f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
 			dr,
 			f.offsetRoot.row, f.offsetRoot.col,
 			0, maxSize,
@@ -1612,7 +1612,7 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 		if ch, ok := r.root.(*CollapsingHeader); ok {
 			ch.Open(r.choosed)
 		}
-		height = r.root.Render(width-banner, drawerLimit(
+		height = r.root.Render(width-banner, DrawerLimit(
 			dr,
 			0, banner,
 			0, maxSize,
@@ -1792,7 +1792,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		lenght = uint(len(ch.pair[1]))
 	}
 	dr(0, lenght, TextStyle, ' ')
-	height = ch.Text.Render(width-lenght-1, drawerLimit(
+	height = ch.Text.Render(width-lenght-1, DrawerLimit(
 		dr,
 		0, lenght+1,
 		0, maxSize,
