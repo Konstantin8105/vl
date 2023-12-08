@@ -1250,37 +1250,55 @@ type word struct {
 type Viewer struct {
 	ContainerVerticalFix
 	converters []func(word []rune) *tcell.Style
-	words      [][]word
+	str        string
+	noUpdate   bool
+	data       [][]Cell
+	// linePos    []int
 }
 
 func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
 	v.converters = converters
-	// use convertors
-	for i := range v.converters {
-		if converters[i] == nil {
-			continue
-		}
-		for k := range v.words {
-			for n := range v.words[k] {
-				t := v.converters[i](v.words[k][n].R)
-				if t == nil {
-					continue
-				}
-				v.words[k][n].S = t
-			}
-		}
-	}
+	v.noUpdate = false
 }
 
 func (v *Viewer) SetText(str string) {
-	v.words = nil
-	str = strings.ReplaceAll(str, "\r", "")
-	str = strings.ReplaceAll(str, "  ", " ")
-	lines := strings.Split(str, "\n")
+	v.str = str
+	v.noUpdate = false
+}
+
+func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
+	defer func() {
+		v.StoreSize(width, height)
+	}()
+	if !v.noUpdate {
+		v.render(width)
+	}
+	// drawing
+	for row := range v.data {
+		if v.addlimit && row == int(v.hmax) {
+			break
+		}
+		for col := range v.data[row] {
+			dr(uint(row), uint(col), v.data[row][col].S, v.data[row][col].R)
+		}
+	}
+	height = uint(len(v.data))
+	if v.addlimit {
+		height = v.hmax
+	}
+	return
+}
+
+func (v *Viewer) render(width uint) {
+	// convert to string lines
+	v.str = strings.ReplaceAll(v.str, "\r", "")
+	v.str = strings.ReplaceAll(v.str, "  ", " ")
+	lines := strings.Split(v.str, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
 	}
 	// set default styles
+	var words [][]word
 	for i := range lines {
 		if len(lines[i]) == 0 {
 			continue
@@ -1299,31 +1317,64 @@ func (v *Viewer) SetText(str string) {
 			}
 			ws = append(ws, word{S: &TextStyle, R: []rune{runes[ilet]}})
 		}
-		v.words = append(v.words, ws)
+		words = append(words, ws)
 	}
-	v.SetColorize(v.converters)
-}
-
-func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
-	defer func() {
-		v.StoreSize(width, height)
-	}()
-	for l := range v.words {
-		pos := uint(0)
-		for k := range v.words[l] {
-			for ir := range v.words[l][k].R {
-				dr(height, pos, *v.words[l][k].S, v.words[l][k].R[ir])
-				pos++
-				if width < pos+1 {
-					height++
-					pos = 0
+	// use convertors
+	for i := range v.converters {
+		if v.converters[i] == nil {
+			continue
+		}
+		for k := range words {
+			for n := range words[k] {
+				t := v.converters[i](words[k][n].R)
+				if t == nil {
+					continue
+				}
+				words[k][n].S = t
+			}
+		}
+	}
+	// drawing to image
+	v.data = nil
+	render := func(width uint, dr Drawer) (height uint) {
+		for l := range words {
+			pos := uint(0)
+			for k := range words[l] {
+				for ir := range words[l][k].R {
+					dr(height, pos, *words[l][k].S, words[l][k].R[ir])
+					pos++
+					if width < pos+1 {
+						height++
+						pos = 0
+					}
+				}
+			}
+			height += 2
+		}
+		height--
+		return
+	}
+	dr := func(row, col uint, s tcell.Style, r rune) {
+		if len(v.data) < int(row)+1 {
+			v.data = append(v.data, make([][]Cell, int(row)-len(v.data)+1)...)
+		}
+		// 		if len(v.linePos) < int(row)+1 {
+		// 			v.linePos = append(v.linePos, make([]int, int(row)-len(v.linePos)+1)...)
+		// 		}
+		for i := 0; i <= int(row); i++ {
+			if len(v.data[i]) < int(width)+1 {
+				v.data[i] = make([]Cell, width+1)
+				for k := range v.data[i] {
+					v.data[i][k] = Cell{S: TextStyle, R: rune(' ')}
 				}
 			}
 		}
-		height += 2
+		v.data[row][col] = Cell{S: s, R: r}
+		// 		if row == 0 {
+		// 			v.linePos =
+		// 		}
 	}
-	height--
-	return
+	_ = render(width, dr)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
