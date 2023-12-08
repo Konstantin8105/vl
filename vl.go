@@ -1253,7 +1253,9 @@ type Viewer struct {
 	str        string
 	noUpdate   bool
 	data       [][]Cell
-	// linePos    []int
+	linePos    [][2]uint //[0] - symbol position, [1] - view position
+	lastWidth  uint
+	position   uint
 }
 
 func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
@@ -1270,24 +1272,96 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		v.StoreSize(width, height)
 	}()
-	if !v.noUpdate {
+	if !v.noUpdate || v.lastWidth != width {
 		v.render(width)
+		v.noUpdate = true
+		v.lastWidth = width
 	}
 	// drawing
-	for row := range v.data {
-		if v.addlimit && row == int(v.hmax) {
+	var row int
+	for i := range v.linePos {
+		if i == 0 {
+			continue
+		}
+		if v.linePos[i-1][0] <= v.position && v.position <= v.linePos[i][0] {
+			row = int(v.linePos[i-1][1])
+		}
+	}
+	for ; row < len(v.data); row++ {
+		if v.addlimit && height == v.hmax {
 			break
 		}
 		for col := range v.data[row] {
-			dr(uint(row), uint(col), v.data[row][col].S, v.data[row][col].R)
+			dr(uint(height), uint(col), v.data[row][col].S, v.data[row][col].R)
 		}
-	}
-	height = uint(len(v.data))
-	if v.addlimit {
-		height = v.hmax
+		height++
 	}
 	return
 }
+
+func (v Viewer) presentLinePosIndex() uint {
+	var lineIndex uint
+	for i := range v.linePos {
+		if i == 0 {
+			continue
+		}
+		if v.linePos[i-1][0] <= v.position && v.position <= v.linePos[i][0] {
+			lineIndex = uint(i - 1)
+			break
+		}
+	}
+	if v.linePos[len(v.linePos)-1][0] <= v.position {
+		lineIndex = uint(len(v.linePos) - 1)
+	}
+	return lineIndex
+}
+
+func (v *Viewer) PrevPage() {
+	if !v.addlimit {
+		return
+	}
+	if v.hmax < 2 {
+		return
+	}
+	lineIndex := v.presentLinePosIndex()
+	found := false
+	for i := range v.linePos {
+		if v.linePos[lineIndex][1] < v.linePos[i][1]+v.hmax {
+			v.position = v.linePos[i][0]
+			found = true
+			break
+		}
+	}
+	if !found {
+		panic(v.position)
+	}
+}
+
+func (v *Viewer) NextPage() {
+	if !v.addlimit {
+		return
+	}
+	if v.hmax < 2 {
+		return
+	}
+	lineIndex := v.presentLinePosIndex()
+	found := false
+	for i := len(v.linePos) - 1; 0 <= i; i-- {
+		if v.linePos[i][1] <= v.linePos[lineIndex][1]+v.hmax {
+			v.position = v.linePos[i][0]
+			found = true
+			break
+		}
+	}
+	if !found {
+		panic(v.position)
+	}
+}
+
+func (v *Viewer) SetPosition(position uint) {
+	v.position = position
+}
+func (v *Viewer) GetPosition() (position uint) { return v.position }
 
 func (v *Viewer) render(width uint) {
 	// convert to string lines
@@ -1336,11 +1410,15 @@ func (v *Viewer) render(width uint) {
 	}
 	// drawing to image
 	v.data = nil
+	v.linePos = nil
+	var counter uint
 	render := func(width uint, dr Drawer) (height uint) {
+		counter = 0
 		for l := range words {
 			pos := uint(0)
 			for k := range words[l] {
 				for ir := range words[l][k].R {
+					counter++
 					dr(height, pos, *words[l][k].S, words[l][k].R[ir])
 					pos++
 					if width < pos+1 {
@@ -1351,16 +1429,13 @@ func (v *Viewer) render(width uint) {
 			}
 			height += 2
 		}
-		height--
+		// height--
 		return
 	}
 	dr := func(row, col uint, s tcell.Style, r rune) {
 		if len(v.data) < int(row)+1 {
 			v.data = append(v.data, make([][]Cell, int(row)-len(v.data)+1)...)
 		}
-		// 		if len(v.linePos) < int(row)+1 {
-		// 			v.linePos = append(v.linePos, make([]int, int(row)-len(v.linePos)+1)...)
-		// 		}
 		for i := 0; i <= int(row); i++ {
 			if len(v.data[i]) < int(width)+1 {
 				v.data[i] = make([]Cell, width+1)
@@ -1370,11 +1445,18 @@ func (v *Viewer) render(width uint) {
 			}
 		}
 		v.data[row][col] = Cell{S: s, R: r}
-		// 		if row == 0 {
-		// 			v.linePos =
-		// 		}
+		v.linePos = append(v.linePos, [2]uint{counter, row})
 	}
 	_ = render(width, dr)
+	//	if len(v.data) != len(v.linePos) {
+	//		panic(fmt.Errorf("Not same linepositions:%d %d",
+	//			len(v.data), len(v.linePos)))
+	//	}
+	// 	var str string
+	// 	for i := range v.linePos {
+	// 		str += fmt.Sprintf("%d %d %d\n", i, v.linePos[i][0], v.linePos[i][1])
+	// 	}
+	// 	panic(str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////

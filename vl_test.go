@@ -849,3 +849,53 @@ func TestMenuList(t *testing.T) {
 		}
 	}
 }
+
+// func TestViewer(t *testing.T) {
+// 	var vr Viewer
+// 	vr.SetText("Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt. Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.")
+// 	vr.SetHeight(5)
+// 	vr.render(10)
+//
+// 	vr.NextPage()
+// 	fmt.Println("::::::::::")
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	vr.NextPage()
+// 	fmt.Println(vr.position)
+// 	vr.PrevPage()
+// 	fmt.Println(vr.position)
+// 	fmt.Println("::::::::::")
+//
+// 	for i := range vr.data {
+// 		for j := range vr.data[i] {
+// 			fmt.Printf("%s", string(vr.data[i][j].R))
+// 		}
+// 		fmt.Printf("\n")
+// 	}
+//
+// 	for i := range vr. linePos {
+// 		fmt.Printf("%d %v\t", i,	vr.linePos[i])
+// 	}
+// }
