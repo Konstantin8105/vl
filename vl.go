@@ -1621,7 +1621,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		height = 1
 	}
 	// add limit of height
-	if f.addlimit {
+	if f.addlimit && height + 2 <= f.hmax {
 		hmax := f.hmax - height - 2
 		if f.root != nil {
 			if _, ok := f.root.(VerticalFix); ok {
@@ -3127,6 +3127,9 @@ type ContainerVerticalFix struct {
 }
 
 func (c *ContainerVerticalFix) SetHeight(hmax uint) {
+	if maxSize < hmax {
+		panic(fmt.Errorf("SetHeight: too big size: %d", hmax))
+	}
 	c.hmax = hmax
 	c.addlimit = true
 }
