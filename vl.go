@@ -1683,7 +1683,7 @@ func (f *Frame) Event(ev tcell.Event) {
 			if col < 0 || row < 0 {
 				break
 			}
-			if int( width) < col || int(height) < row {
+			if int(width) < col || int(height) < row {
 				break
 			}
 			f.Header.Event(tcell.NewEventMouse(
@@ -2397,22 +2397,65 @@ func (c *ComboBox) Event(ev tcell.Event) {
 
 type Tabs struct {
 	Frame
-	header ListH
+	init        bool
+	headerListH *ListH
+	headerCombo *ComboBox
+	combo       bool
+	list        struct {
+		names []string
+		roots []Widget
+	}
 }
 
 func (t *Tabs) Add(name string, root Widget) {
-	if len(t.header.nodes) == 0 {
-		t.Header = &t.header
-		t.header.Compress()
-		t.root = root
+	if name == "" || root == nil {
+		return
 	}
-	var btn Button
-	btn.SetText(name)
-	btn.OnClick = func() {
-		t.root = root
+	if !t.init {
+		t.headerListH = new(ListH)
+		t.headerCombo = new(ComboBox)
+		t.UseCombo(false)
+		t.init = true
 	}
-	btn.Compress()
-	t.header.Add(&btn)
+	t.list.names = append(t.list.names, name)
+	t.list.roots = append(t.list.roots, root)
+	{
+		// buttons
+		var btn Button
+		btn.SetText(name)
+		btn.OnClick = func() { t.Frame.root = root }
+		btn.Compress()
+		t.headerListH.Add(&btn)
+		btn.OnClick()
+	}
+	{
+		// combo
+		t.headerCombo.Add(t.list.names[len(t.list.names)-1])
+		t.headerCombo.OnChange = func() {
+			pos := t.headerCombo.GetPos()
+			if int(pos) < len(t.list.roots) {
+				t.Frame.root = t.list.roots[pos]
+			}
+		}
+		if 0 < len(t.list.names) {
+			t.headerCombo.SetPos(0)
+		}
+	}
+}
+
+func (t *Tabs) UseCombo(combo bool) {
+	// convert
+	defer func() {
+		t.combo = combo
+	}()
+	if combo {
+		// from ListH to ComboBox
+		t.Frame.Header = t.headerCombo
+		return
+	}
+	// from ComboBox to ListH
+	t.Frame.Header = t.headerListH
+	t.headerListH.Compress()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
