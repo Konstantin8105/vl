@@ -1673,6 +1673,29 @@ func (f *Frame) Event(ev tcell.Event) {
 	if !f.focus {
 		return
 	}
+	if f.Header != nil {
+		switch ev := ev.(type) {
+		case *tcell.EventMouse:
+			col, row := ev.Position()
+			col -= int(f.offsetHeader.col)
+			row -= int(f.offsetHeader.row)
+			width, height := f.Header.GetSize()
+			if col < 0 || row < 0 {
+				break
+			}
+			if int( width) < col || int(height) < row {
+				break
+			}
+			f.Header.Event(tcell.NewEventMouse(
+				col, row,
+				ev.Buttons(),
+				ev.Modifiers()))
+			return
+
+		case *tcell.EventKey:
+			f.Header.Event(ev)
+		}
+	}
 	if f.root != nil {
 		switch ev := ev.(type) {
 		case *tcell.EventMouse:
@@ -1683,24 +1706,10 @@ func (f *Frame) Event(ev tcell.Event) {
 				col, row,
 				ev.Buttons(),
 				ev.Modifiers()))
+			return
 
 		case *tcell.EventKey:
 			f.root.Event(ev)
-		}
-	}
-	if f.Header != nil {
-		switch ev := ev.(type) {
-		case *tcell.EventMouse:
-			col, row := ev.Position()
-			col -= int(f.offsetHeader.col)
-			row -= int(f.offsetHeader.row)
-			f.Header.Event(tcell.NewEventMouse(
-				col, row,
-				ev.Buttons(),
-				ev.Modifiers()))
-
-		case *tcell.EventKey:
-			f.Header.Event(ev)
 		}
 	}
 }
