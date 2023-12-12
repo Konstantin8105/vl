@@ -850,52 +850,37 @@ func TestMenuList(t *testing.T) {
 	}
 }
 
-// func TestViewer(t *testing.T) {
-// 	var vr Viewer
-// 	vr.SetText("Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt. Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.")
-// 	vr.SetHeight(5)
-// 	vr.render(10)
-//
-// 	vr.NextPage()
-// 	fmt.Println("::::::::::")
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	vr.NextPage()
-// 	fmt.Println(vr.position)
-// 	vr.PrevPage()
-// 	fmt.Println(vr.position)
-// 	fmt.Println("::::::::::")
-//
-// 	for i := range vr.data {
-// 		for j := range vr.data[i] {
-// 			fmt.Printf("%s", string(vr.data[i][j].R))
-// 		}
-// 		fmt.Printf("\n")
-// 	}
-//
-// 	for i := range vr. linePos {
-// 		fmt.Printf("%d %v\t", i,	vr.linePos[i])
-// 	}
-// }
+func TestViewer(t *testing.T) {
+	var vr Viewer
+	vr.SetText("Instead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.\n\nInstead, they use ModAlt, even for events that could possibly have been distinguished from ModAlt.")
+	vr.SetHeight(5)
+	vr.render(10)
+	// view text
+	t.Logf("Text lines:")
+	for i := range vr.data {
+		var line string
+		for j := range vr.data[i] {
+			line += string(vr.data[i][j].R)
+		}
+		t.Logf("%04d %s\n", i, line)
+	}
+	// view datas
+	// for i := range vr.linePos {
+	// 	t.Logf("%v\t", vr.linePos[i])
+	// }
+	// moving
+	vr.NextPage()
+	vr.NextPage()
+	for _, step := range []func(){
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+		vr.NextPage, vr.PrevPage,
+	} {
+		step()
+		t.Logf("Position = %d", vr.position)
+	}
+}

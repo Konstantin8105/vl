@@ -1445,7 +1445,7 @@ func (v *Viewer) render(width uint) {
 			}
 		}
 		v.data[row][col] = Cell{S: s, R: r}
-		v.linePos = append(v.linePos, [2]uint{counter, row})
+		v.linePos = append(v.linePos, [2]uint{counter-1, row})
 	}
 	_ = render(width, dr)
 	//	if len(v.data) != len(v.linePos) {
