@@ -415,6 +415,24 @@ func Benchmark(b *testing.B) {
 			}
 		})
 	}
+	b.Run("ViewerP", func(b *testing.B) {
+		v := new(Viewer)
+		v.SetText(strings.Repeat(texts[len(texts)-1], 40))
+		screen.SetRoot(v)
+		screen.SetHeight(size)
+		width := uint(20)
+		g := false
+		b.ResetTimer()
+		for n := 0; n < b.N; n++ {
+			if g {
+				width++
+			} else {
+				width--
+			}
+			g = !g
+			_ = screen.Render(width, NilDrawer)
+		}
+	})
 }
 
 func TestAscii(t *testing.T) {
