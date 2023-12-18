@@ -1445,7 +1445,7 @@ func (v *Viewer) render(width uint) {
 			}
 		}
 		v.data[row][col] = Cell{S: s, R: r}
-		v.linePos = append(v.linePos, [2]uint{counter-1, row})
+		v.linePos = append(v.linePos, [2]uint{counter - 1, row})
 	}
 	_ = render(width, dr)
 	//	if len(v.data) != len(v.linePos) {
@@ -1621,7 +1621,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		height = 1
 	}
 	// add limit of height
-	if f.addlimit && height + 2 <= f.hmax {
+	if f.addlimit && height+2 <= f.hmax {
 		hmax := f.hmax - height - 2
 		if f.root != nil {
 			if _, ok := f.root.(VerticalFix); ok {
@@ -2098,6 +2098,7 @@ type listNode struct {
 // Widget: Horizontal list
 type ListH struct {
 	ContainerVerticalFix
+	Splitter func(width uint, size int) (elementWidth []int)
 
 	nodes    []listNode
 	compress bool
@@ -2146,13 +2147,37 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 			}
 			l.nodes[len(l.nodes)-1].to = int(width)
 		} else {
-			// width of each element
-			// gap 1 symbol between widgets
-			dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
-			// calculate widths
-			for i := range l.nodes {
-				l.nodes[i].from = i * (dw + 1)
-				l.nodes[i].to = l.nodes[i].from + dw
+			// use splitter
+			added := false
+			if l.Splitter != nil {
+				ws := l.Splitter(width, len(l.nodes))
+				if len(ws) == len(l.nodes) {
+					summ := 0
+					for i := range ws {
+						summ += ws[i]
+					}
+					summ += len(l.nodes) -1 // borders
+					if summ == int(width) {
+						summ = 0
+						for i := range ws {
+							l.nodes[i].from = summ
+							summ += ws[i]
+							l.nodes[i].to = summ
+							summ++
+						}
+						added = true
+					}
+				}
+			}
+			if !added {
+				// width of each element
+				// gap 1 symbol between widgets
+				dw := int(float32(width-uint(len(l.nodes)-1)) / float32(len(l.nodes)))
+				// calculate widths
+				for i := range l.nodes {
+					l.nodes[i].from = i * (dw + 1)
+					l.nodes[i].to = l.nodes[i].from + dw
+				}
 			}
 			// limits of width
 			for i := range l.nodes {

@@ -884,3 +884,36 @@ func TestViewer(t *testing.T) {
 		t.Logf("Position = %d", vr.position)
 	}
 }
+
+func TestListHSplitter(t *testing.T) {
+	lh := new(ListH)
+	lh.Add(TextStatic("1111111111"))
+	lh.Add(TextStatic("2222222222"))
+	lh.Add(TextStatic("3333333333"))
+	var screen Screen
+	screen.SetRoot(lh)
+	screen.SetHeight(5)
+
+	var buf bytes.Buffer
+	cells := new([][]Cell)
+	for _, f := range []func(uint, int) []int{
+		nil,
+		func(width uint, size int) (ws []int) {
+			if size != 3 {
+				return
+			}
+			if int(width) < 8 {
+				return
+			}
+			return []int{3, int(width) - 3 - 3 - 2, 3}
+		},
+	} {
+		for _, width := range []uint{4, 6, 15, 20} {
+			lh.Splitter = f
+			screen.GetContents(width, cells)
+			fmt.Fprintf(&buf, "%s", Convert(*cells))
+		}
+	}
+	filename := filepath.Join(testdata, "ListHSplitter")
+	compare.Test(t, filename, buf.Bytes())
+}
