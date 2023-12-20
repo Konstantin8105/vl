@@ -1372,7 +1372,7 @@ func (v *Viewer) render(width uint) {
 		lines[i] = strings.TrimSpace(lines[i])
 	}
 	// set default styles
-	var words [][]word
+	var wordsLines [][]word
 	for i := range lines {
 		if len(lines[i]) == 0 {
 			continue
@@ -1391,20 +1391,20 @@ func (v *Viewer) render(width uint) {
 			}
 			ws = append(ws, word{S: &TextStyle, R: []rune{runes[ilet]}})
 		}
-		words = append(words, ws)
+		wordsLines = append(wordsLines, ws)
 	}
 	// use convertors
 	for i := range v.converters {
 		if v.converters[i] == nil {
 			continue
 		}
-		for k := range words {
-			for n := range words[k] {
-				t := v.converters[i](words[k][n].R)
+		for k := range wordsLines {
+			for n := range wordsLines[k] {
+				t := v.converters[i](wordsLines[k][n].R)
 				if t == nil {
 					continue
 				}
-				words[k][n].S = t
+				wordsLines[k][n].S = t
 			}
 		}
 	}
@@ -1414,12 +1414,12 @@ func (v *Viewer) render(width uint) {
 	var counter uint
 	render := func(width uint, dr Drawer) (height uint) {
 		counter = 0
-		for l := range words {
+		for l := range wordsLines {
 			pos := uint(0)
-			for k := range words[l] {
-				for ir := range words[l][k].R {
+			for k := range wordsLines[l] {
+				for ir := range wordsLines[l][k].R {
 					counter++
-					dr(height, pos, *words[l][k].S, words[l][k].R[ir])
+					dr(height, pos, *wordsLines[l][k].S, wordsLines[l][k].R[ir])
 					pos++
 					if width < pos+1 {
 						height++
@@ -1432,22 +1432,24 @@ func (v *Viewer) render(width uint) {
 		// height--
 		return
 	}
-	dr := func(row, col uint, s tcell.Style, r rune) {
-		if len(v.data) < int(row)+1 {
-			v.data = append(v.data, make([][]Cell, int(row)-len(v.data)+1)...)
-		}
-		for i := 0; i <= int(row); i++ {
-			if len(v.data[i]) < int(width)+1 {
-				v.data[i] = make([]Cell, width+1)
-				for k := range v.data[i] {
-					v.data[i][k] = Cell{S: TextStyle, R: rune(' ')}
-				}
+	// calculate height
+	height := render(width, NilDrawer)
+	v.linePos = make([][2]uint, 0, height*width)
+	if 1 < height {
+		height--
+		v.data = make([][]Cell, height)
+		for i := 0; i < int(height); i++ {
+			v.data[i] = make([]Cell, width+1)
+			for k := range v.data[i] {
+				v.data[i][k] = Cell{S: TextStyle, R: rune(' ')}
 			}
 		}
-		v.data[row][col] = Cell{S: s, R: r}
-		v.linePos = append(v.linePos, [2]uint{counter - 1, row})
+		dr := func(row, col uint, s tcell.Style, r rune) {
+			v.data[row][col] = Cell{S: s, R: r}
+			v.linePos = append(v.linePos, [2]uint{counter - 1, row})
+		}
+		_ = render(width, dr)
 	}
-	_ = render(width, dr)
 	//	if len(v.data) != len(v.linePos) {
 	//		panic(fmt.Errorf("Not same linepositions:%d %d",
 	//			len(v.data), len(v.linePos)))
@@ -2156,7 +2158,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 					for i := range ws {
 						summ += ws[i]
 					}
-					summ += len(l.nodes) -1 // borders
+					summ += len(l.nodes) - 1 // borders
 					if summ == int(width) {
 						summ = 0
 						for i := range ws {

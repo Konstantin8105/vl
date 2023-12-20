@@ -387,6 +387,11 @@ func TestRun(t *testing.T) {
 // Benchmark/Tabs-4            	   27115	     45441 ns/op	      64 B/op	       2 allocs/op
 // Benchmark/Tree-4            	   28879	     40285 ns/op	      40 B/op	       2 allocs/op
 // Benchmark/Viewer-4          	   28900	     42974 ns/op	      32 B/op	       1 allocs/op
+//
+// cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
+// Benchmark/ViewerP-4         	     966	   1071589 ns/op	  690830 B/op	    3042 allocs/op
+// Benchmark/ViewerP-4         	    1597	    765777 ns/op	  684385 B/op	    3035 allocs/op
+// Benchmark/ViewerP-4         	    1626	    627755 ns/op	  490629 B/op	    3020 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
