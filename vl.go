@@ -2324,6 +2324,9 @@ func (c *ComboBox) Add(ts ...string) {
 		c.ts = append(c.ts, s)
 		c.rg.Add(TextStatic(s))
 	}
+	if f := c.OnChange; f != nil {
+		f()
+	}
 	if f := c.rg.OnChange; f != nil {
 		f()
 	}
@@ -2349,6 +2352,28 @@ func (c *ComboBox) GetPos() uint {
 	return c.rg.GetPos()
 }
 
+func (c *ComboBox) checkUpdater() {
+	if c.rg.OnChange != nil {
+		return
+	}
+	c.rg.OnChange = func() {
+		if len(c.ts) == 0 {
+			// empty list
+			return
+		}
+		if len(c.ts) <= int(c.rg.pos) {
+			// outside of range - this is strange
+			// try to analyze your code
+			return
+		}
+		c.ch.SetText(c.ts[c.rg.pos])
+		if f := c.OnChange; f != nil {
+			f()
+		}
+	}
+	c.rg.OnChange()
+}
+
 func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		c.StoreSize(width, height)
@@ -2358,23 +2383,8 @@ func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	}
 	if c.ch.root == nil {
 		c.ch.root = &c.rg
-		c.rg.OnChange = func() {
-			if len(c.ts) == 0 {
-				// empty list
-				return
-			}
-			if len(c.ts) <= int(c.rg.pos) {
-				// outside of range - this is strange
-				// try to analyze your code
-				return
-			}
-			c.ch.SetText(c.ts[c.rg.pos])
-			if f := c.OnChange; f != nil {
-				f()
-			}
-		}
-		c.rg.OnChange()
 	}
+	c.checkUpdater()
 	return c.ch.Render(width, dr)
 }
 
