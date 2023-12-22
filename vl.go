@@ -1258,7 +1258,7 @@ type Viewer struct {
 	position   uint
 }
 
-func (v *Viewer) SetColorize(converters []func(word []rune) *tcell.Style) {
+func (v *Viewer) SetColorize(converters ...func(word []rune) *tcell.Style) {
 	v.converters = converters
 	v.noUpdate = false
 }
@@ -2776,7 +2776,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 						}
 						return nil
 					},
-				})
+				}...)
 				list.Add(&viewer)
 			}
 		}
