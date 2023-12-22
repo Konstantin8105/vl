@@ -1252,10 +1252,24 @@ type Colorize func(words []string) []*tcell.Style
 func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 	clean := func(word string) string {
 		word = strings.ToLower(word)
+		word = strings.ReplaceAll(word, "  ", " ")
+		word = strings.TrimSpace(word)
 		return word
 	}
 	for i := range indicates {
 		indicates[i] = clean(indicates[i])
+	}
+	// multi-words
+	var multi [][]string
+	for i := range indicates {
+		fs := strings.Fields(indicates[i])
+		if len(fs) < 2 {
+			continue
+		}
+		for k := range fs {
+			fs[k] = clean(fs[k])
+		}
+		multi = append(multi, fs)
 	}
 	return func(words []string) (styles []*tcell.Style) {
 		styles = make([]*tcell.Style, len(words))
@@ -1276,6 +1290,50 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 				continue
 			}
 			styles[i] = &t
+		}
+		// multi-word indication
+		for i := range multi {
+			if len(multi) < 1 {
+				continue
+			}
+			var firsts []int
+			for k := range words {
+				if words[k] != multi[i][0] {
+					continue
+				}
+				firsts = append(firsts, k)
+			}
+			if len(firsts) == 0 {
+				continue
+			}
+			for _, f := range firsts {
+				if len(words)-f < len(multi[i]) {
+					continue
+				}
+				same := true
+				counter := 0
+				for k := 0; k < len(multi[i]); k++ {
+					pos := f+k+counter
+					if len(words) <= pos {
+						same = false
+						break
+					}
+					if len(words[pos]) == 0 {
+						counter++
+						continue
+					}
+					if multi[i][k] != words[pos] {
+						same = false
+						break
+					}
+				}
+				if !same {
+					continue
+				}
+				for k := 0; k < len(multi[i]) + counter; k++ {
+					styles[f+k] = &t
+				}
+			}
 		}
 		return
 	}
@@ -2789,6 +2847,11 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 					TypicalColorize(
 						[]string{"silent", "saying"},
 						style(tcell.ColorBlack, tcell.ColorBlue),
+					),
+					TypicalColorize(
+						[]string{"or", "for example", "also", "is taken to",
+							"in according to", "According to", "and", "to"},
+						style(tcell.ColorBlack, tcell.ColorDeepPink),
 					),
 				}...)
 				list.Add(&viewer)
