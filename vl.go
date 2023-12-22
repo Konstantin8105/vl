@@ -1247,19 +1247,21 @@ type word struct {
 	R []rune
 }
 
+type Colorize func(word []rune) *tcell.Style
+
 type Viewer struct {
 	ContainerVerticalFix
-	converters []func(word []rune) *tcell.Style
-	str        string
-	noUpdate   bool
-	data       [][]Cell
-	linePos    [][2]uint //[0] - symbol position, [1] - view position
-	lastWidth  uint
-	position   uint
+	colorize  []Colorize
+	str       string
+	noUpdate  bool
+	data      [][]Cell
+	linePos   [][2]uint //[0] - symbol position, [1] - view position
+	lastWidth uint
+	position  uint
 }
 
-func (v *Viewer) SetColorize(converters ...func(word []rune) *tcell.Style) {
-	v.converters = converters
+func (v *Viewer) SetColorize(colorize ...Colorize) {
+	v.colorize = colorize
 	v.noUpdate = false
 }
 
@@ -1394,13 +1396,13 @@ func (v *Viewer) render(width uint) {
 		wordsLines = append(wordsLines, ws)
 	}
 	// use convertors
-	for i := range v.converters {
-		if v.converters[i] == nil {
+	for i := range v.colorize {
+		if v.colorize[i] == nil {
 			continue
 		}
 		for k := range wordsLines {
 			for n := range wordsLines[k] {
-				t := v.converters[i](wordsLines[k][n].R)
+				t := v.colorize[i](wordsLines[k][n].R)
 				if t == nil {
 					continue
 				}
@@ -2741,7 +2743,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 					str = strings.ToLower(str)
 					return str
 				}
-				viewer.SetColorize([]func(word []rune) *tcell.Style{
+				viewer.SetColorize([]Colorize{
 					func(word []rune) *tcell.Style {
 						s := clean(word)
 						if s == "see" || s == "visual" || s == "black" || s == "white" ||
