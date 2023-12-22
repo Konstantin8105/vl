@@ -1247,7 +1247,39 @@ type word struct {
 	R []rune
 }
 
-type Colorize func(word []rune) *tcell.Style
+type Colorize func(words []string) []*tcell.Style
+
+func TypicalColorize(indicates []string, t tcell.Style) Colorize {
+	clean := func(word string) string {
+		word = strings.ToLower(word)
+		return word
+	}
+	for i := range indicates {
+		indicates[i] = clean(indicates[i])
+	}
+	return func(words []string) (styles []*tcell.Style) {
+		styles = make([]*tcell.Style, len(words))
+		for i := range words {
+			words[i] = clean(words[i])
+		}
+		// single word indication
+		for i := range words {
+			found := false
+			for k := range indicates {
+				if indicates[k] != words[i] {
+					continue
+				}
+				found = true
+				break
+			}
+			if !found {
+				continue
+			}
+			styles[i] = &t
+		}
+		return
+	}
+}
 
 type Viewer struct {
 	ContainerVerticalFix
@@ -1401,12 +1433,19 @@ func (v *Viewer) render(width uint) {
 			continue
 		}
 		for k := range wordsLines {
+			var words []string
 			for n := range wordsLines[k] {
-				t := v.colorize[i](wordsLines[k][n].R)
-				if t == nil {
+				words = append(words, string(wordsLines[k][n].R))
+			}
+			styles := v.colorize[i](words)
+			if len(styles) != len(words) {
+				continue
+			}
+			for n := range wordsLines[k] {
+				if styles[n] == nil {
 					continue
 				}
-				wordsLines[k][n].S = t
+				wordsLines[k][n].S = styles[n]
 			}
 		}
 	}
@@ -2738,46 +2777,19 @@ func Demo() (demos []Widget) {
 				viewer.SetText(`In according to https://en.wikipedia.org/wiki/Representational_systems_(NLP)
 According to Bandler and Grinder our chosen words, phrases and sentences are indicative of our referencing of each of the representational systems.[4] So for example the words "black", "clear", "spiral" and "image" reference the visual representation system; similarly the words "tinkling", "silent", "squeal" and "blast" reference the auditory representation system.[4] Bandler and Grinder also propose that ostensibly metaphorical or figurative language indicates a reference to a representational system such that it is actually literal. For example, the comment "I see what you're saying" is taken to indicate a visual representation.[5]`)
 
-				clean := func(word []rune) string {
-					str := string(word)
-					str = strings.ToLower(str)
-					return str
-				}
 				viewer.SetColorize([]Colorize{
-					func(word []rune) *tcell.Style {
-						s := clean(word)
-						if s == "see" || s == "visual" || s == "black" || s == "white" ||
-							s == "image" || s == "indicate" {
-							st := style(
-								tcell.ColorWhite,
-								tcell.ColorGreen,
-							)
-							return &st
-						}
-						return nil
-					},
-					func(word []rune) *tcell.Style {
-						s := clean(word)
-						if s == "bandler" || s == "i" || s == "you" || s == "grinder" {
-							st := style(
-								tcell.ColorDeepPink,
-								tcell.ColorYellow,
-							)
-							return &st
-						}
-						return nil
-					},
-					func(word []rune) *tcell.Style {
-						s := clean(word)
-						if s == "silent" || s == "saying" {
-							st := style(
-								tcell.ColorBlack,
-								tcell.ColorBlue,
-							)
-							return &st
-						}
-						return nil
-					},
+					TypicalColorize(
+						[]string{"see", "visual", "black", "white", "image", "indicate"},
+						style(tcell.ColorWhite, tcell.ColorGreen),
+					),
+					TypicalColorize(
+						[]string{"bandler", "i", "you", "grinder"},
+						style(tcell.ColorDeepPink, tcell.ColorYellow),
+					),
+					TypicalColorize(
+						[]string{"silent", "saying"},
+						style(tcell.ColorBlack, tcell.ColorBlue),
+					),
 				}...)
 				list.Add(&viewer)
 			}
