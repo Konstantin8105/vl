@@ -1313,13 +1313,14 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 				same := true
 				counter := 0
 				for k := 0; k < len(multi[i]); k++ {
-					pos := f+k+counter
+					pos := f + k + counter
 					if len(words) <= pos {
 						same = false
 						break
 					}
 					if len(words[pos]) == 0 {
 						counter++
+						k--
 						continue
 					}
 					if multi[i][k] != words[pos] {
@@ -1330,7 +1331,7 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 				if !same {
 					continue
 				}
-				for k := 0; k < len(multi[i]) + counter; k++ {
+				for k := 0; k < len(multi[i])+counter; k++ {
 					styles[f+k] = &t
 				}
 			}
