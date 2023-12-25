@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	// vl.SpecificSymbol(false)
 	action := make(chan func(), 10)
 	root := vl.Demo()[0]
 	err := vl.Run(root, action, nil, tcell.KeyCtrlC)
