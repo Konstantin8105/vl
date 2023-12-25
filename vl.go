@@ -2281,6 +2281,9 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 					l.nodes[i].to = l.nodes[i].from + dw
 				}
 			}
+			if 0 < len(l.nodes) {
+				l.nodes[len(l.nodes)-1].to = int(width)
+			}
 			// limits of width
 			for i := range l.nodes {
 				if int(width) < l.nodes[i].from {
