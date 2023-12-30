@@ -2537,6 +2537,7 @@ func (c *ComboBox) Event(ev tcell.Event) {
 
 type Tabs struct {
 	Frame
+	OnChange    func()
 	init        bool
 	headerListH *ListH
 	headerCombo *ComboBox
@@ -2563,7 +2564,12 @@ func (t *Tabs) Add(name string, root Widget) {
 		// buttons
 		var btn Button
 		btn.SetText(name)
-		btn.OnClick = func() { t.Frame.root = root }
+		btn.OnClick = func() {
+			t.Frame.root = root
+			if f := t.OnChange; f != nil {
+				f()
+			}
+		}
 		btn.Compress()
 		t.headerListH.Add(&btn)
 		btn.OnClick()
@@ -2575,6 +2581,9 @@ func (t *Tabs) Add(name string, root Widget) {
 			pos := t.headerCombo.GetPos()
 			if int(pos) < len(t.list.roots) {
 				t.Frame.root = t.list.roots[pos]
+			}
+			if f := t.OnChange; f != nil {
+				f()
 			}
 		}
 		if 0 < len(t.list.names) {
