@@ -12,7 +12,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func style(fd, bd tcell.Color) tcell.Style {
+func Style(fd, bd tcell.Color) tcell.Style {
 	return tcell.StyleDefault.Foreground(fd).Background(bd)
 }
 
@@ -24,17 +24,17 @@ var (
 	green  = tcell.ColorGreen
 	black  = tcell.ColorBlack
 
-	ScreenStyle        tcell.Style = style(black, white)
+	ScreenStyle        tcell.Style = Style(black, white)
 	TextStyle          tcell.Style = ScreenStyle
-	ButtonStyle        tcell.Style = style(black, yellow)
-	ButtonFocusStyle   tcell.Style = style(black, focus)
-	ButtonSelectStyle  tcell.Style = style(black, green)
-	InputBoxStyle      tcell.Style = style(black, yellow)
-	InputBoxFocusStyle tcell.Style = style(black, focus)
+	ButtonStyle        tcell.Style = Style(black, yellow)
+	ButtonFocusStyle   tcell.Style = Style(black, focus)
+	ButtonSelectStyle  tcell.Style = Style(black, green)
+	InputBoxStyle      tcell.Style = Style(black, yellow)
+	InputBoxFocusStyle tcell.Style = Style(black, focus)
 	// cursor
-	CursorStyle tcell.Style = style(white, red)
+	CursorStyle tcell.Style = Style(white, red)
 	// select
-	InputBoxSelectStyle tcell.Style = style(black, green)
+	InputBoxSelectStyle tcell.Style = Style(black, green)
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2851,20 +2851,20 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 				viewer.SetColorize([]Colorize{
 					TypicalColorize(
 						[]string{"see", "visual", "black", "white", "image", "indicate"},
-						style(tcell.ColorWhite, tcell.ColorGreen),
+						Style(tcell.ColorWhite, tcell.ColorGreen),
 					),
 					TypicalColorize(
 						[]string{"bandler", "i", "you", "grinder"},
-						style(tcell.ColorDeepPink, tcell.ColorYellow),
+						Style(tcell.ColorDeepPink, tcell.ColorYellow),
 					),
 					TypicalColorize(
 						[]string{"silent", "saying"},
-						style(tcell.ColorBlack, tcell.ColorBlue),
+						Style(tcell.ColorBlack, tcell.ColorBlue),
 					),
 					TypicalColorize(
 						[]string{"or", "for example", "also", "is taken to",
 							"in according to", "According to", "and", "to"},
-						style(tcell.ColorBlack, tcell.ColorDeepPink),
+						Style(tcell.ColorBlack, tcell.ColorDeepPink),
 					),
 				}...)
 				list.Add(&viewer)
@@ -2978,9 +2978,9 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 						c.R = rune('Q')
 					}
 					if (i+j)%3 == 0 {
-						c.S = style(tcell.ColorBlack, tcell.ColorRed)
+						c.S = Style(tcell.ColorBlack, tcell.ColorRed)
 					} else {
-						c.S = style(tcell.ColorYellow, tcell.ColorGreen)
+						c.S = Style(tcell.ColorYellow, tcell.ColorGreen)
 					}
 					data[i][j] = c
 				}
