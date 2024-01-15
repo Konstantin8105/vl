@@ -461,7 +461,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col, *t.style, r)
 	}
-	height = t.content.Render(draw, cur)
+	t.content.Render(draw, cur)
 	if 0 < t.maxLines && t.maxLines < height {
 		height = t.maxLines
 	}

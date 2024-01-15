@@ -1,0 +1,56 @@
+0001|    |....|
+0002|    |....|
+0003|    |....|
+0004|    |....|
+0005|    |....|
+rows  =   5
+width =   4
+0001|[ He ]|YYYYYY|
+0002|[ ll ]|YYYYYY|
+0003|[ o, ]|YYYYYY|
+0004|[ Wo ]|YYYYYY|
+0005|[ rl ]|YYYYYY|
+rows  =   5
+width =   6
+0001|[ Hello,World ]|YYYYYYYYYYYYYYY|
+0002|[ !           ]|YYYYYYYYYYYYYYY|
+0003|               |...............|
+0004|               |...............|
+0005|               |...............|
+rows  =   5
+width =  15
+0001|[ Hello,World!     ]|YYYYYYYYYYYYYYYYYYYY|
+0002|                    |....................|
+0003|                    |....................|
+0004|                    |....................|
+0005|                    |....................|
+rows  =   5
+width =  20
+0001|    |....|
+0002|    |....|
+0003|    |....|
+0004|    |....|
+0005|    |....|
+rows  =   5
+width =   4
+0001|[ He ]|YYYYYY|
+0002|[ ll ]|YYYYYY|
+0003|[ o, ]|YYYYYY|
+0004|      |......|
+0005|      |......|
+rows  =   5
+width =   6
+0001|[ Hello,World ]|YYYYYYYYYYYYYYY|
+0002|[ !           ]|YYYYYYYYYYYYYYY|
+0003|[             ]|YYYYYYYYYYYYYYY|
+0004|               |...............|
+0005|               |...............|
+rows  =   5
+width =  15
+0001|[ Hello,World!     ]|YYYYYYYYYYYYYYYYYYYY|
+0002|[                  ]|YYYYYYYYYYYYYYYYYYYY|
+0003|[                  ]|YYYYYYYYYYYYYYYYYYYY|
+0004|                    |....................|
+0005|                    |....................|
+rows  =   5
+width =  20

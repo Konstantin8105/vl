@@ -940,3 +940,31 @@ func TestListHSplitter(t *testing.T) {
 	filename := filepath.Join(testdata, "ListHSplitter")
 	compare.Test(t, filename, buf.Bytes())
 }
+
+func TestTextHeight(t *testing.T) {
+	btn := new(Button)
+	btn.SetText("Hello,World!")
+
+	var screen Screen
+	screen.SetRoot(btn)
+	screen.SetHeight(5)
+
+	var buf bytes.Buffer
+	cells := new([][]Cell)
+
+	for _, f := range []func(){
+		func() {},
+		func() {
+			btn.SetLinesLimit(3)
+		},
+	} {
+		f()
+		for _, width := range []uint{4, 6, 15, 20} {
+			screen.GetContents(width, cells)
+			fmt.Fprintf(&buf, "%s", Convert(*cells))
+		}
+	}
+
+	filename := filepath.Join(testdata, "TextHeight")
+	compare.Test(t, filename, buf.Bytes())
+}
