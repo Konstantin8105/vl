@@ -440,6 +440,46 @@ func Benchmark(b *testing.B) {
 	})
 }
 
+// goos: linux
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
+// BenchmarkTextScroll/render-4         	     172	   6684900 ns/op	   64112 B/op	    1002 allocs/op
+// BenchmarkTextScroll/moving-4         	     171	   6726420 ns/op	   64123 B/op	    1002 allocs/op
+func BenchmarkTextScroll(b *testing.B) {
+	var screen Screen
+	scroll := new(Scroll)
+	list := new(List)
+	scroll.SetRoot(list)
+	for i := 0; i < 1000; i++ {
+		list.Add(TextStatic(texts[len(texts)-1]))
+	}
+	screen.SetRoot(scroll)
+	var size, width uint
+	size, width = 40, 40
+	screen.SetHeight(size)
+	up := tcell.NewEventKey(tcell.KeyPgUp, ' ', tcell.ModNone)
+	down := tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone)
+	// test
+	b.Run("render", func(b *testing.B) {
+		screen.Event(down)
+		for n := 0; n < b.N; n++ {
+			_ = screen.Render(width, NilDrawer)
+		}
+	})
+	b.Run("moving", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			for i := 0; i < 5; i++ {
+				screen.Event(down)
+			}
+			_ = screen.Render(size, NilDrawer)
+			for i := 0; i < 5; i++ {
+				screen.Event(up)
+			}
+		}
+	})
+}
+
 func TestAscii(t *testing.T) {
 	files, err := filepath.Glob("*.go")
 	if err != nil {
