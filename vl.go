@@ -177,10 +177,15 @@ type Cell struct {
 type Screen struct {
 	ContainerVerticalFix
 	rootable
+	fill func(rune, tcell.Style)
 	//	dialog struct {
 	//		Root             Widget
 	//		offsetX, offsetY uint
 	//	}
+}
+
+func (screen *Screen) Fill(fill func(rune, tcell.Style)) {
+	screen.fill = fill
 }
 
 func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
@@ -259,10 +264,14 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	}
 	// draw default spaces
 	// take a lot of resouses by performance
-	for col := uint(0); col < width; col++ {
-		for row := uint(0); row < screen.hmax; row++ {
-			dr(row, col, ScreenStyle, ' ')
+	if screen.fill == nil {
+		for col := uint(0); col < width; col++ {
+			for row := uint(0); row < screen.hmax; row++ {
+				dr(row, col, ScreenStyle, ' ')
+			}
 		}
+	} else {
+		screen.fill(' ', ScreenStyle)
 	}
 	// draw root widget
 	draw := func(row, col uint, s tcell.Style, r rune) {
@@ -3335,6 +3344,10 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			chEvent <- screen.PollEvent()
 		}
 	}()
+
+	if sc, ok := root.(*Screen); ok {
+		sc.Fill(screen.Fill)
+	}
 
 	var ignore bool
 	for {

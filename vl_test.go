@@ -392,10 +392,34 @@ func TestRun(t *testing.T) {
 // Benchmark/ViewerP-4         	     966	   1071589 ns/op	  690830 B/op	    3042 allocs/op
 // Benchmark/ViewerP-4         	    1597	    765777 ns/op	  684385 B/op	    3035 allocs/op
 // Benchmark/ViewerP-4         	    1626	    627755 ns/op	  490629 B/op	    3020 allocs/op
+//
+// cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
+// Benchmark/Size020-4     	    9613	    119436 ns/op	    2435 B/op	      41 allocs/op
+// Benchmark/Size040-4     	    9499	    122297 ns/op	    2435 B/op	      41 allocs/op
+// Benchmark/Size080-4     	    7232	    150581 ns/op	    2434 B/op	      41 allocs/op
+// Benchmark/Separato-4    	16031305	        66.11 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Text-4        	  866361	      1298 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Scroll-4      	14891812	        80.20 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/List-4        	15000658	        77.54 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Menu-4        	13583463	        78.01 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Button-4      	  777271	      1564 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Frame-4       	  241263	      4729 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/RadioGro-4    	16075549	        82.66 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/CheckBox-4    	  734319	      1652 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/InputBox-4    	 1000000	      1117 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Collapsi-4    	  173040	      6746 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/ListH-4       	16226559	        69.16 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ComboBox-4    	  181116	      6865 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/Tabs-4        	  253702	      4817 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Tree-4        	10501458	       118.6 ns/op	      40 B/op	       2 allocs/op
+// Benchmark/Viewer-4      	  940558	      1306 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Image-4       	 5806833	       212.3 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ViewerP-4     	    2143	    674362 ns/op	  490648 B/op	    3020 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
 	screen.SetRoot(r)
+	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
 	for _, size := range []uint{20, 40, 80} {
 		b.Run(fmt.Sprintf("Size%03d", size), func(b *testing.B) {
 			screen.SetHeight(size)
@@ -446,8 +470,12 @@ func Benchmark(b *testing.B) {
 // cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
 // BenchmarkTextScroll/render-4         	     172	   6684900 ns/op	   64112 B/op	    1002 allocs/op
 // BenchmarkTextScroll/moving-4         	     171	   6726420 ns/op	   64123 B/op	    1002 allocs/op
+// 
+// BenchmarkTextScroll/render-4         	     171	   6772686 ns/op	   64113 B/op	    1002 allocs/op
+// BenchmarkTextScroll/moving-4         	     170	   6887713 ns/op	   64064 B/op	    1002 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
+	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
 	scroll := new(Scroll)
 	list := new(List)
 	scroll.SetRoot(list)
@@ -536,7 +564,26 @@ func list() []Widget {
 			v.SetText("Hello, World")
 			return v
 		}(),
-		new(Image),
+		func() Widget {
+			img := new(Image)
+			img.SetImage([][]Cell{
+				[]Cell{
+					Cell{S: TextStyle, R:'H'},
+					Cell{S: TextStyle, R:'e'},
+					Cell{S: TextStyle, R:'l'},
+					Cell{S: TextStyle, R:'l'},
+					Cell{S: TextStyle, R:'o'},
+					Cell{S: TextStyle, R:','},
+					Cell{S: TextStyle, R:' '},
+					Cell{S: TextStyle, R:'W'},
+					Cell{S: TextStyle, R:'o'},
+					Cell{S: TextStyle, R:'r'},
+					Cell{S: TextStyle, R:'l'},
+					Cell{S: TextStyle, R:'d'},
+				},
+			})
+			return img
+		}(),
 	}
 }
 
