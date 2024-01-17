@@ -472,33 +472,42 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-type staticText struct {
+type Static struct {
 	Image
 	lastWidth uint
-	txt       Text
+	rootable
 }
 
-func (s *staticText) Compress() {}
-func (s *staticText) Render(width uint, dr Drawer) (height uint) {
+func (s *Static) Compress() {
+	if s.root == nil {
+		return
+	}
+	if c, ok := s.root.(Compressable); ok {
+		c.Compress()
+	}
+}
+func (s *Static) Render(width uint, dr Drawer) (height uint) {
 	if width != s.lastWidth {
 		s.lastWidth = width
 		// rendering image and show
-		s.txt.Render(width, NilDrawer)
-		width, height = s.txt.GetSize()
+		s.root.Render(width, NilDrawer)
+		width, height = s.root.GetSize()
 		img := &s.Image.data
 		if width == 0 || height == 0 {
 			*img = nil
 		} else {
-			*img = make([][]Cell, height)
-			for i := uint(0); i < uint(len(*img)); i++ {
-				(*img)[i] = make([]Cell, width)
-			}
-			for i := range *img {
-				for j := range (*img)[i] {
-					(*img)[i][j] = Cell{S: ScreenStyle, R: ' '}
+			if uint(len(*img)) != height || uint(len((*img)[0])) != width {
+				*img = make([][]Cell, height)
+				for i := uint(0); i < uint(len(*img)); i++ {
+					(*img)[i] = make([]Cell, width)
+				}
+				for i := range *img {
+					for j := range (*img)[i] {
+						(*img)[i][j] = Cell{S: ScreenStyle, R: ' '}
+					}
 				}
 			}
-			s.txt.Render(width, func(row, col uint, s tcell.Style, r rune) {
+			s.root.Render(width, func(row, col uint, s tcell.Style, r rune) {
 				if col == width {
 					return
 				}
@@ -511,9 +520,11 @@ func (s *staticText) Render(width uint, dr Drawer) (height uint) {
 }
 
 func TextStatic(str string) Widget {
-	t := new(staticText)
-	t.txt.content.SetText([]rune(str))
-	t.txt.Compress()
+	txt := new(Text)
+	txt.content.SetText([]rune(str))
+	txt.Compress()
+	t := new(Static)
+	t.SetRoot(txt)
 	return t
 }
 

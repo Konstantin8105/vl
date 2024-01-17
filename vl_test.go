@@ -496,6 +496,10 @@ func Benchmark(b *testing.B) {
 // 
 // BenchmarkTextScroll/render-4         	     171	   6772686 ns/op	   64113 B/op	    1002 allocs/op
 // BenchmarkTextScroll/moving-4         	     170	   6887713 ns/op	   64064 B/op	    1002 allocs/op
+//
+// BenchmarkTextScroll/render-4         	     344	   3378204 ns/op	   64078 B/op	    1002 allocs/op
+// BenchmarkTextScroll/moving-4         	     342	   3338545 ns/op	   64127 B/op	    1002 allocs/op
+// BenchmarkTextScroll/static-4         	     703	   1612608 ns/op	      64 B/op	       2 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
 	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
@@ -519,6 +523,20 @@ func BenchmarkTextScroll(b *testing.B) {
 		}
 	})
 	b.Run("moving", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			for i := 0; i < 5; i++ {
+				screen.Event(down)
+			}
+			_ = screen.Render(size, NilDrawer)
+			for i := 0; i < 5; i++ {
+				screen.Event(up)
+			}
+		}
+	})
+	stList := new(Static)
+	stList.SetRoot(list)
+	scroll.SetRoot(stList)
+	b.Run("static", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 			for i := 0; i < 5; i++ {
 				screen.Event(down)
