@@ -368,13 +368,6 @@ type Text struct {
 
 var DefaultMaxTextLines uint = 5
 
-func TextStatic(str string) *Text {
-	t := new(Text)
-	t.content.SetText([]rune(str))
-	t.Compress()
-	return t
-}
-
 // SetMaxLines set maximal visible lines of text
 func (t *Text) SetMaxLines(limit uint) {
 	t.maxLines = limit
@@ -476,6 +469,52 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	return
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+type staticText struct {
+	Image
+	lastWidth uint
+	txt       Text
+}
+
+func (s *staticText) Compress() {}
+func (s *staticText) Render(width uint, dr Drawer) (height uint) {
+	if width != s.lastWidth {
+		s.lastWidth = width
+		// rendering image and show
+		s.txt.Render(width, NilDrawer)
+		width, height = s.txt.GetSize()
+		img := &s.Image.data
+		if width == 0 || height == 0 {
+			*img = nil
+		} else {
+			*img = make([][]Cell, height)
+			for i := uint(0); i < uint(len(*img)); i++ {
+				(*img)[i] = make([]Cell, width)
+			}
+			for i := range *img {
+				for j := range (*img)[i] {
+					(*img)[i][j] = Cell{S: ScreenStyle, R: ' '}
+				}
+			}
+			s.txt.Render(width, func(row, col uint, s tcell.Style, r rune) {
+				if col == width {
+					return
+				}
+				(*img)[row][col] = Cell{S: s, R: r}
+			})
+		}
+	}
+	// show image
+	return s.Image.Render(width, dr)
+}
+
+func TextStatic(str string) Widget {
+	t := new(staticText)
+	t.txt.content.SetText([]rune(str))
+	t.txt.Compress()
+	return t
 }
 
 // /////////////////////////////////////////////////////////////////////////////

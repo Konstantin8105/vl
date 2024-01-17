@@ -415,6 +415,29 @@ func TestRun(t *testing.T) {
 // Benchmark/Viewer-4      	  940558	      1306 ns/op	      32 B/op	       1 allocs/op
 // Benchmark/Image-4       	 5806833	       212.3 ns/op	      32 B/op	       1 allocs/op
 // Benchmark/ViewerP-4     	    2143	    674362 ns/op	  490648 B/op	    3020 allocs/op
+//
+// Benchmark/Size020-4     	   13375	     88755 ns/op	    2433 B/op	      41 allocs/op
+// Benchmark/Size040-4     	   12421	     95885 ns/op	    2432 B/op	      41 allocs/op
+// Benchmark/Size080-4     	    9189	    127487 ns/op	    2436 B/op	      41 allocs/op
+// Benchmark/Separato-4    	15811003	        67.50 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Text-4        	  813781	      1270 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/staticTe-4    	 5587471	       211.6 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Scroll-4      	14879220	        68.29 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/List-4        	15916612	        66.91 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Menu-4        	14948356	        75.95 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Button-4      	  766341	      1442 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Frame-4       	  256839	      4517 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/RadioGro-4    	15119870	        75.77 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/CheckBox-4    	  748864	      1625 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/InputBox-4    	 1000000	      1047 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Collapsi-4    	  184360	      6437 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/ListH-4       	18375650	        67.37 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ComboBox-4    	  185797	      6642 ns/op	     128 B/op	       3 allocs/op
+// Benchmark/Tabs-4        	  236923	      4631 ns/op	      64 B/op	       2 allocs/op
+// Benchmark/Tree-4        	10791748	       110.7 ns/op	      40 B/op	       2 allocs/op
+// Benchmark/Viewer-4      	 1000000	      1199 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/Image-4       	 5850693	       197.7 ns/op	      32 B/op	       1 allocs/op
+// Benchmark/ViewerP-4     	    2146	    656160 ns/op	  490612 B/op	    3020 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
@@ -545,6 +568,9 @@ func list() []Widget {
 			t := new(Text)
 			t.SetText("Hello, World")
 			return t
+		}(),
+		func() Widget {
+			return TextStatic("Hello, World")
 		}(),
 		new(Scroll),
 		new(List),
