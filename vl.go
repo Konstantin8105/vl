@@ -2519,6 +2519,7 @@ func (c *ComboBox) checkUpdater() {
 		return
 	}
 	c.rg.OnChange = func() {
+		c.ch.SetText("")
 		if len(c.ts) == 0 {
 			// empty list
 			return
@@ -2528,7 +2529,11 @@ func (c *ComboBox) checkUpdater() {
 		if uint(len(c.ts)) <= c.rg.pos {
 			// outside of range - this is strange
 			// try to analyze your code
-			return
+			if 0 < len(c.ts) {
+				c.rg.pos = uint(len(c.ts)-1)
+			} else {
+				return
+			}
 		}
 		c.ch.SetText(c.ts[c.rg.pos])
 		if f := c.OnChange; f != nil {
