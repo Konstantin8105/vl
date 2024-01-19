@@ -2523,7 +2523,9 @@ func (c *ComboBox) checkUpdater() {
 			// empty list
 			return
 		}
-		if len(c.ts) <= int(c.rg.pos) {
+		// c.rg.pos = -1; int(c.rg.pos) = 18446744073709551615
+		// So, use `uint(len(c.ts)) <= c.rg.pos`
+		if uint(len(c.ts)) <= c.rg.pos {
 			// outside of range - this is strange
 			// try to analyze your code
 			return
