@@ -1312,6 +1312,7 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 	clean := func(word string) string {
 		word = strings.ToLower(word)
 		word = strings.ReplaceAll(word, "  ", " ")
+		word = strings.ReplaceAll(word, "-", " ")
 		word = strings.TrimSpace(word)
 		return word
 	}
