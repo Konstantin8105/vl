@@ -1311,8 +1311,10 @@ type Colorize func(words []string) []*tcell.Style
 func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 	clean := func(word string) string {
 		word = strings.ToLower(word)
-		word = strings.ReplaceAll(word, "  ", " ")
 		word = strings.ReplaceAll(word, "-", " ")
+		word = strings.ReplaceAll(word, ",", " ")
+		fs := strings.Split(word, " ")
+		word = strings.Join(fs, " ")
 		word = strings.TrimSpace(word)
 		return word
 	}
@@ -2531,7 +2533,7 @@ func (c *ComboBox) checkUpdater() {
 			// outside of range - this is strange
 			// try to analyze your code
 			if 0 < len(c.ts) {
-				c.rg.pos = uint(len(c.ts)-1)
+				c.rg.pos = uint(len(c.ts) - 1)
 			} else {
 				return
 			}
