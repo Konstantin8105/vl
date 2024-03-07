@@ -458,7 +458,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		if width < col {
 			return
 		}
-		if 0 < t.maxLines && t.maxLines < row {
+		if 0 < t.maxLines && t.maxLines <= row {
 			return
 		}
 		dr(row, col, *t.style, r)
