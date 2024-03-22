@@ -1522,6 +1522,7 @@ func (v *Viewer) render(width uint) {
 	// convert to string lines
 	v.str = strings.ReplaceAll(v.str, "\r", "")
 	v.str = strings.ReplaceAll(v.str, "  ", " ")
+	v.str = strings.ReplaceAll(v.str, " ", " ")
 	lines := strings.Split(v.str, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
