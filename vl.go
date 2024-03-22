@@ -1549,6 +1549,16 @@ func (v *Viewer) render(width uint) {
 		}
 		wordsLines = append(wordsLines, ws)
 	}
+	// add counters
+	// for i := range wordsLines {
+	// 	counter := []word {
+	// 		word {
+	// 			R : []rune(fmt.Sprintf("%d. ", i+1)),
+	// 			S : & TextStyle,
+	// 		},
+	// 	}
+	// 	wordsLines[i] = append( counter, wordsLines[i]...)
+	// }
 	// use convertors
 	for i := range v.colorize {
 		if v.colorize[i] == nil {
