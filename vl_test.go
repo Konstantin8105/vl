@@ -574,7 +574,7 @@ func TestAscii(t *testing.T) {
 			if ir == int('\t') {
 				continue
 			}
-			t.Errorf("find unicode: `%s`", string(r))
+			t.Errorf("find unicode: `%s` - %d", string(r), int(r))
 		}
 	}
 }

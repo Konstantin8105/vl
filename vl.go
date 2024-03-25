@@ -1408,7 +1408,7 @@ type Viewer struct {
 	str       string
 	noUpdate  bool
 	data      [][]Cell
-	linePos   [][2]uint //[0] - symbol position, [1] - view position
+	linePos   [][3]uint //[0] - symbol position, [1] - view position
 	lastWidth uint
 	position  uint
 }
@@ -1521,8 +1521,7 @@ func (v *Viewer) GetPosition() (position uint) { return v.position }
 func (v *Viewer) render(width uint) {
 	// convert to string lines
 	v.str = strings.ReplaceAll(v.str, "\r", "")
-	v.str = strings.ReplaceAll(v.str, " ", " ")
-	v.str = strings.ReplaceAll(v.str, " ", " ")
+	v.str = strings.ReplaceAll(v.str, string(rune(160)), " ")
 	lines := strings.Split(v.str, "\n")
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
@@ -1607,7 +1606,7 @@ func (v *Viewer) render(width uint) {
 	}
 	// calculate height
 	height := render(width, NilDrawer)
-	v.linePos = make([][2]uint, 0, height*width)
+	v.linePos = make([][3]uint, 0, height*width)
 	if 1 < height {
 		height--
 		v.data = make([][]Cell, height)
@@ -1619,10 +1618,33 @@ func (v *Viewer) render(width uint) {
 		}
 		dr := func(row, col uint, s tcell.Style, r rune) {
 			v.data[row][col] = Cell{S: s, R: r}
-			v.linePos = append(v.linePos, [2]uint{counter - 1, row})
+			v.linePos = append(v.linePos, [3]uint{counter - 1, row, col})
 		}
 		_ = render(width, dr)
 	}
+
+	// panic(fmt.Errorf("%d %d", len(v.data) * len(v.data[0]), len(v.linePos)))
+
+	// var hs []string
+	// for i := range v.linePos {
+	// 	row := v.linePos[i][1]
+	// 	col := v.linePos[i][2]
+	// 	if col != 0 {
+	// 		continue
+	// 	}
+	// 	if v.data[row][col].R != '#' {
+	// 		continue
+	// 	}
+	// 	var s string
+	// 	for j := 0; j <=int(width); j++ {
+	// 		s += fmt.Sprintf("%s", string(v.data[row][int(col)+j].R))
+	// 	}
+	// 	s += fmt.Sprintf("%v", v.linePos[i])
+	// 	hs = append(hs, s)
+	// }
+	// _ = hs
+	// panic(strings.Join(hs, "\n"))
+	//
 	//	if len(v.data) != len(v.linePos) {
 	//		panic(fmt.Errorf("Not same linepositions:%d %d",
 	//			len(v.data), len(v.linePos)))
