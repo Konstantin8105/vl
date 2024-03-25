@@ -1408,7 +1408,7 @@ type Viewer struct {
 	str       string
 	noUpdate  bool
 	data      [][]Cell
-	linePos   [][3]uint //[0] - symbol position, [1] - view position
+	linePos   [][]uint // counter
 	lastWidth uint
 	position  uint
 }
@@ -1433,15 +1433,7 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 		v.lastWidth = width
 	}
 	// drawing
-	var row int
-	for i := range v.linePos {
-		if i == 0 {
-			continue
-		}
-		if v.linePos[i-1][0] <= v.position && v.position <= v.linePos[i][0] {
-			row = int(v.linePos[i-1][1])
-		}
-	}
+	row := v.presentRow()
 	for ; row < len(v.data); row++ {
 		if v.addlimit && height == v.hmax {
 			break
@@ -1454,21 +1446,15 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
-func (v Viewer) presentLinePosIndex() uint {
-	var lineIndex uint
-	for i := range v.linePos {
-		if i == 0 {
-			continue
-		}
-		if v.linePos[i-1][0] <= v.position && v.position <= v.linePos[i][0] {
-			lineIndex = uint(i - 1)
-			break
+func (v Viewer) presentRow() int {
+	for row := range v.linePos {
+		for col := range v.linePos[row] {
+			if v.linePos[row][col] == v.position || v.position < v.linePos[row][col] {
+				return row
+			}
 		}
 	}
-	if v.linePos[len(v.linePos)-1][0] <= v.position {
-		lineIndex = uint(len(v.linePos) - 1)
-	}
-	return lineIndex
+	return len(v.linePos) - 1
 }
 
 func (v *Viewer) PrevPage() {
@@ -1478,18 +1464,13 @@ func (v *Viewer) PrevPage() {
 	if v.hmax < 2 {
 		return
 	}
-	lineIndex := v.presentLinePosIndex()
-	found := false
-	for i := range v.linePos {
-		if v.linePos[lineIndex][1] < v.linePos[i][1]+v.hmax {
-			v.position = v.linePos[i][0]
-			found = true
-			break
-		}
+	row := v.presentRow() - int(v.hmax)
+	if row == 0 {
+		v.position = 0
+		return
 	}
-	if !found {
-		panic(v.position)
-	}
+	v.position = v.linePos[row][0]
+	return
 }
 
 func (v *Viewer) NextPage() {
@@ -1499,18 +1480,13 @@ func (v *Viewer) NextPage() {
 	if v.hmax < 2 {
 		return
 	}
-	lineIndex := v.presentLinePosIndex()
-	found := false
-	for i := len(v.linePos) - 1; 0 <= i; i-- {
-		if v.linePos[i][1] <= v.linePos[lineIndex][1]+v.hmax {
-			v.position = v.linePos[i][0]
-			found = true
-			break
-		}
+	row := v.presentRow() + int(v.hmax)
+	if len(v.linePos) <= row {
+		v.position = v.linePos[len(v.linePos)-1][0]
+		return
 	}
-	if !found {
-		panic(v.position)
-	}
+	v.position = v.linePos[row][0]
+	return
 }
 
 func (v *Viewer) SetPosition(position uint) {
@@ -1606,7 +1582,10 @@ func (v *Viewer) render(width uint) {
 	}
 	// calculate height
 	height := render(width, NilDrawer)
-	v.linePos = make([][3]uint, 0, height*width)
+	v.linePos = make([][]uint, height)
+	for i := 0; i < int(height); i++ {
+		v.linePos[i] = make([]uint, width)
+	}
 	if 1 < height {
 		height--
 		v.data = make([][]Cell, height)
@@ -1618,42 +1597,35 @@ func (v *Viewer) render(width uint) {
 		}
 		dr := func(row, col uint, s tcell.Style, r rune) {
 			v.data[row][col] = Cell{S: s, R: r}
-			v.linePos = append(v.linePos, [3]uint{counter - 1, row, col})
+			v.linePos[row][col] = counter - 1
 		}
 		_ = render(width, dr)
 	}
-
-	// panic(fmt.Errorf("%d %d", len(v.data) * len(v.data[0]), len(v.linePos)))
-
-	// var hs []string
-	// for i := range v.linePos {
-	// 	row := v.linePos[i][1]
-	// 	col := v.linePos[i][2]
-	// 	if col != 0 {
-	// 		continue
-	// 	}
-	// 	if v.data[row][col].R != '#' {
-	// 		continue
-	// 	}
-	// 	var s string
-	// 	for j := 0; j <=int(width); j++ {
-	// 		s += fmt.Sprintf("%s", string(v.data[row][int(col)+j].R))
-	// 	}
-	// 	s += fmt.Sprintf("%v", v.linePos[i])
-	// 	hs = append(hs, s)
-	// }
-	// _ = hs
-	// panic(strings.Join(hs, "\n"))
-	//
-	//	if len(v.data) != len(v.linePos) {
-	//		panic(fmt.Errorf("Not same linepositions:%d %d",
-	//			len(v.data), len(v.linePos)))
-	//	}
-	// 	var str string
-	// 	for i := range v.linePos {
-	// 		str += fmt.Sprintf("%d %d %d\n", i, v.linePos[i][0], v.linePos[i][1])
-	// 	}
-	// 	panic(str)
+	for row := 0; row < len(v.linePos); row++ {
+		for col := 0; col < len(v.linePos[row]); col++ {
+			if row == 0 && col == 0 {
+				continue
+			}
+			if v.linePos[row][col] != 0 {
+				continue
+			}
+			if 0 < col {
+				v.linePos[row][col] = v.linePos[row][col-1]
+			} else {
+				v.linePos[row][col] = v.linePos[row-1][width-1]
+			}
+		}
+	}
+	for row := 0; row < len(v.linePos); row++ {
+		for col := 0; col < len(v.linePos[row]); col++ {
+			if row*int(width)+col < int(v.linePos[row][col]) {
+				panic(fmt.Errorf("%d %d %d = %d : %d",
+					row, width, col, row*int(width)+col,
+					v.linePos[row][col]),
+				)
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
