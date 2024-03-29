@@ -1509,7 +1509,7 @@ func (v *Viewer) render(width uint) {
 			continue
 		}
 		runes := []rune(lines[i])
-		var ws []word
+		ws := make([]word, 0, len(runes))
 		ws = append(ws, word{S: &TextStyle, R: []rune{runes[0]}})
 		for ilet := 1; ilet < len(runes); ilet++ {
 			if !unicode.IsLetter(runes[ilet]) {
@@ -1587,12 +1587,13 @@ func (v *Viewer) render(width uint) {
 		v.linePos[i] = make([]uint, width)
 	}
 	if 1 < height {
+		const space = rune(' ')
 		height--
 		v.data = make([][]Cell, height)
 		for i := 0; i < int(height); i++ {
 			v.data[i] = make([]Cell, width+1)
 			for k := range v.data[i] {
-				v.data[i][k] = Cell{S: TextStyle, R: rune(' ')}
+				v.data[i][k] = Cell{S: TextStyle, R: space}
 			}
 		}
 		dr := func(row, col uint, s tcell.Style, r rune) {

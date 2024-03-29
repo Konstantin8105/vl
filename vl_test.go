@@ -485,6 +485,17 @@ func Benchmark(b *testing.B) {
 			_ = screen.Render(width, NilDrawer)
 		}
 	})
+	b.Run("ViewerA", func(b *testing.B) {
+		txt := strings.Repeat(texts[len(texts)-1], 40)
+		width := uint(20)
+		b.ResetTimer()
+		for n := 0; n < b.N; n++ {
+			v := new(Viewer)
+			v.SetText(txt)
+			_ = screen.Render(width, NilDrawer)
+			_ = v
+		}
+	})
 }
 
 // goos: linux
@@ -493,7 +504,7 @@ func Benchmark(b *testing.B) {
 // cpu: Intel(R) Xeon(R) CPU E3-1240 V2 @ 3.40GHz
 // BenchmarkTextScroll/render-4         	     172	   6684900 ns/op	   64112 B/op	    1002 allocs/op
 // BenchmarkTextScroll/moving-4         	     171	   6726420 ns/op	   64123 B/op	    1002 allocs/op
-// 
+//
 // BenchmarkTextScroll/render-4         	     171	   6772686 ns/op	   64113 B/op	    1002 allocs/op
 // BenchmarkTextScroll/moving-4         	     170	   6887713 ns/op	   64064 B/op	    1002 allocs/op
 //
@@ -612,18 +623,18 @@ func list() []Widget {
 			img := new(Image)
 			img.SetImage([][]Cell{
 				[]Cell{
-					Cell{S: TextStyle, R:'H'},
-					Cell{S: TextStyle, R:'e'},
-					Cell{S: TextStyle, R:'l'},
-					Cell{S: TextStyle, R:'l'},
-					Cell{S: TextStyle, R:'o'},
-					Cell{S: TextStyle, R:','},
-					Cell{S: TextStyle, R:' '},
-					Cell{S: TextStyle, R:'W'},
-					Cell{S: TextStyle, R:'o'},
-					Cell{S: TextStyle, R:'r'},
-					Cell{S: TextStyle, R:'l'},
-					Cell{S: TextStyle, R:'d'},
+					Cell{S: TextStyle, R: 'H'},
+					Cell{S: TextStyle, R: 'e'},
+					Cell{S: TextStyle, R: 'l'},
+					Cell{S: TextStyle, R: 'l'},
+					Cell{S: TextStyle, R: 'o'},
+					Cell{S: TextStyle, R: ','},
+					Cell{S: TextStyle, R: ' '},
+					Cell{S: TextStyle, R: 'W'},
+					Cell{S: TextStyle, R: 'o'},
+					Cell{S: TextStyle, R: 'r'},
+					Cell{S: TextStyle, R: 'l'},
+					Cell{S: TextStyle, R: 'd'},
 				},
 			})
 			return img
