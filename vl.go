@@ -1465,7 +1465,7 @@ func (v *Viewer) PrevPage() {
 		return
 	}
 	row := v.presentRow() - int(v.hmax)
-	if row == 0 {
+	if row <= 0 {
 		v.position = 0
 		return
 	}
