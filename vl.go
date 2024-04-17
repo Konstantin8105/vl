@@ -1500,13 +1500,19 @@ func (v *Viewer) render(width uint) {
 	for i := range lines {
 		lines[i] = strings.TrimSpace(lines[i])
 	}
-	// set default styles
-	var wordsLines [][]word
-	for i := range lines {
-		if len(lines[i]) == 0 {
-			continue
+	// constants
+	const space = rune(' ')
+	// parse one line
+	OneLine := func(line string) (
+		// return data
+		data [][]Cell,
+		linePos [][]uint,
+	) {
+		if len(line) == 0 {
+			return
 		}
-		runes := []rune(lines[i])
+		runes := []rune(line)
+		// split by words
 		ws := make([]word, 0, len(runes))
 		ws = append(ws, word{S: &TextStyle, R: []rune{runes[0]}})
 		for ilet := 1; ilet < len(runes); ilet++ {
@@ -1520,61 +1526,39 @@ func (v *Viewer) render(width uint) {
 			}
 			ws = append(ws, word{S: &TextStyle, R: []rune{runes[ilet]}})
 		}
-		wordsLines = append(wordsLines, ws)
-	}
-	// add counters
-	// for i := range wordsLines {
-	// 	counter := []word {
-	// 		word {
-	// 			R : []rune(fmt.Sprintf("%d. ", i+1)),
-	// 			S : & TextStyle,
-	// 		},
-	// 	}
-	// 	wordsLines[i] = append( counter, wordsLines[i]...)
-	// }
-	// use convertors
-	addColors := func(i, k int) {
+		// create list of words
 		var words []string
-		for n := range wordsLines[k] {
-			words = append(words, string(wordsLines[k][n].R))
+		for n := range ws {
+			words = append(words, string(ws[n].R))
 		}
-		styles := v.colorize[i](words)
-		if len(styles) != len(words) {
-			return
-		}
-		for n := range wordsLines[k] {
-			if styles[n] == nil {
+		// add colors
+		for i := range v.colorize {
+			if v.colorize[i] == nil {
 				continue
 			}
-			wordsLines[k][n].S = styles[n]
+			styles := v.colorize[i](words)
+			if len(styles) != len(words) {
+				return
+			}
+			for n := range ws {
+				if styles[n] == nil {
+					continue
+				}
+				ws[n].S = styles[n]
+			}
 		}
-	}
-	var wg sync.WaitGroup
-	for i := range v.colorize {
-		if v.colorize[i] == nil {
-			continue
-		}
-		for k := range wordsLines {
-			wg.Add(1)
-			go func(i, k int) {
-				addColors(i, k)
-				wg.Done()
-			}(i, k)
-		}
-	}
-	wg.Wait()
-	// drawing to image
-	v.data = nil
-	v.linePos = nil
-	var counter uint
-	render := func(width uint, dr Drawer) (height uint) {
-		counter = 0
-		for l := range wordsLines {
+
+		// drawing to image
+		data = nil
+		linePos = nil
+		var counter uint
+		render := func(width uint, dr Drawer) (height uint) {
+			counter = 0
 			pos := uint(0)
-			for k := range wordsLines[l] {
-				for ir := range wordsLines[l][k].R {
+			for k := range ws {
+				for ir := range ws[k].R {
 					counter++
-					dr(height, pos, *wordsLines[l][k].S, wordsLines[l][k].R[ir])
+					dr(height, pos, *ws[k].S, ws[k].R[ir])
 					pos++
 					if width < pos+1 {
 						height++
@@ -1583,47 +1567,84 @@ func (v *Viewer) render(width uint) {
 				}
 			}
 			height += 2
+			return
 		}
-		// height--
+		// calculate height
+		height := render(width, NilDrawer)
+		linePos = make([][]uint, height)
+		for i := 0; i < int(height); i++ {
+			linePos[i] = make([]uint, width)
+		}
+		if 1 < height {
+			height--
+			data = make([][]Cell, height)
+			for i := 0; i < int(height); i++ {
+				data[i] = make([]Cell, width+1)
+				for k := range data[i] {
+					data[i][k] = Cell{S: TextStyle, R: space}
+				}
+			}
+			dr := func(row, col uint, s tcell.Style, r rune) {
+				data[row][col] = Cell{S: s, R: r}
+				linePos[row][col] = counter - 1
+			}
+			_ = render(width, dr)
+		}
+		for row := 0; row < len(linePos); row++ {
+			for col := 0; col < len(linePos[row]); col++ {
+				if row == 0 && col == 0 {
+					continue
+				}
+				if linePos[row][col] != 0 {
+					continue
+				}
+				if 0 < col {
+					linePos[row][col] = linePos[row][col-1]
+				} else {
+					linePos[row][col] = linePos[row-1][width-1]
+				}
+			}
+		}
 		return
 	}
-	// calculate height
-	height := render(width, NilDrawer)
-	v.linePos = make([][]uint, height)
-	for i := 0; i < int(height); i++ {
-		v.linePos[i] = make([]uint, width)
+
+	v.data = nil
+	v.linePos = nil
+
+	datas := make([][][]Cell, len(lines))
+	linePos := make([][][]uint, len(lines))
+	var wg sync.WaitGroup
+	for i := range lines {
+		wg.Add(1)
+		go func(i int) {
+			datas[i], linePos[i] = OneLine(lines[i])
+			wg.Done()
+		}(i)
 	}
-	if 1 < height {
-		const space = rune(' ')
-		height--
-		v.data = make([][]Cell, height)
-		for i := 0; i < int(height); i++ {
-			v.data[i] = make([]Cell, width+1)
-			for k := range v.data[i] {
-				v.data[i][k] = Cell{S: TextStyle, R: space}
+	wg.Wait()
+
+	for i := range lines {
+		// data, linePos := OneLine(lines[i])
+		if len(datas[i]) == 0 || len(linePos[i]) == 0 {
+			continue
+		}
+		if 0 < i {
+			add := v.linePos[len(v.linePos)-1][len(v.linePos[len(v.linePos)-1])-1]
+			for row := range linePos[i] {
+				for col := range linePos[i][row] {
+					linePos[i][row][col] += add + 1
+				}
 			}
+			row := make([]Cell, len(v.data[0]))
+			for k := range row {
+				row[k] = Cell{S: TextStyle, R: space}
+			}
+			v.data = append(v.data, row)
 		}
-		dr := func(row, col uint, s tcell.Style, r rune) {
-			v.data[row][col] = Cell{S: s, R: r}
-			v.linePos[row][col] = counter - 1
-		}
-		_ = render(width, dr)
+		v.data = append(v.data, datas[i]...)
+		v.linePos = append(v.linePos, linePos[i]...)
 	}
-	for row := 0; row < len(v.linePos); row++ {
-		for col := 0; col < len(v.linePos[row]); col++ {
-			if row == 0 && col == 0 {
-				continue
-			}
-			if v.linePos[row][col] != 0 {
-				continue
-			}
-			if 0 < col {
-				v.linePos[row][col] = v.linePos[row][col-1]
-			} else {
-				v.linePos[row][col] = v.linePos[row-1][width-1]
-			}
-		}
-	}
+
 	for row := 0; row < len(v.linePos); row++ {
 		for col := 0; col < len(v.linePos[row]); col++ {
 			if row*int(width)+col < int(v.linePos[row][col]) {

@@ -447,6 +447,8 @@ func TestRun(t *testing.T) {
 // Benchmark/ViewerP-4     	    1020	   1190187 ns/op	  619066 B/op	    6630 allocs/op
 // Benchmark/ViewerP-4     	     985	   1119502 ns/op	  619071 B/op	    6629 allocs/op
 // Benchmark/ViewerP-4     	     993	   1268332 ns/op	  619076 B/op	    6629 allocs/op
+// Benchmark/ViewerP-4     	    1036	   1094960 ns/op	  629146 B/op	    6626 allocs/op
+// Benchmark/ViewerP-4     	     954	   1246085 ns/op	  629359 B/op	    6632 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
@@ -1121,4 +1123,51 @@ func TestTextHeight(t *testing.T) {
 
 	filename := filepath.Join(testdata, "TextHeight")
 	compare.Test(t, filename, buf.Bytes())
+}
+
+func TestViewerInternal(t *testing.T) {
+	v := new(Viewer)
+	example := `In according to https://en.wikipedia.org/wiki/Representational_systems_(NLP)
+According to Bandler and Grinder our chosen words, phrases and sentences are indicative of our referencing of each of the representational systems.[4] So for example the words "black", "clear", "spiral" and "image" reference the visual representation system; similarly the words "tinkling", "silent", "squeal" and "blast" reference the auditory representation system.[4] Bandler and Grinder also propose that ostensibly metaphorical or figurative language indicates a reference to a representational system such that it is actually literal. For example, the comment "I see what you're saying" is taken to indicate a visual representation.[5]`
+	var str string
+	for rep := 1; rep < 10; rep++ {
+		str += strings.Repeat(example, rep) + "\n"
+	}
+	v.SetText(str)
+	v.SetColorize([]Colorize{
+		TypicalColorize(
+			[]string{"see", "visual", "black", "white", "image", "indicate"},
+			Style(tcell.ColorWhite, tcell.ColorGreen),
+		),
+		TypicalColorize(
+			[]string{"bandler", "i", "you", "grinder"},
+			Style(tcell.ColorDeepPink, tcell.ColorYellow),
+		),
+		TypicalColorize(
+			[]string{"silent", "saying"},
+			Style(tcell.ColorBlack, tcell.ColorBlue),
+		),
+		TypicalColorize(
+			[]string{"or", "for example", "also", "is taken to",
+				"in according to", "According to", "and", "to"},
+			Style(tcell.ColorBlack, tcell.ColorDeepPink),
+		),
+	}...)
+	width := uint(20)
+	_ = v.Render(width, NilDrawer)
+	{
+		filename := filepath.Join(testdata, "Viewer.View")
+		compare.Test(t, filename, []byte(Convert(v.data)))
+	}
+	{
+		var str string
+		for row := range v.linePos {
+			for col := range v.linePos[row] {
+				str += fmt.Sprintf("%04d ", v.linePos[row][col])
+			}
+			str += "\n"
+		}
+		filename := filepath.Join(testdata, "Viewer.LinePos")
+		compare.Test(t, filename, []byte(str))
+	}
 }
