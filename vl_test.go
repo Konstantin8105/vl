@@ -438,6 +438,15 @@ func TestRun(t *testing.T) {
 // Benchmark/Viewer-4      	 1000000	      1199 ns/op	      32 B/op	       1 allocs/op
 // Benchmark/Image-4       	 5850693	       197.7 ns/op	      32 B/op	       1 allocs/op
 // Benchmark/ViewerP-4     	    2146	    656160 ns/op	  490612 B/op	    3020 allocs/op
+// Benchmark/ViewerA-4     	   49357	     24009 ns/op	      32 B/op	       1 allocs/op
+//
+// Benchmark/ViewerP-4     	     874	   1288535 ns/op	  619009 B/op	    6625 allocs/op
+// Benchmark/ViewerA-4     	   47877	     23791 ns/op	      32 B/op	       1 allocs/op
+//
+// Benchmark/ViewerP-4     	     969	   1125126 ns/op	  618942 B/op	    6625 allocs/op
+// Benchmark/ViewerP-4     	    1020	   1190187 ns/op	  619066 B/op	    6630 allocs/op
+// Benchmark/ViewerP-4     	     985	   1119502 ns/op	  619071 B/op	    6629 allocs/op
+// Benchmark/ViewerP-4     	     993	   1268332 ns/op	  619076 B/op	    6629 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
@@ -470,6 +479,9 @@ func Benchmark(b *testing.B) {
 	b.Run("ViewerP", func(b *testing.B) {
 		v := new(Viewer)
 		v.SetText(strings.Repeat(texts[len(texts)-1], 40))
+		v.SetColorize(TypicalColorize(
+			strings.Fields(strings.Repeat(texts[len(texts)-1], 40)),
+			InputBoxStyle))
 		screen.SetRoot(v)
 		screen.SetHeight(size)
 		width := uint(20)

@@ -3,6 +3,7 @@ package vl
 import (
 	"fmt"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -1321,6 +1322,7 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 	for i := range indicates {
 		indicates[i] = clean(indicates[i])
 	}
+	sort.Strings(indicates) // sort
 	// multi-words
 	var multi [][]string
 	for i := range indicates {
@@ -1340,15 +1342,11 @@ func TypicalColorize(indicates []string, t tcell.Style) Colorize {
 		}
 		// single word indication
 		for i := range words {
-			found := false
-			for k := range indicates {
-				if indicates[k] != words[i] {
-					continue
-				}
-				found = true
-				break
+			pos := sort.SearchStrings(indicates, words[i])
+			if pos < len(indicates) && words[i] != indicates[pos] {
+				pos = len(indicates)
 			}
-			if !found {
+			if pos == len(indicates) {
 				continue
 			}
 			styles[i] = &t
@@ -1535,27 +1533,36 @@ func (v *Viewer) render(width uint) {
 	// 	wordsLines[i] = append( counter, wordsLines[i]...)
 	// }
 	// use convertors
+	addColors := func(i, k int) {
+		var words []string
+		for n := range wordsLines[k] {
+			words = append(words, string(wordsLines[k][n].R))
+		}
+		styles := v.colorize[i](words)
+		if len(styles) != len(words) {
+			return
+		}
+		for n := range wordsLines[k] {
+			if styles[n] == nil {
+				continue
+			}
+			wordsLines[k][n].S = styles[n]
+		}
+	}
+	var wg sync.WaitGroup
 	for i := range v.colorize {
 		if v.colorize[i] == nil {
 			continue
 		}
 		for k := range wordsLines {
-			var words []string
-			for n := range wordsLines[k] {
-				words = append(words, string(wordsLines[k][n].R))
-			}
-			styles := v.colorize[i](words)
-			if len(styles) != len(words) {
-				continue
-			}
-			for n := range wordsLines[k] {
-				if styles[n] == nil {
-					continue
-				}
-				wordsLines[k][n].S = styles[n]
-			}
+			wg.Add(1)
+			go func(i, k int) {
+				addColors(i, k)
+				wg.Done()
+			}(i, k)
 		}
 	}
+	wg.Wait()
 	// drawing to image
 	v.data = nil
 	v.linePos = nil
