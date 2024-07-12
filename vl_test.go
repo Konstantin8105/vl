@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Konstantin8105/compare"
+	"github.com/Konstantin8105/snippet"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -587,8 +588,7 @@ func TestAscii(t *testing.T) {
 		if !utf8.Valid(content) {
 			t.Fatalf("utf8 invalid")
 		}
-		runes := []rune(string(content))
-		for _, r := range runes {
+		for _, r := range string(content) {
 			ir := int(r)
 			if 32 <= ir && ir <= 127 {
 				continue
@@ -636,19 +636,19 @@ func list() []Widget {
 		func() Widget {
 			img := new(Image)
 			img.SetImage([][]Cell{
-				[]Cell{
-					Cell{S: TextStyle, R: 'H'},
-					Cell{S: TextStyle, R: 'e'},
-					Cell{S: TextStyle, R: 'l'},
-					Cell{S: TextStyle, R: 'l'},
-					Cell{S: TextStyle, R: 'o'},
-					Cell{S: TextStyle, R: ','},
-					Cell{S: TextStyle, R: ' '},
-					Cell{S: TextStyle, R: 'W'},
-					Cell{S: TextStyle, R: 'o'},
-					Cell{S: TextStyle, R: 'r'},
-					Cell{S: TextStyle, R: 'l'},
-					Cell{S: TextStyle, R: 'd'},
+				{
+					{S: TextStyle, R: 'H'},
+					{S: TextStyle, R: 'e'},
+					{S: TextStyle, R: 'l'},
+					{S: TextStyle, R: 'l'},
+					{S: TextStyle, R: 'o'},
+					{S: TextStyle, R: ','},
+					{S: TextStyle, R: ' '},
+					{S: TextStyle, R: 'W'},
+					{S: TextStyle, R: 'o'},
+					{S: TextStyle, R: 'r'},
+					{S: TextStyle, R: 'l'},
+					{S: TextStyle, R: 'd'},
 				},
 			})
 			return img
@@ -753,7 +753,7 @@ func TestWidget(t *testing.T) {
 			var btn Button
 			btn.SetText("A) Under root")
 			btn.OnClick = func() {
-				value += 1
+				value++
 				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
 			}
 			c.Add(&btn)
@@ -797,7 +797,7 @@ func TestWidget(t *testing.T) {
 			var btn Button
 			btn.SetText("B) Under root")
 			btn.OnClick = func() {
-				value += 1
+				value++
 				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
 			}
 			c.Add(&btn)
@@ -815,7 +815,7 @@ func TestWidget(t *testing.T) {
 			var btn Button
 			btn.SetText("C) Under root")
 			btn.OnClick = func() {
-				value += 1
+				value++
 				btn.SetText(fmt.Sprintf("%s%d", btn.GetText(), value))
 			}
 			c.SetRoot(&btn)
@@ -944,11 +944,11 @@ func findClick(cells *[][]Cell, width, height uint) (col, row uint, found bool) 
 
 func TestMenuList(t *testing.T) {
 	txts := [][]string{
-		[]string{},
-		[]string{"One"},
-		[]string{"One", "Two"},
-		[]string{"One", "Long long text", "Tree"},
-		[]string{"Long long text 1", "Long long text 2"},
+		{},
+		{"One"},
+		{"One", "Two"},
+		{"One", "Long long text", "Tree"},
+		{"Long long text 1", "Long long text 2"},
 	}
 	{
 		var ls []string
@@ -1170,4 +1170,8 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 		filename := filepath.Join(testdata, "Viewer.LinePos")
 		compare.Test(t, filename, []byte(str))
 	}
+}
+
+func TestSnippet(t *testing.T) {
+	snippet.Test(t, ".")
 }

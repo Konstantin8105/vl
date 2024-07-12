@@ -1,3 +1,4 @@
+// Package vl for create tui applications
 package vl
 
 import (
@@ -13,6 +14,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// Style return prepared style
 func Style(fd, bd tcell.Color) tcell.Style {
 	return tcell.StyleDefault.Foreground(fd).Background(bd)
 }
@@ -112,7 +114,7 @@ func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
 
 const maxSize uint = 10000
 
-func NilDrawer(row, col uint, s tcell.Style, r rune) {}
+func NilDrawer(_, _ uint, _ tcell.Style, _ rune) {}
 
 func DrawerLimit(
 	dr Drawer,
@@ -148,18 +150,41 @@ type Offset struct {
 
 // WidgetV is widget with vertical fix height
 type VerticalFix interface {
+	// snippet setheight.doc
+	// Store maximal height of widget.
+	// end setheight.doc
 	SetHeight(hmax uint)
 }
 
 type Widget interface {
+	// Focus ...
+	// snippet focus.doc
+	// For changing focus-state of widget
+	// end focus.doc
 	Focus(focus bool)
+
+	// Render ...
+	// snippet render.doc
+	// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+	// end render.doc
 	Render(width uint, dr Drawer) (height uint)
+
+	// Event ...
+	// snippet event.doc
+	// For create action for widget
+	// end event.doc
 	Event(ev tcell.Event)
 
-	// store widget size
+	// StoreSize ...
+	// snippet storesize.doc
+	// For storing widget sizes.
+	// end storesize.doc
 	StoreSize(width, height uint)
 
+	// GetSize ...
+	// snippet getsize.doc
 	// return for widget sizes
+	// end getsize.doc
 	GetSize() (width, height uint)
 }
 
@@ -170,11 +195,13 @@ type WidgetVerticalFix interface {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Cell store internal properties of each cell
 type Cell struct {
 	S tcell.Style
 	R rune
 }
 
+// Screen is main widget
 type Screen struct {
 	ContainerVerticalFix
 	rootable
@@ -216,7 +243,6 @@ func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
 		(*cells)[row][col] = Cell{S: s, R: r}
 	}
 	_ = screen.Render(screen.width, drawer) // ignore height
-	return
 }
 
 func Convert(cells [][]Cell) string {
@@ -253,6 +279,10 @@ func Convert(cells [][]Cell) string {
 	return buf.String()
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		screen.StoreSize(width, height)
@@ -298,6 +328,10 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	return screen.hmax
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (screen *Screen) SetHeight(hmax uint) {
 	screen.ContainerVerticalFix.SetHeight(hmax)
 	if screen.root != nil {
@@ -312,6 +346,10 @@ func (screen *Screen) SetHeight(hmax uint) {
 	//	}
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (screen *Screen) Event(ev tcell.Event) {
 	if screen.root == nil {
 		return
@@ -347,9 +385,14 @@ func (screen *Screen) Event(ev tcell.Event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Separator is empty single horizontal line
 type Separator struct{ container }
 
-func (s *Separator) Render(width uint, dr Drawer) (height uint) {
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
+func (s *Separator) Render(width uint, _ Drawer) (height uint) {
 	defer func() {
 		s.StoreSize(width, height)
 	}()
@@ -404,6 +447,10 @@ func (t *Text) Filter(f func(r rune) (insert bool)) {
 	t.content.Filter = f
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		t.StoreSize(width, height)
@@ -416,7 +463,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		t.style = &TextStyle
 	}
 	t.content.SetWidth(width + 1)
-	var cur func(row, col uint) = nil // hide cursor for not-focus inputbox
+	var cur func(row, col uint) // hide cursor for not-focus inputbox
 	if t.focus && t.addCursor {
 		cur = func(row, col uint) {
 			if width < col {
@@ -429,7 +476,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 
 	// TODO min width
 
-	draw := func(row, col uint, r rune) {}
+	draw := func(_, _ uint, _ rune) {}
 	height = t.content.Render(draw, cur)
 	// added for colorize unvisible lines too
 	h := t.content.GetRenderHeight()
@@ -487,6 +534,11 @@ func (s *Static) Compress() {
 		c.Compress()
 	}
 }
+
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (s *Static) Render(width uint, dr Drawer) (height uint) {
 	if width != s.lastWidth {
 		s.lastWidth = width
@@ -538,6 +590,10 @@ type Scroll struct {
 	offset uint
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (sc *Scroll) Focus(focus bool) {
 	if sc.root == nil {
 		return
@@ -546,6 +602,10 @@ func (sc *Scroll) Focus(focus bool) {
 	sc.root.Focus(focus)
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		sc.StoreSize(width, height)
@@ -615,7 +675,7 @@ func (sc *Scroll) fixOffset() {
 	if sc.height < minViewLines {
 		return
 	}
-	var maxOffset uint = sc.height - minViewLines
+	maxOffset := uint(sc.height - minViewLines)
 	if 0 < sc.hmax {
 		if sc.hmax < sc.height {
 			if sc.height < sc.hmax+sc.offset {
@@ -629,6 +689,10 @@ func (sc *Scroll) fixOffset() {
 	}
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (sc *Scroll) Event(ev tcell.Event) {
 	if sc.root == nil {
 		return
@@ -721,14 +785,26 @@ type List struct {
 	compress bool
 }
 
+// Size ...
+// snippet size.doc
+// return size of widget list
+// end size.doc
 func (l *List) Size() int {
 	return len(l.nodes)
 }
 
+// Clear ...
+// snippet clear.doc
+// reset internal list
+// end clear.doc
 func (l *List) Clear() {
 	l.nodes = nil
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (l *List) Focus(focus bool) {
 	if !focus {
 		for i := range l.nodes {
@@ -748,6 +824,10 @@ func (l List) getItemHmax() uint {
 	return l.hmax / uint(len(l.nodes))
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (l *List) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.StoreSize(width, height)
@@ -805,6 +885,10 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (l *List) Event(ev tcell.Event) {
 	_, ok := l.onFocus(ev)
 	if ok {
@@ -882,6 +966,10 @@ func (l *List) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w})
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (l *List) SetHeight(hmax uint) {
 	l.ContainerVerticalFix.SetHeight(hmax)
 	for i := range l.nodes {
@@ -920,6 +1008,10 @@ type Menu struct {
 	subs         []*Menu
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (menu *Menu) SetHeight(hmax uint) {
 	menu.ContainerVerticalFix.SetHeight(hmax)
 	menu.fixRootHeight()
@@ -996,6 +1088,10 @@ func (menu *Menu) AddMenu(name string, sub *Menu) {
 
 var SubMenuWidth uint = 20
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		menu.StoreSize(width, height)
@@ -1065,6 +1161,10 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (menu *Menu) Event(ev tcell.Event) {
 	var found bool
 	{
@@ -1166,7 +1266,7 @@ func (menu *Menu) Event(ev tcell.Event) {
 					row: uint(row),
 				}
 				// offser of submenu for good view
-				menu.offset.row += 1
+				menu.offset.row++
 			}
 
 			// TODO case *tcell.EventKey:
@@ -1241,6 +1341,10 @@ type Button struct {
 	OnClick func()
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		b.StoreSize(width, height)
@@ -1280,6 +1384,10 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (b *Button) Event(ev tcell.Event) {
 	mouse, ok := b.onFocus(ev)
 	if ok {
@@ -1421,6 +1529,10 @@ func (v *Viewer) SetText(str string) {
 	v.noUpdate = false
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		v.StoreSize(width, height)
@@ -1468,7 +1580,6 @@ func (v *Viewer) PrevPage() {
 		return
 	}
 	v.position = v.linePos[row][0]
-	return
 }
 
 func (v *Viewer) NextPage() {
@@ -1484,7 +1595,6 @@ func (v *Viewer) NextPage() {
 		return
 	}
 	v.position = v.linePos[row][0]
-	return
 }
 
 func (v *Viewer) SetPosition(position uint) {
@@ -1492,6 +1602,10 @@ func (v *Viewer) SetPosition(position uint) {
 }
 func (v *Viewer) GetPosition() (position uint) { return v.position }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (v *Viewer) render(width uint) {
 	// convert to string lines
 	v.str = strings.ReplaceAll(v.str, "\r", "")
@@ -1670,6 +1784,10 @@ func (img *Image) SetImage(data [][]Cell) {
 	img.data = data
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (img *Image) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		img.StoreSize(width, height)
@@ -1701,6 +1819,10 @@ type Frame struct {
 	cleaned []bool
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (f *Frame) SetHeight(hmax uint) {
 	f.ContainerVerticalFix.SetHeight(hmax)
 	if f.root != nil {
@@ -1710,6 +1832,10 @@ func (f *Frame) SetHeight(hmax uint) {
 	}
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (f *Frame) Focus(focus bool) {
 	if !focus {
 		if w := f.Header; w != nil {
@@ -1722,6 +1848,10 @@ func (f *Frame) Focus(focus bool) {
 	f.container.Focus(focus)
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.StoreSize(width, height)
@@ -1863,6 +1993,10 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (f *Frame) Event(ev tcell.Event) {
 	_, ok := f.onFocus(ev)
 	if ok {
@@ -1920,6 +2054,10 @@ type radio struct {
 	choosed bool
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (r *radio) Focus(focus bool) {
 	r.container.Focus(focus)
 	if r.root != nil {
@@ -1929,6 +2067,10 @@ func (r *radio) Focus(focus bool) {
 
 const banner = 4 // banner for CheckBox and radio
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		r.StoreSize(width, height)
@@ -1965,6 +2107,10 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (r *radio) Event(ev tcell.Event) {
 	mouse, ok := r.onFocus(ev)
 	if ok {
@@ -2030,6 +2176,10 @@ func (rg *RadioGroup) AddText(ts ...string) {
 	}
 }
 
+// Clear ...
+// snippet clear.doc
+// reset internal list
+// end clear.doc
 func (rg *RadioGroup) Clear() {
 	rg.pos = 0
 	rg.OnChange = nil
@@ -2050,11 +2200,19 @@ func (rg *RadioGroup) GetPos() uint {
 	return rg.pos
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (rg *RadioGroup) Focus(focus bool) {
 	rg.container.Focus(focus)
 	rg.list.Focus(focus)
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		rg.StoreSize(width, height)
@@ -2073,6 +2231,10 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (rg *RadioGroup) Event(ev tcell.Event) {
 	rg.list.Event(ev)
 	if rg.list.focus {
@@ -2103,6 +2265,10 @@ type CheckBox struct {
 	OnChange func()
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		ch.width = width
@@ -2123,7 +2289,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		// not enought for 1 symbol
 		return 1
 	}
-	var lenght uint = 0
+	var lenght uint // 0
 	if ch.Checked {
 		PrintDrawer(0, 0, *st, dr, []rune(ch.pair[0]))
 		lenght = uint(len(ch.pair[0]))
@@ -2147,6 +2313,10 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (ch *CheckBox) Event(ev tcell.Event) {
 	mouse, ok := ch.onFocus(ev)
 	if ok {
@@ -2171,6 +2341,10 @@ type InputBox struct {
 
 var Cursor rune = '_'
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (in *InputBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		in.StoreSize(width, height)
@@ -2185,6 +2359,10 @@ func (in *InputBox) Render(width uint, dr Drawer) (height uint) {
 	return in.Text.Render(width, dr)
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (in *InputBox) Event(ev tcell.Event) {
 	_, ok := in.onFocus(ev)
 	if ok {
@@ -2240,6 +2418,10 @@ type CollapsingHeader struct {
 	init  bool
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (c *CollapsingHeader) Focus(focus bool) {
 	c.frame.Focus(focus)
 }
@@ -2254,6 +2436,10 @@ func (c *CollapsingHeader) Open(state bool) {
 	c.cb.Checked = state
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	if !c.init {
 		c.cb.pair = [2]string{"[ > ]", "[ < ]"}
@@ -2272,14 +2458,26 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 	return c.frame.Render(width, dr)
 }
 
+// StoreSize ...
+// snippet storesize.doc
+// For storing widget sizes.
+// end storesize.doc
 func (c *CollapsingHeader) StoreSize(width, height uint) {
 	c.frame.StoreSize(width, height)
 }
 
+// GetSize ...
+// snippet getsize.doc
+// return for widget sizes
+// end getsize.doc
 func (c CollapsingHeader) GetSize() (width, height uint) {
 	return c.frame.GetSize()
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (c *CollapsingHeader) Event(ev tcell.Event) {
 	c.frame.Event(ev)
 }
@@ -2302,6 +2500,10 @@ type ListH struct {
 	compress bool
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (l *ListH) Focus(focus bool) {
 	if !focus {
 		for i := range l.nodes {
@@ -2317,6 +2519,10 @@ func (l *ListH) Compress() {
 	l.compress = true
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		l.StoreSize(width, height)
@@ -2416,6 +2622,10 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	return
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (l *ListH) SetHeight(hmax uint) {
 	l.ContainerVerticalFix.SetHeight(hmax)
 	if len(l.nodes) == 0 {
@@ -2432,6 +2642,10 @@ func (l *ListH) SetHeight(hmax uint) {
 	}
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (l *ListH) Event(ev tcell.Event) {
 	_, ok := l.onFocus(ev)
 	if ok {
@@ -2490,10 +2704,18 @@ func (l *ListH) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w, from: 0, to: 0})
 }
 
+// Size ...
+// snippet size.doc
+// return size of widget list
+// end size.doc
 func (l *ListH) Size() int {
 	return len(l.nodes)
 }
 
+// Clear ...
+// snippet clear.doc
+// reset internal list
+// end clear.doc
 func (l *ListH) Clear() {
 	l.nodes = nil
 }
@@ -2531,6 +2753,10 @@ func (c *ComboBox) Add(ts ...string) {
 	}
 }
 
+// Clear ...
+// snippet clear.doc
+// reset internal list
+// end clear.doc
 func (c *ComboBox) Clear() {
 	c.rg.Clear()
 	c.ts = []string{}
@@ -2580,6 +2806,10 @@ func (c *ComboBox) checkUpdater() {
 	c.rg.OnChange()
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		c.StoreSize(width, height)
@@ -2594,15 +2824,32 @@ func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	return c.ch.Render(width, dr)
 }
 
+// StoreSize ...
+// snippet storesize.doc
+// For storing widget sizes.
+// end storesize.doc
 func (c *ComboBox) StoreSize(width, height uint) {
 	c.ch.StoreSize(width, height)
 }
 
+// GetSize ...
+// snippet getsize.doc
+// return for widget sizes
+// end getsize.doc
 func (c ComboBox) GetSize() (width, height uint) {
 	return c.ch.GetSize()
 }
 
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (c *ComboBox) Focus(focus bool) { c.ch.Focus(focus) }
+
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (c *ComboBox) Event(ev tcell.Event) {
 	c.ch.Event(ev)
 }
@@ -2734,21 +2981,51 @@ func (s *Stack) present() WidgetVerticalFix {
 	}
 	return s.widgets[len(s.widgets)-1]
 }
+
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (s *Stack) Focus(focus bool) {
 	s.present().Focus(focus)
 }
+
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (s *Stack) Render(width uint, dr Drawer) (height uint) {
 	return s.present().Render(width, dr)
 }
+
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (s *Stack) Event(ev tcell.Event) {
 	s.present().Event(ev)
 }
+
+// StoreSize ...
+// snippet storesize.doc
+// For storing widget sizes.
+// end storesize.doc
 func (s *Stack) StoreSize(width, height uint) {
 	s.present().StoreSize(width, height)
 }
+
+// GetSize ...
+// snippet getsize.doc
+// return for widget sizes
+// end getsize.doc
 func (s *Stack) GetSize() (width, height uint) {
 	return s.present().GetSize()
 }
+
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (s *Stack) SetHeight(hmax uint) {
 	s.present().SetHeight(hmax)
 }
@@ -2795,6 +3072,10 @@ type Tree struct {
 	offsetNodes []Offset
 }
 
+// Render ...
+// snippet render.doc
+// Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
+// end render.doc
 func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		tr.StoreSize(width, height)
@@ -2846,11 +3127,15 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 		dr(hs[i], 1, TextStyle, LineHorizontalUnfocus)
 	}
 	if 1 < len(hs) {
-		height += 1
+		height++
 	}
 	return
 }
 
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (tr *Tree) Event(ev tcell.Event) {
 	_, ok := tr.onFocus(ev)
 	if ok {
@@ -2926,7 +3211,7 @@ func Demo() (demos []Widget) {
 				option[i] = &ch.Checked
 				ch.SetText(fmt.Sprintf("Option %01d", i))
 				ch.OnChange = func() {
-					var str string = "Result:\n"
+					str := "Result:\n"
 					for i := range option {
 						opt := fmt.Sprintf("Option %01d is ", i)
 						str += opt
@@ -3017,7 +3302,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 				rg.Add(&ch)
 			}
 			rg.OnChange = func() {
-				var str string = "Result:\n"
+				str := "Result:\n"
 				str += fmt.Sprintf("Choosed position: %02d", rg.GetPos())
 				optionInfo.SetText(str)
 				log.SetText(fmt.Sprintf("%d %s", rg.GetPos(), log.GetText()))
@@ -3201,16 +3486,16 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 		tr := Tree{
 			Root: TextStatic("Root node"),
 			Nodes: []Tree{
-				Tree{Root: TextStatic("Childs 01\nLine 1\nLine 2")},
-				Tree{Root: TextStatic("Childs 02: Long line. qwerty[posdifaslkdfjaskldjf;al ksdjf;alksdjf;laksdjf;laksdjfl;kasdjf;lkasdjf;lkasdjfl;kaj,vkmncx,mzxncfkasdjhkahdfiuewryhiuwehrkjdfhsadlkjfhalskdjhfaslkdjhfalskdjhflaksdjhfalksdjfhaklsdjhflkasdjhfaklsdjhflaksdjh")},
-				Tree{Root: TextStatic("Childs 03\nLine 1\nLine 2"),
+				{Root: TextStatic("Childs 01\nLine 1\nLine 2")},
+				{Root: TextStatic("Childs 02: Long line. qwerty[posdifaslkdfjaskldjf;al ksdjf;alksdjf;laksdjf;laksdjfl;kasdjf;lkasdjf;lkasdjfl;kaj,vkmncx,mzxncfkasdjhkahdfiuewryhiuwehrkjdfhsadlkjfhalskdjhfaslkdjhfalskdjhflaksdjhfalksdjfhaklsdjhflkasdjhfaklsdjhflaksdjh")},
+				{Root: TextStatic("Childs 03\nLine 1\nLine 2"),
 					Nodes: []Tree{
-						Tree{Root: &res},
-						Tree{Root: &b},
-						Tree{Root: &res},
+						{Root: &res},
+						{Root: &b},
+						{Root: &res},
 					},
 				},
-				Tree{Root: TextStatic("Childs\n04\nMultilines")},
+				{Root: TextStatic("Childs\n04\nMultilines")},
 			},
 		}
 		list.Add(&tr)
@@ -3294,23 +3579,35 @@ type container struct {
 	height uint
 }
 
-// Focus modify focus state of widget
+// Focus ...
+// snippet focus.doc
+// For changing focus-state of widget
+// end focus.doc
 func (c *container) Focus(focus bool) {
 	c.focus = focus
 }
 
-// StoreSize store widget size
+// StoreSize ...
+// snippet storesize.doc
+// For storing widget sizes.
+// end storesize.doc
 func (c *container) StoreSize(width, height uint) {
 	c.width = width
 	c.height = height
 }
 
-// GetSize return for widget sizes
+// GetSize ...
+// snippet getsize.doc
+// return for widget sizes
+// end getsize.doc
 func (c container) GetSize() (width, height uint) {
 	return c.width, c.height
 }
 
-// Event for widget actions
+// Event ...
+// snippet event.doc
+// For create action for widget
+// end event.doc
 func (c *container) Event(ev tcell.Event) {
 	_, ok := c.onFocus(ev)
 	if ok {
@@ -3356,6 +3653,10 @@ type ContainerVerticalFix struct {
 	addlimit bool
 }
 
+// SetHeight ...
+// snippet setheight.doc
+// Store maximal height of widget.
+// end setheight.doc
 func (c *ContainerVerticalFix) SetHeight(hmax uint) {
 	if maxSize < hmax {
 		panic(fmt.Errorf("SetHeight: too big size: %d", hmax))
@@ -3364,6 +3665,7 @@ func (c *ContainerVerticalFix) SetHeight(hmax uint) {
 	c.addlimit = true
 }
 
+// GetLimit return internal state of widget container
 func (c *ContainerVerticalFix) GetLimit() (addlimit bool, hmax uint) {
 	return c.addlimit, c.hmax
 }
@@ -3466,13 +3768,12 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			case *tcell.EventMouse:
 				if ev.Buttons() == tcell.ButtonNone {
 					ignore = true
-					continue
 				}
 			}
 			if quit {
 				break
 			}
-			if ev != nil && root != nil {
+			if ev != nil { // Always && root != nil {
 				mu.Lock()
 				if runtime.GOOS == "windows" {
 					if p, ok := ev.(*tcell.EventMouse); ok {
@@ -3521,10 +3822,11 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			// ignore height of root widget height
 			_ = root.Render(uint(width)-widthOffset,
 				func(row, col uint, st tcell.Style, r rune) {
-					if row < 0 || uint(height) < row {
+					// row , col always positive or zero
+					if uint(height) < row {
 						return
 					}
-					if col < 0 || uint(width) < col {
+					if uint(width) < col {
 						return
 					}
 					screen.SetCell(int(col), int(row), st, r)
