@@ -2259,8 +2259,9 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 //
 // [v] Option
 type CheckBox struct {
-	pair    [2]string
-	Checked bool
+	pair     [2]string
+	Checked  bool
+	ReadOnly bool // if `false` then changing is possible
 	Text
 	OnChange func()
 }
@@ -2326,9 +2327,11 @@ func (ch *CheckBox) Event(ev tcell.Event) {
 		return
 	}
 	if mouse[0] {
-		ch.Checked = !ch.Checked
-		if f := ch.OnChange; f != nil {
-			f()
+		if !ch.ReadOnly {
+			ch.Checked = !ch.Checked
+			if f := ch.OnChange; f != nil {
+				f()
+			}
 		}
 	}
 }
