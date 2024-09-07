@@ -2777,6 +2777,9 @@ func (c *ComboBox) SetPos(pos uint) {
 }
 
 func (c *ComboBox) GetPos() uint {
+	if c == nil { // avoid nil ComboBox
+		return 0
+	}
 	return c.rg.GetPos()
 }
 
@@ -2943,6 +2946,18 @@ func (t *Tabs) Add(name string, root Widget) {
 			t.headerCombo.SetPos(0)
 		}
 	}
+}
+
+func (t *Tabs) Clear() {
+	*t = *new(Tabs) // reset everything
+}
+
+func (t *Tabs) GetPos() uint {
+	return t.headerCombo.GetPos()
+}
+
+func (t *Tabs) SetPos(pos uint) {
+	t.headerCombo.SetPos(pos)
 }
 
 func (t *Tabs) UseCombo(combo bool) {
