@@ -653,6 +653,11 @@ func list() []Widget {
 			})
 			return img
 		}(),
+		func() Widget {
+			f := new(Frame)
+			f.NoBorder = true
+			return f
+		}(),
 	}
 }
 

@@ -1815,6 +1815,7 @@ type Frame struct {
 	Header       Widget
 	offsetHeader Offset
 	offsetRoot   Offset
+	NoBorder     bool
 
 	cleaned []bool
 }
@@ -1890,6 +1891,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}
 	// draw frame
 	drawRow := func(row uint) {
+		// if f.NoBorder {
+		// 	return
+		// }
 		var i uint
 		for i = 0; i < width; i++ {
 			if f.focus {
@@ -1902,6 +1906,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	// draw border
 	drawRow(0)
 	defer func() {
+		// if f.NoBorder {
+		// 	return
+		// }
 		drawRow(height)
 		var r uint
 		for r = 0; r < height; r++ {
@@ -2427,6 +2434,10 @@ type CollapsingHeader struct {
 // end focus.doc
 func (c *CollapsingHeader) Focus(focus bool) {
 	c.frame.Focus(focus)
+}
+
+func (c *CollapsingHeader) Border(show bool) {
+	c.frame.NoBorder = !show
 }
 
 func (c *CollapsingHeader) SetText(str string) {
@@ -3418,6 +3429,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	list.Add(new(Separator))
 	{
 		var frame CollapsingHeader
+		frame.Border(false)
 		list.Add(&frame)
 		frame.SetText("InputBox test")
 		var list List
