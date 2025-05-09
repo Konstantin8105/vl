@@ -1891,9 +1891,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	}
 	// draw frame
 	drawRow := func(row uint) {
-		// if f.NoBorder {
-		// 	return
-		// }
+		if f.NoBorder {
+			return
+		}
 		var i uint
 		for i = 0; i < width; i++ {
 			if f.focus {
@@ -1906,10 +1906,10 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	// draw border
 	drawRow(0)
 	defer func() {
-		// if f.NoBorder {
-		// 	return
-		// }
 		drawRow(height)
+		if f.NoBorder {
+			return
+		}
 		var r uint
 		for r = 0; r < height; r++ {
 			if f.focus {
@@ -2424,10 +2424,11 @@ func (in *InputBox) Event(ev tcell.Event) {
 
 type CollapsingHeader struct {
 	rootable
-	frame Frame
-	open  bool
-	cb    CheckBox
-	init  bool
+	frame          Frame
+	noBorderClosed bool
+	open           bool
+	cb             CheckBox
+	init           bool
 }
 
 // Focus ...
@@ -2438,8 +2439,8 @@ func (c *CollapsingHeader) Focus(focus bool) {
 	c.frame.Focus(focus)
 }
 
-func (c *CollapsingHeader) Border(show bool) {
-	c.frame.NoBorder = !show
+func (c *CollapsingHeader) BorderIfClosed(show bool) {
+	c.noBorderClosed = !show
 }
 
 func (c *CollapsingHeader) SetText(str string) {
@@ -2467,8 +2468,10 @@ func (c *CollapsingHeader) Render(width uint, dr Drawer) (height uint) {
 		c.init = true
 	}
 	if c.open {
+		c.frame.NoBorder = false
 		c.frame.root = c.root
 	} else {
+		c.frame.NoBorder = c.noBorderClosed
 		c.frame.root = nil
 	}
 	return c.frame.Render(width, dr)
@@ -3431,7 +3434,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	list.Add(new(Separator))
 	{
 		var frame CollapsingHeader
-		frame.Border(false)
+		frame.BorderIfClosed(false)
 		list.Add(&frame)
 		frame.SetText("InputBox test")
 		var list List

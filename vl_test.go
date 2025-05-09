@@ -658,6 +658,11 @@ func list() []Widget {
 			f.NoBorder = true
 			return f
 		}(),
+		func() Widget {
+			c := new(CollapsingHeader)
+			c.BorderIfClosed(false)
+			return c
+		}(),
 	}
 }
 
@@ -673,6 +678,14 @@ func list() []Widget {
 func getName(w Widget) string {
 	name := fmt.Sprintf("%T", w)
 	name = strings.ReplaceAll(name, "*vl.", "")
+	if fr, ok := w.(*Frame); ok && fr.NoBorder {
+		name += "NoBorder"
+	}
+	if c, ok := w.(*CollapsingHeader); ok {
+		if c.noBorderClosed {
+			name += "NoBorder"
+		}
+	}
 	return name
 }
 
