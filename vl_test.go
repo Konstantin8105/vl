@@ -198,16 +198,16 @@ func check(t *testing.T, name string, si int, screen Screen) {
 		},
 	}
 
-	for i := 0; i < 6; i++ {
+	for range 6 {
 		move = append(move, move[2])
 	}
-	for i := 0; i < 8; i++ {
+	for range 8 {
 		move = append(move, move[1])
 	}
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		move = append(move, move[3], move[4], move[4], move[2])
 	}
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		move = append(move, move[5], move[6])
 	}
 	for i := -2; i < int(sizes[si]+1); i++ {

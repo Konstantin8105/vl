@@ -36,6 +36,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)
 	}
-	return
-
 }
