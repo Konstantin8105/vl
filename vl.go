@@ -890,7 +890,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 // For create action for widget
 // end event.doc
 func (l *List) Event(ev tcell.Event) {
-	mouse, ok := l.onFocus(ev)
+	_, ok := l.onFocus(ev)
 	if ok {
 		l.Focus(true)
 	}
@@ -930,9 +930,6 @@ func (l *List) Event(ev tcell.Event) {
 				// 	continue
 				// }
 				//l.nodes[i].w.Focus(true)
-				if cl, ok := l.nodes[i].w.(interface{ choose() }); ok && mouse[0] {
-					cl.choose()
-				}
 				l.nodes[i].w.Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
@@ -2066,10 +2063,6 @@ type radio struct {
 	choosed bool
 }
 
-func (r *radio) choose() {
-	r.choosed = true
-}
-
 // Focus ...
 // snippet focus.doc
 // For changing focus-state of widget
@@ -2252,13 +2245,23 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 // For create action for widget
 // end event.doc
 func (rg *RadioGroup) Event(ev tcell.Event) {
+	mouse, ok := rg.onFocus(ev)
+	if ok {
+		rg.Focus(true)
+	}
+	if !rg.focus {
+		return
+	}
+	if !mouse[0] {
+		return
+	}
 	last := rg.pos // last radio position
 	for i := range rg.list.nodes {
 		rg.list.nodes[i].w.(*radio).choosed = false
 	}
 	rg.list.Event(ev)
 	for i := range rg.list.nodes {
-		if rg.list.nodes[i].w.(*radio).choosed {
+		if rg.list.nodes[i].w.(*radio).focus {
 			rg.pos = uint(i)
 		}
 	}
@@ -2268,12 +2271,6 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 	if !rg.list.focus {
 		return
 	}
-	// for i := range rg.list.nodes {
-	// 	if rg.list.nodes[i].w.(*radio).focus { // TODO: need click but not focus
-	// 		rg.pos = uint(i)
-	// 		break
-	// 	}
-	// }
 	// no changed position
 	if last == rg.pos {
 		return
