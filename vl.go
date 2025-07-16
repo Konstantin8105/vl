@@ -890,7 +890,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 // For create action for widget
 // end event.doc
 func (l *List) Event(ev tcell.Event) {
-	_, ok := l.onFocus(ev)
+	mouse, ok := l.onFocus(ev)
 	if ok {
 		l.Focus(true)
 	}
@@ -926,10 +926,13 @@ func (l *List) Event(ev tcell.Event) {
 				row := row - int(l.nodes[i].from)
 				// focus
 				l.Focus(true)
-				// 				if l.nodes[i].w == nil {
-				// 					continue
-				// 				}
+				// if l.nodes[i].w == nil {
+				// 	continue
+				// }
 				//l.nodes[i].w.Focus(true)
+				if cl, ok := l.nodes[i].w.(interface{ choose() }); ok && mouse[0] {
+					cl.choose()
+				}
 				l.nodes[i].w.Event(tcell.NewEventMouse(
 					col, row,
 					ev.Buttons(),
@@ -2063,6 +2066,10 @@ type radio struct {
 	choosed bool
 }
 
+func (r *radio) choose() {
+	r.choosed = true
+}
+
 // Focus ...
 // snippet focus.doc
 // For changing focus-state of widget
@@ -2165,7 +2172,7 @@ type RadioGroup struct {
 	container
 
 	list     List
-	pos      uint
+	pos      uint // position of choosed element
 	OnChange func()
 }
 
@@ -2245,20 +2252,34 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 // For create action for widget
 // end event.doc
 func (rg *RadioGroup) Event(ev tcell.Event) {
+	last := rg.pos // last radio position
+	for i := range rg.list.nodes {
+		rg.list.nodes[i].w.(*radio).choosed = false
+	}
 	rg.list.Event(ev)
-	if rg.list.focus {
-		// change radio position
-		last := rg.pos
-		for i := range rg.list.nodes {
-			if rg.list.nodes[i].w.(*radio).focus {
-				rg.pos = uint(i)
-			}
+	for i := range rg.list.nodes {
+		if rg.list.nodes[i].w.(*radio).choosed {
+			rg.pos = uint(i)
 		}
-		if last != rg.pos {
-			if f := rg.OnChange; f != nil {
-				f()
-			}
-		}
+	}
+	if int(rg.pos) < len(rg.list.nodes) {
+		rg.list.nodes[rg.pos].w.(*radio).choosed = true
+	}
+	if !rg.list.focus {
+		return
+	}
+	// for i := range rg.list.nodes {
+	// 	if rg.list.nodes[i].w.(*radio).focus { // TODO: need click but not focus
+	// 		rg.pos = uint(i)
+	// 		break
+	// 	}
+	// }
+	// no changed position
+	if last == rg.pos {
+		return
+	}
+	if f := rg.OnChange; f != nil {
+		f()
 	}
 }
 
@@ -2804,7 +2825,10 @@ func (c *ComboBox) checkUpdater() {
 		return
 	}
 	c.rg.OnChange = func() {
-		c.ch.SetText("")
+		name := ""
+		defer func() {
+			c.ch.SetText(name)
+		}()
 		if len(c.ts) == 0 {
 			// empty list
 			return
@@ -2820,7 +2844,7 @@ func (c *ComboBox) checkUpdater() {
 				return
 			}
 		}
-		c.ch.SetText(c.ts[c.rg.pos])
+		name = c.ts[c.rg.pos]
 		if f := c.OnChange; f != nil {
 			f()
 		}
