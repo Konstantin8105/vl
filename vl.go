@@ -2414,7 +2414,10 @@ func (in *InputBox) Event(ev tcell.Event) {
 		if row < 0 {
 			return
 		}
-		in.content.CursorPosition(uint(row), uint(col))
+		switch ev.Buttons() {
+		case tcell.Button1: // Left mouse button
+			in.content.CursorPosition(uint(row), uint(col))
+		}
 		return
 	case *tcell.EventKey:
 		switch ev.Key() {
@@ -3609,7 +3612,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	}
 	{
 		var sub Menu
-		for i := 0; i < 5; i++ {
+		for i := range 5 {
 			name := fmt.Sprintf("SecondText%02d", i)
 			sub.AddText(name)
 		}
