@@ -1665,7 +1665,7 @@ func (v *Viewer) render(width uint) {
 
 		// drawing to image
 		data = nil
-		linePos = nil
+		// linePos = nil
 		var counter uint
 		render := func(width uint, dr Drawer) (height uint) {
 			counter = 0
