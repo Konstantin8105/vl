@@ -3,3 +3,4 @@ ttyrecord
 *.test
 testdata/*.new
 *.html
+*.exe

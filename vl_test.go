@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	testdata  = "testdata"
-	errorRune = rune('#')
+	testdata = "testdata"
+	// errorRune = rune('#')
 )
 
 var (
