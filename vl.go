@@ -3,6 +3,7 @@ package vl
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"sort"
 	"strings"
@@ -3562,7 +3563,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	{
 		var t Tabs
 		t.Add("nil", nil)
-		for i := 0; i < 10; i++ {
+		for i := range 10 {
 			var list List
 			list.Add(TextStatic(fmt.Sprintf("Some text %02d", i)))
 			var text InputBox
@@ -3585,7 +3586,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	menu.AddButton("File", nil)
 	{
 		var sub Menu
-		for i := 0; i < 30; i++ {
+		for i := range 30 {
 			name := fmt.Sprintf("Text%02d", i)
 			if i%3 == 0 {
 				sub.AddButton(name, func() {
@@ -3600,7 +3601,7 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 			if i%4 == 0 {
 				name += "Sub"
 				var ss Menu
-				for k := 0; k < 5; k++ {
+				for range 5 {
 					ss.AddButton(name, func() {
 						debugs = append(debugs, fmt.Sprintln("Click Sub:"+name))
 					})
@@ -3755,8 +3756,8 @@ var (
 
 func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
 	defer func() {
-		for i := range debugs {
-			fmt.Println(i, ":", debugs[i])
+		for i, str := range debugs {
+			fmt.Fprintf(os.Stdout, "%02d: %s\n", i, str)
 		}
 	}()
 
