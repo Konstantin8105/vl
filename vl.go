@@ -565,6 +565,12 @@ func (s *Static) Render(width uint, dr Drawer) (height uint) {
 				if col == width {
 					return
 				}
+				if uint(len((*img))) <= row {
+					return
+				}
+				if uint(len((*img)[row])) <= col {
+					return
+				}
 				(*img)[row][col] = Cell{S: s, R: r}
 			})
 		}
