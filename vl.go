@@ -2252,14 +2252,11 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 // For create action for widget
 // end event.doc
 func (rg *RadioGroup) Event(ev tcell.Event) {
-	mouse, ok := rg.onFocus(ev)
+	_, ok := rg.onFocus(ev)
 	if ok {
 		rg.Focus(true)
 	}
 	if !rg.focus {
-		return
-	}
-	if !mouse[0] {
 		return
 	}
 	last := rg.pos // last radio position
