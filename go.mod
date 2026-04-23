@@ -6,7 +6,7 @@ require (
 	github.com/Konstantin8105/compare v0.0.0-20240706101316-2b8aefbb57c9
 	github.com/Konstantin8105/snippet v0.0.0-20240712185128-0b654b2df8c7
 	github.com/Konstantin8105/tf v0.0.0-20240403170626-5245216e7740
-	github.com/gdamore/tcell/v2 v2.13.8
+	github.com/gdamore/tcell/v2 v2.13.9
 )
 
 // replace github.com/Konstantin8105/tf => ../tf
