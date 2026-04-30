@@ -4,7 +4,6 @@ package vl
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -3808,7 +3807,6 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 		sc.Fill(screen.Fill)
 	}
 
-	lastClick := time.Now()
 	var ignore bool
 	for {
 		if quit {
@@ -3819,7 +3817,6 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 
 		select {
 		case ev := <-chEvent:
-			skip := false
 			switch ev := ev.(type) {
 			case *tcell.EventResize:
 				screen.Sync()
@@ -3830,20 +3827,10 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 						break
 					}
 				}
-				if runtime.GOOS == "windows" && ev.Key() == tcell.KeyRune {
-					if time.Since(lastClick) < 200*time.Millisecond {
-						skip = true
-						continue
-					}
-					lastClick = time.Now()
-				}
 			case *tcell.EventMouse:
 				if ev.Buttons() == tcell.ButtonNone {
 					ignore = true
 				}
-			}
-			if skip {
-				continue
 			}
 			if quit {
 				break
