@@ -3808,6 +3808,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 		sc.Fill(screen.Fill)
 	}
 
+	lastClick := time.Now()
 	var ignore bool
 	for {
 		if quit {
@@ -3818,6 +3819,10 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 
 		select {
 		case ev := <-chEvent:
+			if time.Since(lastClick) < 100*time.Millisecond {
+				continue
+			}
+			lastClick = time.Now()
 			switch ev := ev.(type) {
 			case *tcell.EventResize:
 				screen.Sync()
