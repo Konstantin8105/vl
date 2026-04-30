@@ -3819,10 +3819,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 
 		select {
 		case ev := <-chEvent:
-			if time.Since(lastClick) < 100*time.Millisecond {
-				continue
-			}
-			lastClick = time.Now()
+			skip := false
 			switch ev := ev.(type) {
 			case *tcell.EventResize:
 				screen.Sync()
@@ -3833,24 +3830,26 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 						break
 					}
 				}
+				if runtime.GOOS == "windows" && ev.Key() == tcell.KeyRune {
+					if time.Since(lastClick) < 200*time.Millisecond {
+						skip = true
+						continue
+					}
+					lastClick = time.Now()
+				}
 			case *tcell.EventMouse:
 				if ev.Buttons() == tcell.ButtonNone {
 					ignore = true
 				}
+			}
+			if skip {
+				continue
 			}
 			if quit {
 				break
 			}
 			if ev != nil { // Always && root != nil {
 				mu.Lock()
-				if runtime.GOOS == "windows" {
-					if p, ok := ev.(*tcell.EventMouse); ok {
-						bm := p.Buttons()
-						if bm == tcell.Button1 || bm == tcell.Button2 || bm == tcell.Button3 {
-							time.Sleep(time.Millisecond * 500) // sleep for Windows
-						}
-					}
-				}
 				root.Event(ev)
 				mu.Unlock()
 			}
