@@ -2779,18 +2779,19 @@ func (l *ListH) Clear() {
 type ComboBox struct {
 	ch       CollapsingHeader
 	rg       RadioGroup
-	ts       []string
+	init     bool
 	OnChange func()
 }
 
 func (c *ComboBox) Add(ts ...string) {
 	for _, s := range ts {
-		c.ts = append(c.ts, s)
 		c.rg.Add(TextStatic(s))
 	}
-	if f := c.OnChange; f != nil {
-		f()
-	}
+	// No need, because run inside radiogroup
+	//
+	// if f := c.OnChange; f != nil {
+	// 	f()
+	// }
 	if f := c.rg.OnChange; f != nil {
 		f()
 	}
@@ -2802,15 +2803,17 @@ func (c *ComboBox) Add(ts ...string) {
 // end clear.doc
 func (c *ComboBox) Clear() {
 	c.rg.Clear()
-	c.ts = []string{}
+	// c.ts = []string{}
 	c.OnChange = nil
 }
 
 func (c *ComboBox) SetPos(pos uint) {
 	c.rg.SetPos(pos)
-	if f := c.OnChange; f != nil {
-		f()
-	}
+	// No need, because run inside radiogroup
+	//
+	// if f := c.OnChange; f != nil {
+	// 	f()
+	// }
 	if f := c.rg.OnChange; f != nil {
 		f()
 	}
@@ -2821,38 +2824,6 @@ func (c *ComboBox) GetPos() uint {
 		return 0
 	}
 	return c.rg.GetPos()
-}
-
-func (c *ComboBox) checkUpdater() {
-	if c.rg.OnChange != nil {
-		return
-	}
-	c.rg.OnChange = func() {
-		name := ""
-		defer func() {
-			c.ch.SetText(name)
-		}()
-		if len(c.ts) == 0 {
-			// empty list
-			return
-		}
-		// c.rg.pos = -1; int(c.rg.pos) = 18446744073709551615
-		// So, use `uint(len(c.ts)) <= c.rg.pos`
-		if uint(len(c.ts)) <= c.rg.pos {
-			// outside of range - this is strange
-			// try to analyze your code
-			if 0 < len(c.ts) {
-				c.rg.pos = uint(len(c.ts) - 1)
-			} else {
-				return
-			}
-		}
-		name = c.ts[c.rg.pos]
-		if f := c.OnChange; f != nil {
-			f()
-		}
-	}
-	c.rg.OnChange()
 }
 
 // Render ...
@@ -2866,10 +2837,25 @@ func (c *ComboBox) Render(width uint, dr Drawer) (height uint) {
 	if width < 4 {
 		return 1
 	}
-	if c.ch.root == nil {
+	if !c.init {
 		c.ch.root = &c.rg
+		c.rg.OnChange = func() {
+			name := ""
+			defer func() {
+				c.ch.SetText(name)
+			}()
+			if c.rg.list.Size() == 0 {
+				// empty list
+				return
+			}
+			name = c.rg.list.nodes[c.rg.pos].w.(*radio).root.(*Static).root.(*Text).GetText()
+			if f := c.OnChange; f != nil {
+				f()
+			}
+		}
+		c.rg.OnChange()
+		c.init = true
 	}
-	c.checkUpdater()
 	return c.ch.Render(width, dr)
 }
 
@@ -3843,7 +3829,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			if quit {
 				break
 			}
-			if ev != nil { // Always && root != nil {
+			if ev != nil && !ignore { // Always && root != nil {
 				mu.Lock()
 				root.Event(ev)
 				mu.Unlock()
