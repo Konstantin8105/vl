@@ -2947,15 +2947,18 @@ type Tabs struct {
 	}
 }
 
+func (t *Tabs) initialize() {
+	t.headerListH = new(ListH)
+	t.headerCombo = new(ComboBox)
+	t.init = true
+}
+
 func (t *Tabs) Add(name string, root Widget) {
 	if name == "" || root == nil {
 		return
 	}
 	if !t.init {
-		t.headerListH = new(ListH)
-		t.headerCombo = new(ComboBox)
-		t.UseCombo(false)
-		t.init = true
+		t.initialize()
 	}
 	t.list.names = append(t.list.names, name)
 	t.list.roots = append(t.list.roots, root)
@@ -2975,7 +2978,7 @@ func (t *Tabs) Add(name string, root Widget) {
 	}
 	{
 		// combo
-		t.headerCombo.Add(t.list.names[len(t.list.names)-1])
+		t.headerCombo.Add(name) // t.list.names[len(t.list.names)-1])
 		t.headerCombo.OnChange = func() {
 			pos := t.headerCombo.GetPos()
 			if int(pos) < len(t.list.roots) {
@@ -3004,6 +3007,9 @@ func (t *Tabs) SetPos(pos uint) {
 }
 
 func (t *Tabs) UseCombo(combo bool) {
+	if !t.init {
+		t.initialize()
+	}
 	// convert
 	defer func() {
 		t.combo = combo
@@ -3011,11 +3017,12 @@ func (t *Tabs) UseCombo(combo bool) {
 	if combo {
 		// from ListH to ComboBox
 		t.Frame.Header = t.headerCombo
-		return
+		// return
+	} else {
+		// from ComboBox to ListH
+		t.Frame.Header = t.headerListH
+		// t.headerListH.Compress()
 	}
-	// from ComboBox to ListH
-	t.Frame.Header = t.headerListH
-	t.headerListH.Compress()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3562,8 +3569,9 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 		}
 		list.Add(&tr)
 	}
-	{
+	for _, combo := range []bool{false, true} {
 		var t Tabs
+		t.UseCombo(combo)
 		t.Add("nil", nil)
 		for i := range 10 {
 			var list List
