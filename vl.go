@@ -827,6 +827,9 @@ func (l *List) Compress() {
 }
 
 func (l List) getItemHmax() uint {
+	if len(l.nodes) == 0 {
+		return 0
+	}
 	return l.hmax / uint(len(l.nodes))
 }
 
@@ -2773,6 +2776,25 @@ func (l *ListH) Event(ev tcell.Event) {
 
 func (l *ListH) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w, from: 0, to: 0})
+}
+
+// Get return widget by index.
+// Return nil if index not valid.
+func (l *ListH) Get(index int) Widget {
+	if index < 0 || len(l.nodes) <= index {
+		return nil
+	}
+	return l.nodes[index].w
+}
+
+// Update replace widget by index.
+func (l *ListH) Update(index int, w Widget) {
+	if index < 0 || len(l.nodes) <= index {
+		return
+	}
+	l.nodes[index].w = w
+	l.nodes[index].from = 0
+	l.nodes[index].to = 0
 }
 
 // Size ...

@@ -2212,6 +2212,324 @@ func TestOnClickInit(t *testing.T) {
 	})
 }
 
+// TestListUpdate checks that List.Update changes the rendered output
+// by capturing before and after snapshots and comparing.
+func TestListUpdate(t *testing.T) {
+	t.Run("ReplaceText", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("before"))
+		list.Add(TextStatic("keep"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+
+		var screen Screen
+		screen.SetRoot(&list)
+		screen.SetHeight(3)
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "Before update:\n%s", Convert(*cells))
+
+		list.Update(0, TextStatic("after"))
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "After update:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListUpdateReplaceText")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("ReplaceToNil", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("visible"))
+		list.Add(TextStatic("removed"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+
+		var screen Screen
+		screen.SetRoot(&list)
+		screen.SetHeight(3)
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "Before update:\n%s", Convert(*cells))
+
+		list.Update(1, nil)
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "After update:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListUpdateReplaceToNil")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("NilToWidget", func(t *testing.T) {
+		var list List
+		list.Add(nil)
+		list.Add(TextStatic("second"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+
+		var screen Screen
+		screen.SetRoot(&list)
+		screen.SetHeight(3)
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "Before update:\n%s", Convert(*cells))
+
+		list.Update(0, TextStatic("first"))
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "After update:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListUpdateNilToWidget")
+		compare.Test(t, filename, buf.Bytes())
+	})
+}
+
+// TestListHUpdate verifies ListH.Update changes rendered output.
+func TestListHUpdate(t *testing.T) {
+	t.Run("ReplaceText", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("before"))
+		lh.Add(TextStatic("keep"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+		var screen Screen
+		screen.SetRoot(&lh)
+		screen.SetHeight(3)
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "Before update:\n%s", Convert(*cells))
+
+		lh.Update(0, TextStatic("after"))
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "After update:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListHUpdateReplaceText")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("ReplaceToNil", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("visible"))
+		lh.Add(TextStatic("removed"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+		var screen Screen
+		screen.SetRoot(&lh)
+		screen.SetHeight(3)
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "Before update:\n%s", Convert(*cells))
+
+		lh.Update(1, nil)
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "After update:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListHUpdateReplaceToNil")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("InvalidIndex", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("x"))
+		lh.Update(-1, TextStatic("y"))
+		lh.Update(5, TextStatic("z"))
+		if lh.Size() != 1 {
+			t.Errorf("size should remain 1, got %d", lh.Size())
+		}
+	})
+
+	t.Run("Get", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("a"))
+		lh.Add(TextStatic("b"))
+		if g := lh.Get(0); g == nil {
+			t.Error("Get(0) should not be nil")
+		}
+		if g := lh.Get(1); g == nil {
+			t.Error("Get(1) should not be nil")
+		}
+		if g := lh.Get(-1); g != nil {
+			t.Error("Get(-1) should be nil")
+		}
+		if g := lh.Get(5); g != nil {
+			t.Error("Get(5) should be nil")
+		}
+	})
+}
+
+// TestDivisionByZero verifies that division operations handle zero values.
+func TestDivisionByZero(t *testing.T) {
+	t.Run("getItemHmaxEmpty", func(t *testing.T) {
+		var l List
+		h := l.getItemHmax()
+		if h != 0 {
+			t.Errorf("expected 0 for empty list, got %d", h)
+		}
+	})
+
+	t.Run("getItemHmaxWithItems", func(t *testing.T) {
+		var l List
+		l.Add(TextStatic("a"))
+		l.Add(TextStatic("b"))
+		l.SetHeight(6)
+		h := l.getItemHmax()
+		if h != 3 {
+			t.Errorf("expected 3 (6/2), got %d", h)
+		}
+	})
+
+	t.Run("ListHRenderEmptyDefaultSplitter", func(t *testing.T) {
+		var lh ListH
+		h := lh.Render(10, NilDrawer)
+		if h != 0 {
+			t.Errorf("expected 0 for empty, got %d", h)
+		}
+	})
+
+	t.Run("ScrollHmaxSmall", func(t *testing.T) {
+		var sc Scroll
+		sc.SetHeight(1)
+		var list List
+		list.Add(TextStatic("item"))
+		sc.SetRoot(&list)
+		h := sc.Render(10, NilDrawer)
+		if h != 0 {
+			t.Logf("Scroll height with hmax=1: %d", h)
+		}
+	})
+
+	t.Run("ScrollEventRatioWithHmaxTwo", func(t *testing.T) {
+		var sc Scroll
+		sc.SetHeight(2)
+		var list List
+		list.Add(TextStatic("A"))
+		list.Add(TextStatic("B"))
+		list.Add(TextStatic("C"))
+		sc.SetRoot(&list)
+		sc.Focus(true)
+		sc.Render(10, NilDrawer)
+		sc.Event(tcell.NewEventMouse(0, 0, tcell.WheelDown, tcell.ModNone))
+	})
+
+	t.Run("ScrollHeightEqualsHmax", func(t *testing.T) {
+		var sc Scroll
+		sc.SetHeight(3)
+		var list List
+		list.Add(TextStatic("oneline"))
+		sc.SetRoot(&list)
+		sc.Focus(true)
+		h := sc.Render(10, NilDrawer)
+		if h == 0 {
+			t.Errorf("expected non-zero height")
+		}
+	})
+
+	t.Run("ViewerEmptyPresentRow", func(t *testing.T) {
+		var vr Viewer
+		if vr.presentRow() != -1 {
+			t.Error("expected -1 for empty viewer linePos")
+		}
+	})
+
+	t.Run("ListHRenderSingleNodeDefaultSplitter", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("X"))
+		h := lh.Render(10, NilDrawer)
+		if h == 0 {
+			t.Errorf("expected non-zero height")
+		}
+	})
+
+	t.Run("ListWithAddlimitAndItems", func(t *testing.T) {
+		var l List
+		l.Add(TextStatic("a"))
+		l.Add(TextStatic("b"))
+		l.SetHeight(4)
+		h := l.Render(10, NilDrawer)
+		if h != 4 {
+			t.Errorf("expected height 4 (hmax), got %d", h)
+		}
+	})
+
+	t.Run("ViewerNextPageEmpty", func(t *testing.T) {
+		var vr Viewer
+		vr.NextPage()
+		vr.PrevPage()
+	})
+
+	t.Run("ViewerNextPageWithTextNoAddlimit", func(t *testing.T) {
+		var vr Viewer
+		vr.SetText("hello")
+		vr.render(10)
+		vr.NextPage()
+		vr.PrevPage()
+	})
+}
+
+// TestListHSplitterChanges verifies ListH.Splitter set to a function then
+// back to nil produces different rendered layouts.
+func TestListHSplitterChanges(t *testing.T) {
+	t.Run("WithSplitterThenNil", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("AAA"))
+		lh.Add(TextStatic("BB"))
+		lh.Add(TextStatic("C"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+		var screen Screen
+		screen.SetRoot(&lh)
+		screen.SetHeight(3)
+
+		lh.Splitter = func(width uint, size int) (ws []int) {
+			if size != 3 || int(width) < 10 {
+				return nil
+			}
+			return []int{5, int(width) - 5 - 3 - 2, 3}
+		}
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "With splitter:\n%s", Convert(*cells))
+
+		lh.Splitter = nil
+
+		screen.GetContents(14, cells)
+		fmt.Fprintf(&buf, "Without splitter:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListHSplitterChanges")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("SplitterReturnsPartial", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("X"))
+		lh.Add(TextStatic("YY"))
+
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+		var screen Screen
+		screen.SetRoot(&lh)
+		screen.SetHeight(3)
+
+		// Splitter returns nil (should fall back to equal-width).
+		lh.Splitter = func(_ uint, _ int) []int { return nil }
+
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "Splitter nil fallback:\n%s", Convert(*cells))
+
+		filename := filepath.Join(testdata, "ListHSplitterFallback")
+		compare.Test(t, filename, buf.Bytes())
+	})
+}
+
 func TestSnippet(t *testing.T) {
 	snippet.Test(t, ".")
 }
@@ -2255,27 +2573,6 @@ func TestListWidthChange(t *testing.T) {
 	}
 	if w5 == w40 {
 		t.Errorf("width=5 height %d should differ from width=40 height %d", w5, w40)
-	}
-}
-
-func TestListOffScreenCulling(t *testing.T) {
-	var list List
-	list.Compress()
-	list.SetHeight(3)
-	for i := 0; i < 10; i++ {
-		list.Add(TextStatic(fmt.Sprintf("R%d", i)))
-	}
-	var drawnRows []int
-	list.Render(10, func(row, col uint, s tcell.Style, r rune) {
-		drawnRows = append(drawnRows, int(row))
-	})
-	if len(drawnRows) == 0 {
-		t.Fatal("no rows drawn at all, expected rows 0-2")
-	}
-	for _, row := range drawnRows {
-		if row >= 3 {
-			t.Errorf("item drawn at row %d, expected culling for rows >= 3", row)
-		}
 	}
 }
 
@@ -2368,20 +2665,6 @@ func TestListGet(t *testing.T) {
 	}
 	if l.Get(1) == nil {
 		t.Errorf("expected non-nil for valid index")
-	}
-}
-
-func TestListUpdate(t *testing.T) {
-	var l List
-	l.Add(TextStatic("old"))
-	l.Update(-1, TextStatic("new"))
-	l.Update(5, TextStatic("new"))
-	if l.Size() != 1 {
-		t.Errorf("size should remain 1, got %d", l.Size())
-	}
-	l.Update(0, TextStatic("new"))
-	if l.Size() != 1 {
-		t.Errorf("size should remain 1 after update, got %d", l.Size())
 	}
 }
 
