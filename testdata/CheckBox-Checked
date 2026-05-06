@@ -1,0 +1,22 @@
+Height 02. Width 06:
+0001|[v] Op|XXX...|
+0002|    ti|......|
+rows  =   2
+width =   6
+Height 02. Width 12:
+0001|[v] Option  |XXX.........|
+0002|            |............|
+rows  =   2
+width =  12
+Height 03. Width 06:
+0001|[v] Op|XXX...|
+0002|    ti|......|
+0003|    on|......|
+rows  =   3
+width =   6
+Height 03. Width 12:
+0001|[v] Option  |XXX.........|
+0002|            |............|
+0003|            |............|
+rows  =   3
+width =  12

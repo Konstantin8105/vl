@@ -1,0 +1,28 @@
+Height 02. Width 05:
+0001|SXXXX|Y....|
+0002|XXXXX|.....|
+rows  =   2
+width =   5
+Height 02. Width 10:
+0001|SXXXX     |Y.........|
+0002|XXXXX     |..........|
+rows  =   2
+width =  10
+Height 06. Width 05:
+0001|SXXXX|Y....|
+0002|XXXXX|.....|
+0003|XXXXX|.....|
+0004|     |.....|
+0005|     |.....|
+0006|     |.....|
+rows  =   6
+width =   5
+Height 06. Width 10:
+0001|SXXXX     |Y.........|
+0002|XXXXX     |..........|
+0003|XXXXX     |..........|
+0004|          |..........|
+0005|          |..........|
+0006|          |..........|
+rows  =   6
+width =  10

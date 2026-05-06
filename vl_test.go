@@ -1193,6 +1193,1025 @@ According to Bandler and Grinder our chosen words, phrases and sentences are ind
 	}
 }
 
+// TestProgressiveAdd tests sequential element addition in container widgets.
+// For each container, starts empty, snapshots after each step (0..5),
+// then verifies against golden files. Checked at 2 different screen widths.
+func TestProgressiveAdd(t *testing.T) {
+	type addStep func(name string, i uint)
+
+	type testCase struct {
+		name   string
+		names  []string
+		height uint
+		widths []uint
+		setup  func() (Widget, addStep, func())
+	}
+
+	tcs := []testCase{
+		{
+			name:   "List",
+			names:  []string{"First", "Second", "Third", "Fourth", "Fifth"},
+			height: 6,
+			widths: sizes,
+			setup: func() (Widget, addStep, func()) {
+				var w List
+				return &w, func(name string, _ uint) { w.Add(TextStatic(name)) }, w.Clear
+			},
+		},
+		{
+			name:   "ListH",
+			names:  []string{"A", "BB", "CCC", "DDDD", "EEEEE"},
+			height: 3,
+			widths: []uint{10, 20},
+			setup: func() (Widget, addStep, func()) {
+				var w ListH
+				w.Compress()
+				return &w, func(name string, _ uint) { w.Add(TextStatic(name)) }, w.Clear
+			},
+		},
+		{
+			name:   "RadioGroup",
+			names:  []string{"Alpha", "Beta", "Gamma", "Delta", "Epsilon"},
+			height: 6,
+			widths: []uint{10, 20},
+			setup: func() (Widget, addStep, func()) {
+				var w RadioGroup
+				return &w, func(name string, _ uint) { w.AddText(name) }, w.Clear
+			},
+		},
+		{
+			name:   "ComboBox",
+			names:  []string{"One", "Two", "Three", "Four", "Five"},
+			height: 6,
+			widths: []uint{10, 20},
+			setup: func() (Widget, addStep, func()) {
+				var w ComboBox
+				return &w, func(name string, _ uint) { w.Add(name) }, w.Clear
+			},
+		},
+		{
+			name:   "Tabs",
+			names:  []string{"Tab1", "Tab2", "Tab3", "Tab4", "Tab5"},
+			height: 6,
+			widths: []uint{15, 30},
+			setup: func() (Widget, addStep, func()) {
+				var w Tabs
+				w.UseCombo(false)
+				return &w, func(name string, _ uint) { w.Add(name, TextStatic("content")) }, w.Clear
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			root, add, clear := tc.setup()
+
+			var screen Screen
+			screen.SetRoot(root)
+			screen.SetHeight(tc.height)
+
+			var buf bytes.Buffer
+			cells := new([][]Cell)
+
+			for _, width := range tc.widths {
+				for i := 0; i <= len(tc.names); i++ {
+					fmt.Fprintf(&buf, "Step %d. Width %02d:\n", i, width)
+					screen.GetContents(width, cells)
+					fmt.Fprintf(&buf, "%s", Convert(*cells))
+					if i < len(tc.names) {
+						add(tc.names[i], uint(i))
+					}
+				}
+				clear()
+			}
+
+			filename := filepath.Join(testdata, "ProgressiveAdd-"+tc.name)
+			compare.Test(t, filename, buf.Bytes())
+		})
+	}
+}
+
+// capture renders a widget at every (width, height) pair and returns the output.
+func capture(t *testing.T, root Widget, widths, heights []uint) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	cells := new([][]Cell)
+	for _, h := range heights {
+		var screen Screen
+		screen.SetRoot(root)
+		screen.SetHeight(h)
+		for _, w := range widths {
+			fmt.Fprintf(&buf, "Height %02d. Width %02d:\n", h, w)
+			screen.GetContents(w, cells)
+			fmt.Fprintf(&buf, "%s", Convert(*cells))
+		}
+	}
+	return buf.Bytes()
+}
+
+// TestFrameEdgeCases checks Frame widget with different border/header/root combos
+// at multiple width and height values.
+func TestFrameEdgeCases(t *testing.T) {
+	type testCase struct {
+		name       string
+		noBorder   bool
+		withHeader bool
+		withRoot   bool
+	}
+	tcs := []testCase{
+		{"NoBorder", true, false, false},
+		{"WithHeader", false, true, false},
+		{"WithRoot", false, false, true},
+		{"FullBorder", false, true, true},
+		{"FullNoBorder", true, true, true},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var fr Frame
+			fr.NoBorder = tc.noBorder
+			if tc.withHeader {
+				var ch CheckBox
+				ch.SetText("Test Header")
+				fr.Header = &ch
+			}
+			if tc.withRoot {
+				fr.SetRoot(TextStatic("Inside content"))
+			}
+			out := capture(t, &fr, []uint{8, 16}, []uint{3, 5})
+			compare.Test(t, filepath.Join(testdata, "Frame-"+tc.name), out)
+		})
+	}
+}
+
+// TestCheckBoxVariants checks CheckBox with different states
+// at multiple width and height values.
+func TestCheckBoxVariants(t *testing.T) {
+	type testCase struct {
+		name     string
+		checked  bool
+		readonly bool
+	}
+	tcs := []testCase{
+		{"Unchecked", false, false},
+		{"Checked", true, false},
+		{"ReadOnly", false, true},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var ch CheckBox
+			ch.SetText("Option")
+			ch.Checked = tc.checked
+			ch.ReadOnly = tc.readonly
+			out := capture(t, &ch, []uint{6, 12}, []uint{2, 3})
+			compare.Test(t, filepath.Join(testdata, "CheckBox-"+tc.name), out)
+		})
+	}
+}
+
+// TestTextSettings checks Text widget with MaxLines, LinesLimit, Compress
+// at multiple width and height values.
+func TestTextSettings(t *testing.T) {
+	type testCase struct {
+		name     string
+		text     string
+		maxLines uint
+		useLimit bool
+		compress bool
+	}
+	tcs := []testCase{
+		{"Short", "Hello", 0, false, false},
+		{"LongWithMaxLines", "Line1\nLine2\nLine3\nLine4\nLine5\nLine6", 3, false, false},
+		{"WithLinesLimit", "A\nB\nC\nD\nE", 0, true, false},
+		{"Compressed", "Compress Me", 0, false, true},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var txt Text
+			txt.SetText(tc.text)
+			if 0 < tc.maxLines {
+				txt.SetMaxLines(tc.maxLines)
+			}
+			if tc.useLimit {
+				txt.SetLinesLimit(3)
+			}
+			if tc.compress {
+				txt.Compress()
+			}
+			out := capture(t, &txt, []uint{5, 12}, []uint{4, 6})
+			compare.Test(t, filepath.Join(testdata, "Text-"+tc.name), out)
+		})
+	}
+}
+
+// TestScrollWithHeight checks Scroll widget with SetHeight and scrollbar
+// at multiple width and height values.
+func TestScrollWithHeight(t *testing.T) {
+	type testCase struct {
+		name     string
+		addLimit bool
+		height   uint
+	}
+	tcs := []testCase{
+		{"NoLimit", false, 0},
+		{"Limit3", true, 3},
+		{"Limit5", true, 5},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var sc Scroll
+			var list List
+			list.Add(TextStatic("Line A"))
+			list.Add(TextStatic("Line B"))
+			list.Add(TextStatic("Line C"))
+			list.Add(TextStatic("Line D"))
+			sc.SetRoot(&list)
+			heights := []uint{tc.height}
+			if tc.addLimit {
+				sc.SetHeight(tc.height)
+			} else {
+				heights = []uint{4, 6}
+			}
+			out := capture(t, &sc, []uint{8, 14}, heights)
+			compare.Test(t, filepath.Join(testdata, "Scroll-"+tc.name), out)
+		})
+	}
+}
+
+// TestCollapsingHeaderStates checks CollapsingHeader open/closed/border modes
+// at multiple width and height values.
+func TestCollapsingHeaderStates(t *testing.T) {
+	type testCase struct {
+		name       string
+		open       bool
+		noBorder   bool
+		withRoot   bool
+	}
+	tcs := []testCase{
+		{"ClosedWithBorder", false, false, false},
+		{"ClosedNoBorder", false, true, false},
+		{"OpenWithRoot", true, false, true},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var ch CollapsingHeader
+			ch.SetText("Header")
+			ch.Open(tc.open)
+			ch.BorderIfClosed(!tc.noBorder)
+			if tc.withRoot {
+				ch.SetRoot(TextStatic("Inside text"))
+			}
+			out := capture(t, &ch, []uint{8, 16}, []uint{3, 5})
+			compare.Test(t, filepath.Join(testdata, "Collapsing-"+tc.name), out)
+		})
+	}
+}
+
+// TestImageSizes checks Image widget with various data sizes
+// at multiple width and height values.
+func TestImageSizes(t *testing.T) {
+	type testCase struct {
+		name string
+		rows int
+		cols int
+	}
+	tcs := []testCase{
+		{"1x1", 1, 1},
+		{"3x5", 3, 5},
+		{"5x3", 5, 3},
+		{"Empty", 0, 0},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var img Image
+			if 0 < tc.rows && 0 < tc.cols {
+				data := make([][]Cell, tc.rows)
+				for r := range data {
+					data[r] = make([]Cell, tc.cols)
+					for c := range data[r] {
+						data[r][c] = Cell{S: TextStyle, R: 'X'}
+					}
+				}
+				data[0][0] = Cell{S: ButtonStyle, R: 'S'}
+				img.SetImage(data)
+			}
+			out := capture(t, &img, []uint{5, 10}, []uint{2, 6})
+			compare.Test(t, filepath.Join(testdata, "Image-"+tc.name), out)
+		})
+	}
+}
+
+// TestMiscFunctions tests small uncovered utility functions.
+func TestMiscFunctions(t *testing.T) {
+	t.Run("NilDrawer", func(t *testing.T) {
+		NilDrawer(0, 0, TextStyle, ' ')
+	})
+
+	t.Run("FillAndSetStyle", func(t *testing.T) {
+		var called bool
+		var screen Screen
+		screen.Fill(func(r rune, s tcell.Style) {
+			called = true
+		})
+		screen.SetHeight(2)
+		_ = screen.Render(4, NilDrawer)
+		if !called {
+			t.Error("Fill callback was not called")
+		}
+
+		var txt Text
+		st := ButtonStyle
+		txt.SetStyle(&st)
+	})
+
+	t.Run("GetLimit", func(t *testing.T) {
+		var cvf ContainerVerticalFix
+		cvf.SetHeight(10)
+		add, hmax := cvf.GetLimit()
+		if !add {
+			t.Error("expected addlimit true")
+		}
+		if hmax != 10 {
+			t.Errorf("expected hmax 10, got %d", hmax)
+		}
+	})
+
+	t.Run("SpecificSymbol", func(t *testing.T) {
+		SpecificSymbol(false)
+		if LineHorizontalFocus != '\u2550' {
+			t.Error("expected unicode horizontal focus")
+		}
+		SpecificSymbol(true)
+		if LineHorizontalFocus != '=' {
+			t.Error("expected ascii horizontal focus")
+		}
+	})
+
+	t.Run("Stack", func(t *testing.T) {
+		var stack Stack
+		var stackSc Scroll
+		stackSc.SetRoot(TextStatic("Stacked"))
+		stack.Push(&stackSc)
+		stack.Focus(true)
+		stack.StoreSize(10, 5)
+		stack.Event(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone))
+		stack.Pop()
+		var stackSc2 Scroll
+		stack.Push(&stackSc2)
+		stack.SetHeight(3)
+		_ = stack.Render(10, NilDrawer)
+	})
+
+	t.Run("ListGetUpdate", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("zero"))
+		list.Add(TextStatic("one"))
+		if g := list.Get(0); g == nil {
+			t.Error("Get(0) is nil")
+		}
+		if g := list.Get(99); g != nil {
+			t.Error("Get(99) should be nil")
+		}
+		var btn2 Button
+		btn2.SetText("updated")
+		list.Update(1, &btn2)
+		list.Update(99, nil)
+	})
+
+	t.Run("ViewerPosition", func(t *testing.T) {
+		var vr Viewer
+		vr.SetPosition(5)
+		if vr.GetPosition() != 5 {
+			t.Errorf("position expected 5, got %d", vr.GetPosition())
+		}
+	})
+
+	t.Run("ComboBox", func(t *testing.T) {
+		var nilCB *ComboBox
+		if nilCB.GetPos() != 0 {
+			t.Error("nil ComboBox GetPos should return 0")
+		}
+		var cb2 ComboBox
+		cb2.Add("a", "b", "c")
+		cb2.Render(20, NilDrawer)
+		var changed bool
+		cb2.OnChange = func() { changed = true }
+		cb2.SetPos(1)
+		if !changed {
+			t.Error("OnChange not called after SetPos")
+		}
+	})
+
+	t.Run("TabsPosition", func(t *testing.T) {
+		var tabs Tabs
+		tabs.UseCombo(false)
+		tabs.Add("Z", TextStatic("z"))
+		tabs.Add("Y", TextStatic("y"))
+		tabs.SetPos(1)
+		if tabs.GetPos() != 1 {
+			t.Errorf("tabs pos expected 1, got %d", tabs.GetPos())
+		}
+	})
+
+	t.Run("ScrollKeyboard", func(t *testing.T) {
+		var scrollEv Scroll
+		scrollEv.SetRoot(TextStatic("X"))
+		scrollEv.SetHeight(3)
+		scrollEv.Event(tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone))
+		scrollEv.Event(tcell.NewEventKey(tcell.KeyPgUp, ' ', tcell.ModNone))
+		scrollEv.Focus(true)
+		scrollEv.Event(tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone))
+	})
+
+	t.Run("DrawerLimit", func(t *testing.T) {
+		var hit int
+		dr := func(row, col uint, s tcell.Style, r rune) { hit++ }
+		lim := DrawerLimit(dr, 0, 0, 0, 2, 0, 3)
+		lim(0, 0, TextStyle, 'A')
+		lim(5, 0, TextStyle, 'B')
+		lim(0, 5, TextStyle, 'C')
+		if hit != 1 {
+			t.Errorf("expected 1 draw call, got %d", hit)
+		}
+	})
+}
+
+// TestTreeEvent checks Tree event handling without prior Render.
+func TestTreeEvent(t *testing.T) {
+	var tr Tree
+	tr.Root = TextStatic("Root")
+	tr.Nodes = []Tree{
+		{Root: TextStatic("Child")},
+	}
+
+	tr.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+	tr.Focus(true)
+	tr.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+}
+
+// TestEdgePanic finds and fixes code that panics on valid edge cases.
+func TestEdgePanic(t *testing.T) {
+	t.Run("RadioGroupDirectListAdd", func(t *testing.T) {
+		var rg RadioGroup
+		rg.list.Add(TextStatic("bypass"))
+		rg.Render(10, NilDrawer)
+	})
+
+	t.Run("RadioGroupEmptyList", func(t *testing.T) {
+		var rg RadioGroup
+		rg.Render(10, NilDrawer)
+		rg.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+	})
+
+	t.Run("ListHCompressNilWidget", func(t *testing.T) {
+		var lh ListH
+		lh.Compress()
+		lh.Add(nil)
+		lh.Render(10, NilDrawer)
+	})
+
+	t.Run("ListHRenderEmpty", func(t *testing.T) {
+		var lh ListH
+		lh.Render(10, NilDrawer)
+	})
+
+	t.Run("RadioGroupEventDirectList", func(t *testing.T) {
+		var rg RadioGroup
+		rg.list.Add(TextStatic("X"))
+		rg.Focus(true)
+		rg.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+	})
+}
+
+// TestEdgeBehavior covers remaining uncovered widget behavior.
+func TestEdgeBehavior(t *testing.T) {
+	t.Run("StaticCompressNil", func(t *testing.T) {
+		var s Static
+		s.Compress()
+	})
+
+	t.Run("RadioEvent", func(t *testing.T) {
+		var r radio
+		r.Focus(true)
+		r.Event(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone))
+		r.Event(tcell.NewEventMouse(1, 0, tcell.Button1, tcell.ModNone))
+		r.Focus(false)
+	})
+
+	t.Run("InputBoxKeyEvents", func(t *testing.T) {
+		var in InputBox
+		in.SetText("ABC")
+		in.SetMaxLines(1)
+		// Render once to initialize text field dimensions.
+		in.Render(10, NilDrawer)
+		in.Focus(true)
+		in.Event(tcell.NewEventKey(tcell.KeyLeft, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyRight, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyUp, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyDown, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyBackspace, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(tcell.KeyDelete, ' ', tcell.ModNone))
+		in.Event(tcell.NewEventKey(0, 'X', tcell.ModNone))
+		in.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+	})
+
+	t.Run("ViewerPageMove", func(t *testing.T) {
+		var vr Viewer
+		vr.SetText("Line1\nLine2\nLine3\nLine4\nLine5")
+		vr.render(10)
+		vr.NextPage()
+		vr.PrevPage()
+		// With SetHeight (addlimit).
+		vr.SetHeight(2)
+		vr.NextPage()
+		vr.PrevPage()
+	})
+
+	t.Run("StackEmpty", func(t *testing.T) {
+		var s Stack
+		s.Pop()
+		_ = s.Render(10, NilDrawer)
+		w, h := s.GetSize()
+		if w != 0 && h != 0 {
+			t.Logf("Stack.GetSize = %d,%d", w, h)
+		}
+	})
+
+	t.Run("ListHSetHeight", func(t *testing.T) {
+		var l ListH
+		l.Add(TextStatic("A"))
+		l.SetHeight(5)
+		// Re-render to cover SetHeight propagation path.
+		_ = l.Render(10, NilDrawer)
+	})
+
+	t.Run("FixOffsetEdge", func(t *testing.T) {
+		var sc Scroll
+		sc.offset = 5
+		sc.height = 1
+		sc.fixOffset()
+	})
+
+	t.Run("ScrollFocusNil", func(t *testing.T) {
+		var sc Scroll
+		sc.Focus(true)
+	})
+
+	t.Run("ScrollOffsetEdge", func(t *testing.T) {
+		var sc Scroll
+		var list List
+		list.Add(TextStatic("A"))
+		sc.SetRoot(&list)
+		sc.SetHeight(3)
+		sc.offset = 10
+		sc.fixOffset()
+	})
+
+	t.Run("ViewerNextPageEdge", func(t *testing.T) {
+		var vr Viewer
+		vr.SetText("S")
+		vr.render(10)
+		vr.NextPage()
+		vr.PrevPage()
+	})
+
+	t.Run("RadioEventBanner", func(t *testing.T) {
+		var r radio
+		var btn Button
+		btn.SetText("In")
+		r.SetRoot(&btn)
+		r.Focus(true)
+		r.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		r.Event(tcell.NewEventMouse(10, 0, tcell.Button1, tcell.ModNone))
+		// Key event routed to root.
+		r.Event(tcell.NewEventKey(tcell.KeyEnter, ' ', tcell.ModNone))
+	})
+
+	t.Run("RunSimulation", func(t *testing.T) {
+		simulation = true
+		defer func() { simulation = false }()
+		qu := make(chan struct{}, 1)
+		action := make(chan func(), 10)
+		root := Demo()[0]
+		go func() {
+			qu <- struct{}{}
+		}()
+		err := Run(root, action, qu)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
+}
+
+// TestAddModifyRemove exercises add/update/delete cycles on all container
+// widgets to verify no panic occurs during normal lifecycle operations.
+func TestAddModifyRemove(t *testing.T) {
+	t.Run("ListCRUD", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("a"))
+		list.Add(TextStatic("b"))
+		list.Add(nil)
+		list.Add(TextStatic("c"))
+		list.Render(10, NilDrawer)
+
+		list.Update(1, TextStatic("B2"))
+		list.Update(3, nil)
+		list.Render(10, NilDrawer)
+
+		if g := list.Get(0); g == nil {
+			t.Error("Get(0) should not be nil")
+		}
+		if g := list.Get(99); g != nil {
+			t.Error("Get(99) should be nil")
+		}
+		list.Clear()
+		list.Render(10, NilDrawer)
+
+		list.Add(TextStatic("after clear"))
+		list.Render(10, NilDrawer)
+	})
+
+	t.Run("ListHCRUD", func(t *testing.T) {
+		var lh ListH
+		lh.Add(TextStatic("x"))
+		lh.Add(TextStatic("y"))
+		lh.Render(10, NilDrawer)
+
+		lh.Compress()
+		lh.Render(10, NilDrawer)
+
+		lh.Clear()
+		lh.Render(10, NilDrawer)
+
+		lh.Add(TextStatic("z"))
+		lh.Render(10, NilDrawer)
+	})
+
+	t.Run("RadioGroupCRUD", func(t *testing.T) {
+		var rg RadioGroup
+		rg.AddText("one", "two", "three")
+		rg.Render(10, NilDrawer)
+
+		rg.Clear()
+		rg.Render(10, NilDrawer)
+
+		rg.AddText("four")
+		rg.SetPos(0)
+		rg.Render(10, NilDrawer)
+
+		var onchange int
+		rg.OnChange = func() { onchange++ }
+		rg.AddText("five")
+		if onchange == 0 {
+			t.Error("OnChange should fire on Add")
+		}
+	})
+
+	t.Run("ComboBoxCRUD", func(t *testing.T) {
+		var cb ComboBox
+		cb.Add("a", "b")
+		cb.Render(10, NilDrawer)
+
+		cb.Clear()
+		cb.Render(10, NilDrawer)
+
+		cb.Add("c", "d", "e")
+		cb.SetPos(2)
+		cb.Render(10, NilDrawer)
+	})
+
+	t.Run("TabsCRUD", func(t *testing.T) {
+		var tabs Tabs
+		tabs.UseCombo(false)
+		tabs.Add("X", TextStatic("contentX"))
+		tabs.Render(10, NilDrawer)
+
+		tabs.Clear()
+		tabs.UseCombo(false)
+		tabs.Render(10, NilDrawer)
+
+		tabs.Add("Y", TextStatic("contentY"))
+		tabs.Add("Z", TextStatic("contentZ"))
+		tabs.SetPos(1)
+		tabs.Render(10, NilDrawer)
+
+		tabs.UseCombo(true)
+		tabs.Render(10, NilDrawer)
+	})
+
+	t.Run("ScrollRootSwap", func(t *testing.T) {
+		var sc Scroll
+		sc.SetRoot(nil)
+		sc.Render(10, NilDrawer)
+		sc.Focus(true)
+		sc.Event(tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone))
+
+		sc.SetRoot(TextStatic("Hello"))
+		sc.Render(10, NilDrawer)
+		sc.Event(tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone))
+
+		sc.SetRoot(nil)
+		sc.Render(10, NilDrawer)
+	})
+
+	t.Run("MenuCRUD", func(t *testing.T) {
+		var menu Menu
+		menu.AddButton("Btn", nil)
+		menu.AddText("Txt")
+		var sub Menu
+		sub.AddButton("SubBtn", nil)
+		menu.AddMenu("Sub", &sub)
+		menu.Render(10, NilDrawer)
+
+		menu.SetHeight(5)
+		menu.Render(10, NilDrawer)
+	})
+
+	t.Run("FrameRootSwap", func(t *testing.T) {
+		var fr Frame
+		fr.SetRoot(TextStatic("first"))
+		fr.Render(10, NilDrawer)
+
+		fr.SetRoot(TextStatic("second"))
+		fr.Render(10, NilDrawer)
+
+		fr.SetRoot(nil)
+		fr.Render(10, NilDrawer)
+
+		fr.NoBorder = true
+		fr.SetRoot(TextStatic("no border"))
+		fr.Render(10, NilDrawer)
+	})
+
+	t.Run("ButtonTextCycle", func(t *testing.T) {
+		var b Button
+		b.SetText("start")
+		b.Compress()
+		b.Render(10, NilDrawer)
+
+		b.SetText("changed")
+		b.Render(10, NilDrawer)
+
+		b.SetMaxLines(2)
+		b.SetLinesLimit(2)
+		b.SetText("multi\nline\ntext")
+		b.Render(10, NilDrawer)
+
+		var clicked int
+		b.OnClick = func() { clicked++ }
+		b.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if clicked != 1 {
+			t.Error("button click not fired")
+		}
+	})
+
+	t.Run("TextSetGetCycle", func(t *testing.T) {
+		var txt Text
+		txt.SetText("initial")
+		if txt.GetText() != "initial" {
+			t.Error("GetText mismatch")
+		}
+		txt.SetText("update")
+		if txt.GetText() != "update" {
+			t.Error("GetText mismatch after update")
+		}
+		txt.SetLinesLimit(3)
+		txt.SetMaxLines(2)
+		txt.Compress()
+		txt.Filter(func(r rune) bool { return r != ' ' })
+		txt.Render(10, NilDrawer)
+	})
+
+	t.Run("CheckBoxToggle", func(t *testing.T) {
+		var ch CheckBox
+		ch.SetText("toggle")
+		ch.Render(10, NilDrawer)
+
+		ch.Checked = true
+		ch.Render(10, NilDrawer)
+
+		ch.Checked = false
+		ch.ReadOnly = true
+		ch.Render(10, NilDrawer)
+
+		var changed int
+		ch.OnChange = func() { changed++ }
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if ch.ReadOnly && changed != 0 {
+			t.Error("ReadOnly should block change")
+		}
+		ch.ReadOnly = false
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if changed != 1 {
+			t.Error("change should fire")
+		}
+	})
+
+	t.Run("StackPushPopCycle", func(t *testing.T) {
+		var s Stack
+		for i := 0; i < 5; i++ {
+			var sc Scroll
+			sc.SetRoot(TextStatic("item"))
+			s.Push(&sc)
+		}
+		s.Render(10, NilDrawer)
+		for i := 0; i < 5; i++ {
+			s.Pop()
+		}
+		s.Pop()
+		s.Render(10, NilDrawer)
+	})
+
+	t.Run("CollapsingHeaderCycle", func(t *testing.T) {
+		var ch CollapsingHeader
+		ch.SetText("header")
+		ch.Render(10, NilDrawer)
+
+		ch.Open(true)
+		ch.SetRoot(TextStatic("inner"))
+		ch.Render(10, NilDrawer)
+
+		ch.Open(false)
+		ch.BorderIfClosed(false)
+		ch.Render(10, NilDrawer)
+	})
+}
+
+// TestIntToUintEdgeCases verifies that list operations using sentinel -1
+// values for nil nodes do not cause uint overflow or panic.
+func TestIntToUintEdgeCases(t *testing.T) {
+	t.Run("ListAllNilNodes", func(t *testing.T) {
+		var list List
+		list.Add(nil)
+		list.Add(nil)
+		list.Add(nil)
+		h := list.Render(10, NilDrawer)
+		if h != 0 {
+			t.Errorf("expected height 0 for all-nil list, got %d", h)
+		}
+	})
+
+	t.Run("ListLastNodeNil", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("A"))
+		list.Add(nil)
+		h := list.Render(10, NilDrawer)
+		if h == 0 {
+			t.Error("expected non-zero height when first node is valid")
+		}
+	})
+
+	t.Run("ListFirstNodeNil", func(t *testing.T) {
+		var list List
+		list.Add(nil)
+		list.Add(TextStatic("B"))
+		var buf bytes.Buffer
+		cells := new([][]Cell)
+		var screen Screen
+		screen.SetRoot(&list)
+		screen.SetHeight(3)
+		screen.GetContents(10, cells)
+		fmt.Fprintf(&buf, "%s", Convert(*cells))
+		filename := filepath.Join(testdata, "ListFirstNodeNil")
+		compare.Test(t, filename, buf.Bytes())
+	})
+
+	t.Run("ListHeightZeroWidget", func(t *testing.T) {
+		var list List
+		list.Add(new(Separator))
+		list.Render(10, NilDrawer)
+	})
+
+	t.Run("ListMultipleNilInterleaved", func(t *testing.T) {
+		var list List
+		list.Add(TextStatic("A"))
+		list.Add(nil)
+		list.Add(TextStatic("B"))
+		list.Add(nil)
+		list.Add(TextStatic("C"))
+		h := list.Render(10, NilDrawer)
+		if h < 3 {
+			t.Errorf("expected height >= 3 for 3 valid items, got %d", h)
+		}
+	})
+}
+
+// TestOnClickInit verifies that setting callback functions before any
+// initialization/rendering does not lose them during widget setup.
+func TestOnClickInit(t *testing.T) {
+	t.Run("ButtonOnClickBeforeRender", func(t *testing.T) {
+		var b Button
+		b.SetText("click")
+		var clicked int
+		b.OnClick = func() { clicked++ }
+		b.Render(10, NilDrawer)
+		b.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if clicked != 1 {
+			t.Errorf("OnClick lost after Render: clicked=%d", clicked)
+		}
+	})
+
+	t.Run("CheckBoxOnChangeBeforeRender", func(t *testing.T) {
+		var ch CheckBox
+		ch.SetText("check")
+		var changed int
+		ch.OnChange = func() { changed++ }
+		ch.Render(10, NilDrawer)
+		ch.Focus(true)
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if changed == 0 {
+			t.Error("OnChange lost after Render")
+		}
+	})
+
+	t.Run("ComboBoxOnChangeBeforeRender", func(t *testing.T) {
+		var cb ComboBox
+		cb.Add("a", "b")
+		var changed int
+		cb.OnChange = func() { changed++ }
+		cb.Render(10, NilDrawer)
+		if changed == 0 {
+			t.Error("ComboBox OnChange lost during init Render")
+		}
+	})
+
+	t.Run("RadioGroupOnChangeBeforeRender", func(t *testing.T) {
+		var rg RadioGroup
+		rg.AddText("x", "y")
+		var changed int
+		rg.OnChange = func() { changed++ }
+		rg.Render(10, NilDrawer)
+		rg.Focus(true)
+		rg.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+	})
+
+	t.Run("ButtonOnClickReplaced", func(t *testing.T) {
+		var b Button
+		b.SetText("btn")
+		var first int
+		b.OnClick = func() { first++ }
+		b.Render(10, NilDrawer)
+		var second int
+		b.OnClick = func() { second++ }
+		b.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if second != 1 {
+			t.Error("replaced OnClick not called")
+		}
+		if first != 0 {
+			t.Error("old OnClick still called after replacement")
+		}
+	})
+
+	t.Run("CheckBoxOnChangeDuringToggle", func(t *testing.T) {
+		var ch CheckBox
+		ch.SetText("opt")
+		var count int
+		ch.OnChange = func() { count++ }
+		ch.Render(10, NilDrawer)
+		ch.Focus(true)
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		ch.Event(tcell.NewEventMouse(0, 0, tcell.Button1, tcell.ModNone))
+		if count != 3 {
+			t.Errorf("OnChange called %d times, expected 3", count)
+		}
+	})
+
+	t.Run("MenuAddButtonCallback", func(t *testing.T) {
+		var menu Menu
+		var called int
+		menu.AddButton("Test", func() { called++ })
+		menu.Render(10, NilDrawer)
+	})
+
+	t.Run("CollapsingHeaderOnChange", func(t *testing.T) {
+		var ch CollapsingHeader
+		ch.SetText("head")
+		ch.Render(10, NilDrawer)
+	})
+
+	t.Run("RadioGroupOnChangeSequence", func(t *testing.T) {
+		var rg RadioGroup
+		rg.AddText("a", "b", "c")
+		rg.SetPos(0)
+		rg.Render(10, NilDrawer)
+
+		var changed int
+		rg.OnChange = func() { changed++ }
+		rg.SetPos(1)
+		if changed != 1 {
+			t.Errorf("SetPos should fire OnChange: changed=%d", changed)
+		}
+	})
+}
+
 func TestSnippet(t *testing.T) {
 	snippet.Test(t, ".")
 }

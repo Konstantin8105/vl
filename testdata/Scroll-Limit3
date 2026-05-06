@@ -1,0 +1,12 @@
+Height 03. Width 08:
+0001|Line A -|........|
+0002|Line B *|........|
+0003|Line C -|........|
+rows  =   3
+width =   8
+Height 03. Width 14:
+0001|Line A       -|..............|
+0002|Line B       *|..............|
+0003|Line C       -|..............|
+rows  =   3
+width =  14
