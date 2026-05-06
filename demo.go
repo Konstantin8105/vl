@@ -49,6 +49,13 @@ func main() {
 		}
 		root := rg
 		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
+	case 4:
+		action := make(chan func(), 10)
+		txt := vl.TextStatic(strings.Repeat("ABCDabcd", 500000))
+		scroll := new(vl.Scroll)
+		scroll.SetRoot(txt)
+		root := scroll
+		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
