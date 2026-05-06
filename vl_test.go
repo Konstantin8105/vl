@@ -526,6 +526,15 @@ func Benchmark(b *testing.B) {
 // BenchmarkTextScroll/render-4         	     344	   3378204 ns/op	   64078 B/op	    1002 allocs/op
 // BenchmarkTextScroll/moving-4         	     342	   3338545 ns/op	   64127 B/op	    1002 allocs/op
 // BenchmarkTextScroll/static-4         	     703	   1612608 ns/op	      64 B/op	       2 allocs/op
+//
+// PS V:\go\vl> go test -run=Bench  -bench=BenchmarkTextScroll -benchmem -cpuprofile cpu.out -memprofile mem.out
+// goos: windows
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E5-2660 v4 @ 2.00GHz
+// BenchmarkTextScroll/render-28                224           5268533 ns/op           64087 B/op       1002 allocs/op
+// BenchmarkTextScroll/moving-28                226           5099225 ns/op           64064 B/op       1002 allocs/op
+// BenchmarkTextScroll/static-28                492           2354826 ns/op              64 B/op          2 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
 	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
@@ -550,11 +559,11 @@ func BenchmarkTextScroll(b *testing.B) {
 	})
 	b.Run("moving", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				screen.Event(down)
 			}
 			_ = screen.Render(size, NilDrawer)
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				screen.Event(up)
 			}
 		}
@@ -564,11 +573,11 @@ func BenchmarkTextScroll(b *testing.B) {
 	scroll.SetRoot(stList)
 	b.Run("static", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				screen.Event(down)
 			}
 			_ = screen.Render(size, NilDrawer)
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				screen.Event(up)
 			}
 		}
@@ -942,8 +951,8 @@ func findClick(cells *[][]Cell, width, height uint) (col, row uint, found bool) 
 	if width == 0 {
 		return
 	}
-	for row = 0; row < height; row++ {
-		for col = 0; col < width; col++ {
+	for row = range height {
+		for col = range width {
 			if (*cells)[row][col].S == ButtonStyle ||
 				(*cells)[row][col].S == InputBoxStyle {
 				found = true
@@ -951,8 +960,8 @@ func findClick(cells *[][]Cell, width, height uint) (col, row uint, found bool) 
 			}
 		}
 	}
-	for row = 0; row < height; row++ {
-		for col = 0; col < width; col++ {
+	for row = range height {
+		for col = range width {
 			if (*cells)[row][col].S == ButtonFocusStyle ||
 				(*cells)[row][col].S == InputBoxFocusStyle {
 				found = true
@@ -973,7 +982,7 @@ func TestMenuList(t *testing.T) {
 	}
 	{
 		var ls []string
-		for i := 0; i < 10; i++ {
+		for i := range 10 {
 			ls = append(ls, fmt.Sprintf("Long long text %d", i))
 		}
 		txts = append(txts, ls)
@@ -1027,7 +1036,7 @@ func TestMenuList(t *testing.T) {
 						col, row = 0, 1
 						t.Logf("not clicked")
 					}
-					for i := 0; i < 2; i++ {
+					for i := range 2 {
 						fmt.Fprintf(&buf, "Click%02d %d, %d\n", i, col, row)
 						click := tcell.NewEventMouse(
 							int(col), int(row),
