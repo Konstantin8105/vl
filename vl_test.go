@@ -2215,3 +2215,309 @@ func TestOnClickInit(t *testing.T) {
 func TestSnippet(t *testing.T) {
 	snippet.Test(t, ".")
 }
+
+func TestListLayoutCache(t *testing.T) {
+	var l List
+	for i := 0; i < 10; i++ {
+		l.Add(TextStatic(fmt.Sprintf("Line %d", i)))
+	}
+	capture := func(width uint) (cells [][]Cell) {
+		l.Render(width, func(row, col uint, s tcell.Style, r rune) {
+			for len(cells) <= int(row) {
+				cells = append(cells, nil)
+			}
+			if len(cells[row]) <= int(col) {
+				cells[row] = append(cells[row], make([]Cell, int(col)-len(cells[row])+1)...)
+			}
+			cells[row][col] = Cell{S: s, R: r}
+		})
+		return
+	}
+	for _, width := range []uint{10, 20, 40} {
+		c1 := capture(width)
+		c2 := capture(width)
+		if len(c1) != len(c2) {
+			t.Errorf("width=%d: row count differs: %d vs %d", width, len(c1), len(c2))
+		}
+	}
+}
+
+func TestListWidthChange(t *testing.T) {
+	var l List
+	for i := 0; i < 5; i++ {
+		l.Add(TextStatic("Instead, they use ModAlt, even for events"))
+	}
+	w40 := l.Render(40, NilDrawer)
+	w5 := l.Render(5, NilDrawer)
+	w40b := l.Render(40, NilDrawer)
+	if w40 != w40b {
+		t.Errorf("second width=40 height %d differs from first %d", w40b, w40)
+	}
+	if w5 == w40 {
+		t.Errorf("width=5 height %d should differ from width=40 height %d", w5, w40)
+	}
+}
+
+func TestListOffScreenCulling(t *testing.T) {
+	var list List
+	list.Compress()
+	list.SetHeight(3)
+	for i := 0; i < 10; i++ {
+		list.Add(TextStatic(fmt.Sprintf("R%d", i)))
+	}
+	var drawnRows []int
+	list.Render(10, func(row, col uint, s tcell.Style, r rune) {
+		drawnRows = append(drawnRows, int(row))
+	})
+	if len(drawnRows) == 0 {
+		t.Fatal("no rows drawn at all, expected rows 0-2")
+	}
+	for _, row := range drawnRows {
+		if row >= 3 {
+			t.Errorf("item drawn at row %d, expected culling for rows >= 3", row)
+		}
+	}
+}
+
+func TestListNilNodes(t *testing.T) {
+	var l List
+	l.Add(TextStatic("First"))
+	l.Add(nil)
+	l.Add(TextStatic("Third"))
+	l.Add(nil)
+	l.Add(TextStatic("Fifth"))
+	h := l.Render(20, NilDrawer)
+	if l.nodes[0].from != 0 || l.nodes[0].to <= 0 {
+		t.Errorf("first node: from=%d to=%d", l.nodes[0].from, l.nodes[0].to)
+	}
+	if l.nodes[1].from != -1 || l.nodes[1].to != -1 {
+		t.Errorf("nil node 1: from=%d to=%d", l.nodes[1].from, l.nodes[1].to)
+	}
+	if l.nodes[2].from != l.nodes[0].to {
+		t.Errorf("third node: from=%d, expected %d", l.nodes[2].from, l.nodes[0].to)
+	}
+	if l.nodes[4].from != l.nodes[2].to {
+		t.Errorf("fifth node: from=%d, expected %d", l.nodes[4].from, l.nodes[2].to)
+	}
+	if h < 3 {
+		t.Errorf("height too small: %d", h)
+	}
+	var drawn int
+	l.Render(20, func(row, col uint, s tcell.Style, r rune) {
+		drawn++
+	})
+	if drawn == 0 {
+		t.Errorf("no content drawn at all")
+	}
+}
+
+func TestListCompressAddlimit(t *testing.T) {
+	var l List
+	l.Compress()
+	l.SetHeight(4)
+	for i := 0; i < 3; i++ {
+		l.Add(TextStatic(fmt.Sprintf("Text %d", i)))
+	}
+	l.Render(10, NilDrawer)
+	if !l.addlimit || l.hmax != 4 {
+		t.Errorf("addlimit=%v hmax=%d", l.addlimit, l.hmax)
+	}
+	for i := range l.nodes {
+		if l.nodes[i].w == nil {
+			continue
+		}
+		dh := int(l.getItemHmax())
+		if l.nodes[i].to-l.nodes[i].from > dh {
+			t.Errorf("item %d: height %d exceeds dh=%d",
+				i, l.nodes[i].to-l.nodes[i].from, dh)
+		}
+	}
+}
+
+func TestListPreallocatedDrawer(t *testing.T) {
+	var l List
+	l.Add(TextStatic("A"))
+	l.Add(TextStatic("B"))
+	l.Add(TextStatic("C"))
+	rows := make(map[uint][]rune)
+	l.Render(10, func(row, col uint, s tcell.Style, r rune) {
+		rows[row] = append(rows[row], r)
+	})
+	if len(rows) < 3 {
+		t.Errorf("expected at least 3 rows of output, got %d", len(rows))
+	}
+	for row := uint(0); row < uint(len(rows)); row++ {
+		if len(rows[row]) == 0 {
+			t.Errorf("row %d has no content", row)
+		}
+	}
+}
+
+func TestListGet(t *testing.T) {
+	var l List
+	l.Add(TextStatic("zero"))
+	l.Add(TextStatic("one"))
+	if l.Get(-1) != nil {
+		t.Errorf("expected nil for negative index")
+	}
+	if l.Get(2) != nil {
+		t.Errorf("expected nil for out-of-range index")
+	}
+	if l.Get(0) == nil {
+		t.Errorf("expected non-nil for valid index")
+	}
+	if l.Get(1) == nil {
+		t.Errorf("expected non-nil for valid index")
+	}
+}
+
+func TestListUpdate(t *testing.T) {
+	var l List
+	l.Add(TextStatic("old"))
+	l.Update(-1, TextStatic("new"))
+	l.Update(5, TextStatic("new"))
+	if l.Size() != 1 {
+		t.Errorf("size should remain 1, got %d", l.Size())
+	}
+	l.Update(0, TextStatic("new"))
+	if l.Size() != 1 {
+		t.Errorf("size should remain 1 after update, got %d", l.Size())
+	}
+}
+
+func TestListClear(t *testing.T) {
+	var l List
+	l.Add(TextStatic("a"))
+	l.Add(TextStatic("b"))
+	if l.Size() != 2 {
+		t.Errorf("expected size 2, got %d", l.Size())
+	}
+	l.Clear()
+	if l.Size() != 0 {
+		t.Errorf("expected size 0 after clear, got %d", l.Size())
+	}
+}
+
+func TestListSetHeightNonVerticalFix(t *testing.T) {
+	var l List
+	var txt Text
+	txt.SetText("plain")
+	l.Add(&txt)
+	l.SetHeight(10)
+}
+
+func TestListRenderEdgeCases(t *testing.T) {
+	var empty List
+	h := empty.Render(10, NilDrawer)
+	if h != 0 {
+		t.Errorf("empty list height should be 0, got %d", h)
+	}
+	var l List
+	l.Add(TextStatic("hello"))
+	h = l.Render(1, NilDrawer)
+	if h != 0 {
+		t.Errorf("width<2 height should be 0, got %d", h)
+	}
+	h = l.Render(0, NilDrawer)
+	if h != 0 {
+		t.Errorf("width=0 height should be 0, got %d", h)
+	}
+}
+
+func TestListEventMouseOutOfBounds(t *testing.T) {
+	var l List
+	l.Add(TextStatic("item"))
+	l.Focus(true)
+	l.Event(tcell.NewEventMouse(-1, 0, tcell.Button1, tcell.ModNone))
+	l.Event(tcell.NewEventMouse(0, -1, tcell.Button1, tcell.ModNone))
+}
+
+func TestListEventKey(t *testing.T) {
+	var l List
+	l.Add(TextStatic("item"))
+	l.Focus(true)
+	l.Event(tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone))
+}
+
+func TestListRenderCompressNoAddlimit(t *testing.T) {
+	var l List
+	l.Compress()
+	l.Add(TextStatic("short"))
+	l.Add(TextStatic("longer text"))
+	h := l.Render(10, NilDrawer)
+	if h == 0 {
+		t.Errorf("expected non-zero height")
+	}
+}
+
+func TestScrollNoAddlimit(t *testing.T) {
+	var sc Scroll
+	sc.SetRoot(TextStatic("hello"))
+	h := sc.Render(10, NilDrawer)
+	if h == 0 {
+		t.Errorf("expected non-zero height")
+	}
+}
+
+func TestScrollRenderSmallWidth(t *testing.T) {
+	var sc Scroll
+	sc.SetRoot(TextStatic("hello"))
+	h := sc.Render(1, NilDrawer)
+	if h != 0 {
+		t.Errorf("expected 0, got %d", h)
+	}
+}
+
+func TestStaticCompressNilRoot(t *testing.T) {
+	var s Static
+	s.Compress()
+}
+
+func TestFrameSetHeightNilRoot(t *testing.T) {
+	var f Frame
+	f.SetHeight(10)
+	h := f.Render(10, NilDrawer)
+	if h == 0 {
+		t.Errorf("expected non-zero height")
+	}
+}
+
+func TestListEventNoFocus(t *testing.T) {
+	var l List
+	l.Add(TextStatic("item"))
+	l.Event(tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone))
+}
+
+func TestListRenderAddlimitWithoutCompress(t *testing.T) {
+	var l List
+	l.SetHeight(6)
+	l.Add(TextStatic("a"))
+	l.Add(TextStatic("b"))
+	l.Add(TextStatic("c"))
+	dh := l.getItemHmax()
+	if dh != 2 {
+		t.Errorf("dh should be 2, got %d", dh)
+	}
+	h := l.Render(10, NilDrawer)
+	if h != l.hmax {
+		t.Errorf("height %d should equal hmax %d", h, l.hmax)
+	}
+	h2 := l.Render(5, NilDrawer)
+	if h2 != l.hmax {
+		t.Errorf("height %d should equal hmax %d after width change", h2, l.hmax)
+	}
+}
+
+func TestContainerVerticalFixSetHeight(t *testing.T) {
+	var cvf ContainerVerticalFix
+	cvf.SetHeight(10)
+	addlimit, hmax := cvf.GetLimit()
+	if !addlimit || hmax != 10 {
+		t.Errorf("expected addlimit=true, hmax=10, got %v, %d", addlimit, hmax)
+	}
+	cvf.SetHeight(0)
+	addlimit, hmax = cvf.GetLimit()
+	if !addlimit || hmax != 0 {
+		t.Errorf("expected addlimit=true, hmax=0, got %v, %d", addlimit, hmax)
+	}
+}
