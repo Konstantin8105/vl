@@ -4,3 +4,4 @@ ttyrecord
 testdata/*.new
 *.html
 *.exe
+plans/*
