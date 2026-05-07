@@ -1925,7 +1925,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			if f.cleaned[r] {
 				continue
 			}
-			for w := uint(0); w < width; w++ {
+			for w := range width {
 				drg(r, w, TextStyle, ' ')
 			}
 			f.cleaned[r] = true
@@ -1941,7 +1941,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			return
 		}
 		var i uint
-		for i = 0; i < width; i++ {
+		for i = range width {
 			if f.focus {
 				dr(row, i, TextStyle, LineHorizontalFocus)
 			} else {
@@ -1956,8 +1956,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		if f.NoBorder {
 			return
 		}
-		var r uint
-		for r = 0; r < height; r++ {
+		for r := range height {
 			if f.focus {
 				dr(r, 0, TextStyle, LineVerticalFocus)
 				dr(r, width-1, TextStyle, LineVerticalFocus)
