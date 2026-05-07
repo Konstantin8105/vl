@@ -1455,10 +1455,10 @@ func TestScrollWithHeight(t *testing.T) {
 // at multiple width and height values.
 func TestCollapsingHeaderStates(t *testing.T) {
 	type testCase struct {
-		name       string
-		open       bool
-		noBorder   bool
-		withRoot   bool
+		name     string
+		open     bool
+		noBorder bool
+		withRoot bool
 	}
 	tcs := []testCase{
 		{"ClosedWithBorder", false, false, false},
@@ -1641,7 +1641,7 @@ func TestMiscFunctions(t *testing.T) {
 	t.Run("DrawerLimit", func(t *testing.T) {
 		var hit int
 		dr := func(row, col uint, s tcell.Style, r rune) { hit++ }
-		lim := DrawerLimit(dr, 0, 0, 0, 2, 0, 3)
+		lim := DrawerLimit(dr, 0, 0, 2, 3)
 		lim(0, 0, TextStyle, 'A')
 		lim(5, 0, TextStyle, 'B')
 		lim(0, 5, TextStyle, 'C')

@@ -116,26 +116,48 @@ const maxSize uint = 10000
 
 func NilDrawer(_, _ uint, _ tcell.Style, _ rune) {}
 
+// DrawerLimit check coordinates and draw only on acceptable area
+//
+// |                                                                      |
+// |       |  dcol  |     cols      |                                     |
+// | ------*********|***************|*****************                    |
+// |       *        |               |                *                    |
+// | drow  *        |               |                *                    |
+// |       *        |               |                *                    |
+// | ---------------+++++++++++++++++                *                    |
+// |       *        +               +                *                    |
+// |       *        +               +                *                    |
+// |       *        +  Acceptable   +                *                    |
+// |  rows *        +               +                *                    |
+// |       *        +    area       +                *                    |
+// |       *        +               +                *                    |
+// |       *        +               +                *                    |
+// | ---------------+++++++++++++++++                *                    |
+// |       *                                         *                    |
+// |       *                                         *                    |
+// |       *                                         *                    |
+// |       *                                         *                    |
+// |       *******************************************                    |
+// |                                                                      |
 func DrawerLimit(
 	dr Drawer,
 	drow, dcol uint,
-	rowFrom, rowTo uint,
-	colFrom, colTo uint,
+	rows, cols uint,
 ) Drawer {
-	return func(row, col uint, s tcell.Style, r rune) {
-		row += drow
-		col += dcol
+	return func(localRow, localCol uint, s tcell.Style, r rune) {
+		if rows < localRow { // outside row
+			return
+		}
+		if cols < localCol { // outside col
+			return
+		}
+		row := localRow + drow
+		col := localCol + dcol
 		if maxSize <= row {
 			panic(fmt.Errorf("row is too big: %d", row))
 		}
 		if maxSize <= col {
 			panic(fmt.Errorf("col is too big: %d", col))
-		}
-		if row < rowFrom || rowTo < row { // outside roe
-			return
-		}
-		if col < colFrom || colTo < col { // outside col
-			return
 		}
 		dr(row, col, s, r)
 	}
@@ -891,8 +913,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
 			rowFrom, 0,
-			rowFrom, rowTo,
-			0, width,
+			(rowTo-rowFrom), width,
 		))
 	}
 	{
@@ -1151,8 +1172,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		menu.frame.Render(w, DrawerLimit(
 			dr,
 			menu.offset.row, menu.offset.col,
-			0, maxSize,
-			0, width,
+			maxSize, width,
 		))
 	}
 	if menu.parent == nil {
@@ -1163,8 +1183,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			height = menu.root.Render(width, DrawerLimit(
 				dr,
 				h, 0,
-				0, menu.hmax,
-				0, width,
+				menu.hmax, width,
 			))
 		}
 		height += h // for menu
@@ -1394,8 +1413,7 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	b.Text.Render(width-2*buttonOffset, DrawerLimit(
 		dr,
 		0, buttonOffset,
-		0, maxSize,
-		0, width-buttonOffset,
+		maxSize, width-buttonOffset,
 	))
 	width, height = b.GetSize()
 	width += 2 * buttonOffset
@@ -1965,8 +1983,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		draw := DrawerLimit(
 			dr,
 			0, 2,
-			0, maxSize,
-			0, width,
+			maxSize, width,
 		)
 		height = f.Header.Render(width-4, draw)
 		// draw line
@@ -2014,8 +2031,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		h := f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
 			dr,
 			f.offsetRoot.row, f.offsetRoot.col,
-			0, maxSize,
-			0, width-2*f.offsetRoot.col+1,
+			maxSize, width-2*f.offsetRoot.col+1,
 		))
 		height += h + 2
 	}
@@ -2133,8 +2149,7 @@ func (r *radio) Render(width uint, dr Drawer) (height uint) {
 		height = r.root.Render(width-banner, DrawerLimit(
 			dr,
 			0, banner,
-			0, maxSize,
-			0, width,
+			maxSize, width,
 		))
 	}
 	if height < 2 {
@@ -2361,8 +2376,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	height = ch.Text.Render(width-lenght-1, DrawerLimit(
 		dr,
 		0, lenght+1,
-		0, maxSize,
-		lenght+1, width,
+		maxSize, (width-(lenght+1)),
 	))
 	if height < 2 {
 		height = 1
@@ -3924,17 +3938,13 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 				vf.SetHeight(uint(height))
 			}
 			// ignore height of root widget height
-			_ = root.Render(uint(width)-widthOffset,
+			_ = root.Render(uint(width)-widthOffset, DrawerLimit(
 				func(row, col uint, st tcell.Style, r rune) {
-					// row , col always positive or zero
-					if uint(height) < row {
-						return
-					}
-					if uint(width) < col {
-						return
-					}
 					screen.SetCell(int(col), int(row), st, r)
-				})
+				},
+				0, 0,
+				uint(height), uint(width),
+			))
 		}
 		// show screen result
 		screen.Show()
