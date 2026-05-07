@@ -327,15 +327,10 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 		screen.fill(' ', ScreenStyle)
 	}
 	// draw root widget
-	draw := func(row, col uint, s tcell.Style, r rune) {
-		if screen.hmax <= row {
-			return
-		}
-		if width <= col {
-			return
-		}
-		dr(row, col, s, r)
-	}
+	draw := DrawerLimit(dr,
+		0, 0,
+		screen.hmax-1, width-1,
+	)
 	if screen.root != nil {
 		_ = screen.root.Render(width, draw) // ignore height
 	}
