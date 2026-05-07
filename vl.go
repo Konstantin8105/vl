@@ -104,11 +104,11 @@ func SpecificSymbol(ascii bool) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-type Drawer = func(row, col uint, s tcell.Style, r rune)
+type Drawer = func(row, col uint, st tcell.Style, r rune)
 
-func PrintDrawer(row, col uint, s tcell.Style, dr Drawer, rs []rune) {
+func PrintDrawer(row, col uint, st tcell.Style, dr Drawer, rs []rune) {
 	for i := range rs {
-		dr(row, col+uint(i), s, rs[i])
+		dr(row, col+uint(i), st, rs[i])
 	}
 }
 
@@ -261,8 +261,8 @@ func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
 		}
 	}
 	// var cleaned []bool
-	drawer := func(row, col uint, s tcell.Style, r rune) {
-		(*cells)[row][col] = Cell{S: s, R: r}
+	drawer := func(row, col uint, st tcell.Style, r rune) {
+		(*cells)[row][col] = Cell{S: st, R: r}
 	}
 	_ = screen.Render(screen.width, drawer) // ignore height
 }
@@ -318,8 +318,8 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	// draw default spaces
 	// take a lot of resouses by performance
 	if screen.fill == nil {
-		for col := uint(0); col < width; col++ {
-			for row := uint(0); row < screen.hmax; row++ {
+		for col := range width {
+			for row := range screen.hmax {
 				dr(row, col, ScreenStyle, ' ')
 			}
 		}
