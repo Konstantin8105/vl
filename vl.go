@@ -916,6 +916,10 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		if 0 < l.nodes[i].to {
 			rowTo--
 		}
+		if isNilDrawer(dr) {
+			// do nothing
+			continue
+		}
 		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
 			int(rowFrom), 0,
