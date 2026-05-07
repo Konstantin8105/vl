@@ -643,32 +643,18 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	sc.fixOffset() // fix offset position
-	draw := func(row, col uint, s tcell.Style, r rune) {
-		if width < col {
-			return
-		}
-		if row < sc.offset {
-			return
-		}
-		row -= sc.offset
-		if sc.addlimit && sc.hmax <= row {
-			return
-		}
-		dr(row, col, s, r)
+	var draw func(row, col uint, st tcell.Style, r rune)
+	if sc.addlimit {
+		draw = DrawerLimit(dr,
+			-int(sc.offset), 0,
+			sc.hmax-1+sc.offset, width,
+		)
+	} else {
+		draw = DrawerLimit(dr,
+			-int(sc.offset), 0,
+			1e10, width,
+		)
 	}
-	// TODO
-	// var draw func(row, col uint, s tcell.Style, r rune)
-	// if sc.addlimit {
-	// 	draw = DrawerLimit(dr,
-	// 		int(sc.offset), 0,
-	// 		sc.hmax-1, width,
-	// 	)
-	// } else {
-	// 	draw = DrawerLimit(dr,
-	// 		int(sc.offset), 0,
-	// 		maxSize, width,
-	// 	)
-	// }
 
 	if width < 2 {
 		return
@@ -3234,12 +3220,10 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	for i := range tr.Nodes {
-		draw := func(row, col uint, s tcell.Style, r rune) {
-			if width < col {
-				panic("Text width")
-			}
-			dr(row+height, col+2, s, r)
-		}
+		draw := DrawerLimit(dr,
+			int(height), 2,
+			1e10, width,
+		)
 		tr.offsetNodes[i].col = 2
 		tr.offsetNodes[i].row = height
 		h := tr.Nodes[i].Render(width-2, draw)
