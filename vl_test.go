@@ -535,6 +535,14 @@ func Benchmark(b *testing.B) {
 // BenchmarkTextScroll/render-28                224           5268533 ns/op           64087 B/op       1002 allocs/op
 // BenchmarkTextScroll/moving-28                226           5099225 ns/op           64064 B/op       1002 allocs/op
 // BenchmarkTextScroll/static-28                492           2354826 ns/op              64 B/op          2 allocs/op
+//
+// goos: windows
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E5-2660 v4 @ 2.00GHz
+// BenchmarkTextScroll/render-28                442           2506285 ns/op       48108 B/op       1002 allocs/op
+// BenchmarkTextScroll/moving-28                468           2572049 ns/op       48096 B/op       1002 allocs/op
+// BenchmarkTextScroll/static-28                801           1587073 ns/op          96 B/op          2 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
 	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen

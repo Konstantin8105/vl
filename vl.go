@@ -4,6 +4,7 @@ package vl
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	"sync"
@@ -115,6 +116,10 @@ func PrintDrawer(row, col uint, st tcell.Style, dr Drawer, rs []rune) {
 const maxSize uint = 10000
 
 func NilDrawer(_, _ uint, _ tcell.Style, _ rune) {}
+
+func isNilDrawer(dr Drawer) bool {
+	return reflect.ValueOf(dr).Pointer() == reflect.ValueOf(NilDrawer).Pointer()
+}
 
 // DrawerLimit check coordinates and draw only on acceptable area
 //
@@ -512,6 +517,9 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if t.compress {
 		width = t.content.GetRenderWidth() + 1
 	}
+	if isNilDrawer(dr) {
+		return
+	}
 
 	// drawing
 	for w := 0; w <= int(width); w++ {
@@ -535,9 +543,6 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 		dr(row, col, *t.style, r)
 	}
 	t.content.Render(draw, cur)
-	if 0 < t.maxLines && t.maxLines < height {
-		height = t.maxLines
-	}
 
 	return
 }
@@ -1838,12 +1843,16 @@ func (img *Image) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		img.StoreSize(width, height)
 	}()
+	height = uint(len(img.data))
+	if isNilDrawer(dr) {
+		// do nothing
+		return
+	}
 	for row := range img.data {
 		for col := range img.data[row] {
 			dr(uint(row), uint(col), img.data[row][col].S, img.data[row][col].R)
 		}
 	}
-	height = uint(len(img.data))
 	return
 }
 
