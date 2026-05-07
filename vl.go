@@ -1903,6 +1903,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	defer func() {
 		f.StoreSize(width, height)
 	}()
+	if width < 4 {
+		return 1
+	}
 	{ // default cleaner
 		for i := range f.cleaned {
 			f.cleaned[i] = false
@@ -1931,9 +1934,6 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			return
 		}
 		drg(row, col, s, r)
-	}
-	if width < 4 {
-		return 1
 	}
 	// draw frame
 	drawRow := func(row uint) {
