@@ -2693,16 +2693,10 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		}
 	}
 	for i := range l.nodes {
-		draw := func(row, col uint, s tcell.Style, r rune) {
-			if 0 < l.hmax && l.hmax < row {
-				return
-			}
-			col += uint(l.nodes[i].from)
-			if width < col {
-				return
-			}
-			dr(row, col, s, r)
-		}
+		draw := DrawerLimit(dr,
+			0, l.nodes[i].from,
+			1e10, width,
+		)
 		if l.nodes[i].w == nil {
 			continue
 		}
