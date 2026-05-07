@@ -141,7 +141,7 @@ func NilDrawer(_, _ uint, _ tcell.Style, _ rune) {}
 // |                                                                      |
 func DrawerLimit(
 	dr Drawer,
-	drow, dcol uint,
+	drow, dcol int,
 	rows, cols uint,
 ) Drawer {
 	return func(localRow, localCol uint, s tcell.Style, r rune) {
@@ -151,8 +151,14 @@ func DrawerLimit(
 		if cols < localCol { // outside col
 			return
 		}
-		row := localRow + drow
-		col := localCol + dcol
+		if int(localRow)+drow < 0 {
+			return
+		}
+		if int(localCol)+dcol < 0 {
+			return
+		}
+		row := localRow + uint(drow)
+		col := localCol + uint(dcol)
 		if maxSize <= row {
 			panic(fmt.Errorf("row is too big: %d", row))
 		}
@@ -650,6 +656,20 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		}
 		dr(row, col, s, r)
 	}
+	// TODO
+	// var draw func(row, col uint, s tcell.Style, r rune)
+	// if sc.addlimit {
+	// 	draw = DrawerLimit(dr,
+	// 		int(sc.offset), 0,
+	// 		sc.hmax-1, width,
+	// 	)
+	// } else {
+	// 	draw = DrawerLimit(dr,
+	// 		int(sc.offset), 0,
+	// 		maxSize, width,
+	// 	)
+	// }
+
 	if width < 2 {
 		return
 	}
@@ -907,7 +927,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 		}
 		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
-			rowFrom, 0,
+			int(rowFrom), 0,
 			(rowTo-rowFrom), width,
 		))
 	}
@@ -1166,7 +1186,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 		}
 		menu.frame.Render(w, DrawerLimit(
 			dr,
-			menu.offset.row, menu.offset.col,
+			int(menu.offset.row), int(menu.offset.col),
 			maxSize, width,
 		))
 	}
@@ -1177,7 +1197,7 @@ func (menu *Menu) Render(width uint, dr Drawer) (height uint) {
 			menu.fixRootHeight() // fix root
 			height = menu.root.Render(width, DrawerLimit(
 				dr,
-				h, 0,
+				int(h), 0,
 				menu.hmax, width,
 			))
 		}
@@ -2025,7 +2045,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		// ))
 		h := f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
 			dr,
-			f.offsetRoot.row, f.offsetRoot.col,
+			int(f.offsetRoot.row), int(f.offsetRoot.col),
 			maxSize, width-2*f.offsetRoot.col+1,
 		))
 		height += h + 2
@@ -2370,7 +2390,7 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 	dr(0, lenght, TextStyle, ' ')
 	height = ch.Text.Render(width-lenght-1, DrawerLimit(
 		dr,
-		0, lenght+1,
+		0, int(lenght+1),
 		maxSize, (width-(lenght+1)),
 	))
 	if height < 2 {
