@@ -1,0 +1,12 @@
+Before update:
+0001|visible   |..........|
+0002|removed   |..........|
+0003|          |..........|
+rows  =   3
+width =  10
+After update:
+0001|visible   |..........|
+0002|          |..........|
+0003|          |..........|
+rows  =   3
+width =  10

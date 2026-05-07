@@ -827,6 +827,9 @@ func (l *List) Compress() {
 }
 
 func (l List) getItemHmax() uint {
+	if len(l.nodes) == 0 {
+		return 0
+	}
 	return l.hmax / uint(len(l.nodes))
 }
 
@@ -877,14 +880,29 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 			break
 		}
 		// drawing
+		rowFrom := uint(l.nodes[i].from)
+		rowTo := uint(l.nodes[i].to)
+		if 0 < l.nodes[i].to {
+			rowTo--
+		}
 		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
-			uint(l.nodes[i].from), 0,
-			uint(l.nodes[i].from), uint(l.nodes[i].to)-1,
+			rowFrom, 0,
+			rowFrom, rowTo,
 			0, width,
 		))
 	}
-	height = uint(l.nodes[len(l.nodes)-1].to)
+	{
+		last := len(l.nodes) - 1
+		for 0 <= last && l.nodes[last].w == nil {
+			last--
+		}
+		if last < 0 {
+			height = 0
+		} else {
+			height = uint(l.nodes[last].to)
+		}
+	}
 	if l.addlimit {
 		height = l.hmax
 	}
@@ -2236,11 +2254,15 @@ func (rg *RadioGroup) Render(width uint, dr Drawer) (height uint) {
 		rg.pos = 0
 	}
 	for i := range rg.list.nodes {
-		if uint(i) == rg.pos {
-			rg.list.nodes[i].w.(*radio).choosed = true
+		r, ok := rg.list.nodes[i].w.(*radio)
+		if !ok {
 			continue
 		}
-		rg.list.nodes[i].w.(*radio).choosed = false
+		if uint(i) == rg.pos {
+			r.choosed = true
+			continue
+		}
+		r.choosed = false
 	}
 	height = rg.list.Render(width, dr)
 	return
@@ -2260,16 +2282,20 @@ func (rg *RadioGroup) Event(ev tcell.Event) {
 	}
 	last := rg.pos // last radio position
 	for i := range rg.list.nodes {
-		rg.list.nodes[i].w.(*radio).choosed = false
+		if r, ok := rg.list.nodes[i].w.(*radio); ok {
+			r.choosed = false
+		}
 	}
 	rg.list.Event(ev)
 	for i := range rg.list.nodes {
-		if rg.list.nodes[i].w.(*radio).focus {
+		if r, ok := rg.list.nodes[i].w.(*radio); ok && r.focus {
 			rg.pos = uint(i)
 		}
 	}
 	if int(rg.pos) < len(rg.list.nodes) {
-		rg.list.nodes[rg.pos].w.(*radio).choosed = true
+		if r, ok := rg.list.nodes[rg.pos].w.(*radio); ok {
+			r.choosed = true
+		}
 	}
 	if !rg.list.focus {
 		return
@@ -2576,11 +2602,16 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	if l.nodes[len(l.nodes)-1].to != int(width) {
 		if l.compress {
 			for i := range l.nodes {
-				// initialize sizes of widgets
+				if l.nodes[i].w == nil {
+					continue
+				}
 				l.nodes[i].w.Render(width, NilDrawer)
 			}
 			l.nodes[0].from = 0
 			for i := range l.nodes {
+				if l.nodes[i].w == nil {
+					continue
+				}
 				if c, ok := l.nodes[i].w.(Compressable); ok {
 					c.Compress()
 				} else {
@@ -2745,6 +2776,25 @@ func (l *ListH) Event(ev tcell.Event) {
 
 func (l *ListH) Add(w Widget) {
 	l.nodes = append(l.nodes, listNode{w: w, from: 0, to: 0})
+}
+
+// Get return widget by index.
+// Return nil if index not valid.
+func (l *ListH) Get(index int) Widget {
+	if index < 0 || len(l.nodes) <= index {
+		return nil
+	}
+	return l.nodes[index].w
+}
+
+// Update replace widget by index.
+func (l *ListH) Update(index int, w Widget) {
+	if index < 0 || len(l.nodes) <= index {
+		return
+	}
+	l.nodes[index].w = w
+	l.nodes[index].from = 0
+	l.nodes[index].to = 0
 }
 
 // Size ...
@@ -3212,6 +3262,9 @@ func (tr *Tree) Event(ev tcell.Event) {
 		case *tcell.EventKey:
 			tr.Root.Event(ev)
 		}
+	}
+	if len(tr.Nodes) > 0 && len(tr.offsetNodes) != len(tr.Nodes) {
+		tr.offsetNodes = make([]Offset, len(tr.Nodes))
 	}
 	for i := range tr.Nodes {
 		switch ev := ev.(type) {
