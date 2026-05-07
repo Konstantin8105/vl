@@ -642,7 +642,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	sc.fixOffset() // fix offset position
-	draw := func(row, col uint, st tcell.Style, r rune) {
+	draw := func(row, col uint, s tcell.Style, r rune) {
 		if width < col {
 			return
 		}
@@ -653,7 +653,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		if sc.addlimit && sc.hmax <= row {
 			return
 		}
-		dr(row, col, st, r)
+		dr(row, col, s, r)
 	}
 	if width < 2 {
 		return
@@ -2692,7 +2692,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		}
 	}
 	for i := range l.nodes {
-		draw := func(row, col uint, st tcell.Style, r rune) {
+		draw := func(row, col uint, s tcell.Style, r rune) {
 			if 0 < l.hmax && l.hmax < row {
 				return
 			}
@@ -2700,7 +2700,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 			if width < col {
 				return
 			}
-			dr(row, col, st, r)
+			dr(row, col, s, r)
 		}
 		if l.nodes[i].w == nil {
 			continue
@@ -3219,11 +3219,11 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	for i := range tr.Nodes {
-		draw := func(row, col uint, st tcell.Style, r rune) {
+		draw := func(row, col uint, s tcell.Style, r rune) {
 			if width < col {
 				panic("Text width")
 			}
-			dr(row+height, col+2, st, r)
+			dr(row+height, col+2, s, r)
 		}
 		tr.offsetNodes[i].col = 2
 		tr.offsetNodes[i].row = height
@@ -3939,8 +3939,8 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			}
 			// ignore height of root widget height
 			_ = root.Render(uint(width)-widthOffset, DrawerLimit(
-				func(row, col uint, st tcell.Style, r rune) {
-					screen.SetCell(int(col), int(row), st, r)
+				func(row, col uint, s tcell.Style, r rune) {
+					screen.SetCell(int(col), int(row), s, r)
 				},
 				0, 0,
 				uint(height), uint(width),
