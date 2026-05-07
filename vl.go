@@ -628,6 +628,9 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 			return
 		}
 		row -= sc.offset
+		if sc.addlimit && sc.hmax <= row {
+			return
+		}
 		dr(row, col, st, r)
 	}
 	if width < 2 {
