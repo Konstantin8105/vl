@@ -1937,8 +1937,8 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		heightRoot = f.root.Render(width-2*f.offsetRoot.col, NilDrawer)
 	}
 
-	height = max(heightHeader, 1) // border or header
-	height += 1                   // space line between root and border
+	height += max(heightHeader, 1) // border or header
+	height += 1                    // space line between root and border
 	height += heightRoot
 	if !f.NoBorder {
 		height += 1 // space line between root and border
@@ -1950,6 +1950,16 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 			height = f.hmax - 1
 		} else {
 			height = 0
+		}
+		if 0 < int(f.hmax)-int(heightHeader)-4 {
+			if _, ok := f.root.(VerticalFix); ok {
+				hmax := f.hmax - heightHeader - 4
+				//TODO if !f.NoBorder {
+				//	hmax += 8
+				//}
+				// TODO height change
+				f.root.(VerticalFix).SetHeight(hmax)
+			}
 		}
 	}
 	// cleaning space for Frame
@@ -1999,18 +2009,11 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		))
 	}
 	if f.root != nil {
-		// add limit of height
-		if f.addlimit && height+2 <= f.hmax {
-			if _, ok := f.root.(VerticalFix); ok {
-				hmax := f.hmax - height - 2
-				f.root.(VerticalFix).SetHeight(hmax)
-			}
-		}
-		if 2+heightHeader <= height {
+		if 3+heightHeader <= height {
 			f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
 				dr,
 				int(f.offsetRoot.row), int(f.offsetRoot.col),
-				height-heightHeader-2, width-2*f.offsetRoot.col+1,
+				height-heightHeader-3, width-2*f.offsetRoot.col+1,
 			))
 		}
 	}

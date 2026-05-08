@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var err error
-	input := 0
+	input := 5 // 0
 	switch input {
 	case 0:
 		action := make(chan func(), 10)
@@ -55,6 +55,22 @@ func main() {
 		scroll := new(vl.Scroll)
 		scroll.SetRoot(txt)
 		root := scroll
+		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
+	case 5:
+		action := make(chan func(), 10)
+		fr := new(vl.Frame)
+		// TODO fr.NoBorder = true
+		fr.Header = vl.TextStatic(strings.Repeat("AWSDEQASWED", 10))
+		{
+			sc := new(vl.Scroll)
+			list := new(vl.List)
+			for i := range 100 {
+				list.Add(vl.TextStatic(fmt.Sprintf("ABCDabcd:%d", i)))
+			}
+			sc.SetRoot(list)
+			fr.SetRoot(sc)
+		}
+		root := fr
 		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
 	}
 	if err != nil {
