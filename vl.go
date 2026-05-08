@@ -1938,7 +1938,9 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	height += max(heightHeader, 1) // border or header
-	height += 1                    // space line between root and border
+	if f.root != nil {
+		height += 1 // space line between root and border
+	}
 	height += heightRoot
 	if !f.NoBorder {
 		height += 1 // space line between root and border

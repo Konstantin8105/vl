@@ -72,6 +72,28 @@ func main() {
 		}
 		root := fr
 		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
+	case 6:
+		action := make(chan func(), 10)
+		list := new(vl.List)
+		for range 10 {
+			ch := new(vl.CollapsingHeader)
+			ch.SetText("asdas d asd as d\n sdf sdf")
+			sl := new(vl.List)
+			for i := range 100 {
+				sl.Add(vl.TextStatic(fmt.Sprintf("ABCDabcd:%d", i)))
+			}
+			// ch.BorderIfClosed(false)
+			ch.SetRoot(sl)
+			list.Add(ch)
+		}
+		tabs := new(vl.Tabs)
+		tabs.UseCombo(true)
+
+		sc := new(vl.Scroll)
+		sc.SetRoot(list)
+		tabs.Add("BBB", sc)
+		root := tabs
+		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
