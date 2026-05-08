@@ -648,7 +648,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 	sc.fixOffset() // fix offset position
-	var draw func(row, col uint, st tcell.Style, r rune)
+	var draw Drawer
 	if sc.addlimit {
 		draw = DrawerLimit(dr,
 			-int(sc.offset), 0,
