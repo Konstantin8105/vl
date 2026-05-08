@@ -12,6 +12,8 @@ github.com/Konstantin8105/snippet v0.0.0-20260502090858-69a739d076dd h1:ZisbnbzL
 github.com/Konstantin8105/snippet v0.0.0-20260502090858-69a739d076dd/go.mod h1:1+ZPhlkGGTj/aI+vhqBesGvz+gXXM4gdx5GLZbpXGag=
 github.com/Konstantin8105/tf v0.0.0-20240403170626-5245216e7740 h1:B0bxOj8qk0pdiXqSaE3Bok2N6htbTywTHY+cKppqLh8=
 github.com/Konstantin8105/tf v0.0.0-20240403170626-5245216e7740/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
+github.com/Konstantin8105/tf v0.0.0-20260508080816-886976ee517a h1:mQno0FpHFC9nApz7TxybyLfqiCcyiazxwAjCve4l7Ew=
+github.com/Konstantin8105/tf v0.0.0-20260508080816-886976ee517a/go.mod h1:ttVpgkqnbjDxpK2ZSVo9MgQ125QXThKPKqO1UJ4I/t0=
 github.com/Konstantin8105/tree v0.1.0/go.mod h1:/KrCn6rMgf1uoXUY2HjVvML1LeLUULD1BDiHWJhJwII=
 github.com/Konstantin8105/tree v0.1.1 h1:EaEOLocAJ5IyQ+KisgY43X/TXoVyFXVd1nsykCleBxw=
 github.com/Konstantin8105/tree v0.1.1/go.mod h1:/KrCn6rMgf1uoXUY2HjVvML1LeLUULD1BDiHWJhJwII=
@@ -47,6 +49,8 @@ golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
 golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+golang.org/x/sys v0.44.0 h1:ildZl3J4uzeKP07r2F++Op7E9B29JRUy+a27EibtBTQ=
+golang.org/x/sys v0.44.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=
