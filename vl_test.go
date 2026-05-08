@@ -450,6 +450,36 @@ func TestRun(t *testing.T) {
 // Benchmark/ViewerP-4     	     993	   1268332 ns/op	  619076 B/op	    6629 allocs/op
 // Benchmark/ViewerP-4     	    1036	   1094960 ns/op	  629146 B/op	    6626 allocs/op
 // Benchmark/ViewerP-4     	     954	   1246085 ns/op	  629359 B/op	    6632 allocs/op
+//
+// goos: windows
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E5-2660 v4 @ 2.00GHz
+// Benchmark/Size020-28               13617             85129 ns/op            2256 B/op         47 allocs/op
+// Benchmark/Size040-28                9783            126617 ns/op            2256 B/op         47 allocs/op
+// Benchmark/Size080-28                6920            169185 ns/op            2256 B/op         47 allocs/op
+// Benchmark/Separato-28            8624926               133.0 ns/op            48 B/op          1 allocs/op
+// Benchmark/Text-28                 509203              2397 ns/op              48 B/op          1 allocs/op
+// Benchmark/Static-28              3357193               360.0 ns/op            48 B/op          1 allocs/op
+// Benchmark/Scroll-28             12647514               141.7 ns/op            48 B/op          1 allocs/op
+// Benchmark/List-28                7370029               138.1 ns/op            48 B/op          1 allocs/op
+// Benchmark/Menu-28                9520590               122.2 ns/op            48 B/op          1 allocs/op
+// Benchmark/Button-28               362455              3075 ns/op              96 B/op          2 allocs/op
+// Benchmark/Frame-28                162360              7140 ns/op              48 B/op          1 allocs/op
+// Benchmark/RadioGro-28            8894574               138.4 ns/op            48 B/op          1 allocs/op
+// Benchmark/CheckBox-28             407659              3050 ns/op              96 B/op          2 allocs/op
+// Benchmark/InputBox-28             565615              2035 ns/op              48 B/op          1 allocs/op
+// Benchmark/Collapsi-28             136394              8376 ns/op             192 B/op          4 allocs/op
+// Benchmark/ListH-28              11462379               134.6 ns/op            48 B/op          1 allocs/op
+// Benchmark/ComboBox-28             152752              8159 ns/op             192 B/op          4 allocs/op
+// Benchmark/Tabs-28                 164522              7200 ns/op              48 B/op          1 allocs/op
+// Benchmark/Tree-28                8258251               134.5 ns/op            48 B/op          1 allocs/op
+// Benchmark/Viewer-28               569508              2014 ns/op              48 B/op          1 allocs/op
+// Benchmark/Image-28               3527438               339.8 ns/op            48 B/op          1 allocs/op
+// Benchmark/FrameNoB-28             501481              2355 ns/op              48 B/op          1 allocs/op
+// Benchmark/Collapsi#01-28          360709              3358 ns/op             192 B/op          4 allocs/op
+// Benchmark/ViewerP-28                 856           2074056 ns/op          711721 B/op       6632 allocs/op
+// Benchmark/ViewerA-28               30216             39712 ns/op              48 B/op          1 allocs/op
 func Benchmark(b *testing.B) {
 	var screen Screen
 	r := roots[len(roots)-1].generate()
@@ -543,6 +573,14 @@ func Benchmark(b *testing.B) {
 // BenchmarkTextScroll/render-28                442           2506285 ns/op       48108 B/op       1002 allocs/op
 // BenchmarkTextScroll/moving-28                468           2572049 ns/op       48096 B/op       1002 allocs/op
 // BenchmarkTextScroll/static-28                801           1587073 ns/op          96 B/op          2 allocs/op
+//
+// goos: windows
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: Intel(R) Xeon(R) CPU E5-2660 v4 @ 2.00GHz
+// BenchmarkTextScroll/render-28               3397            296172 ns/op           48111 B/op       1002 allocs/op
+// BenchmarkTextScroll/moving-28               4251            287509 ns/op           48096 B/op       1002 allocs/op
+// BenchmarkTextScroll/static-28              10000            120654 ns/op              96 B/op          2 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
 	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
@@ -1648,7 +1686,10 @@ func TestMiscFunctions(t *testing.T) {
 
 	t.Run("DrawerLimit", func(t *testing.T) {
 		var hit int
-		dr := func(row, col uint, s tcell.Style, r rune) { hit++ }
+		dr := func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
+			hit++
+			return true
+		}
 		lim := DrawerLimit(dr, 0, 0, 2, 3)
 		lim(0, 0, TextStyle, 'A')
 		lim(5, 0, TextStyle, 'B')
@@ -2557,7 +2598,7 @@ func TestListLayoutCache(t *testing.T) {
 		l.Add(TextStatic(fmt.Sprintf("Line %d", i)))
 	}
 	capture := func(width uint) (cells [][]Cell) {
-		l.Render(width, func(row, col uint, s tcell.Style, r rune) {
+		l.Render(width, func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 			for len(cells) <= int(row) {
 				cells = append(cells, nil)
 			}
@@ -2565,6 +2606,7 @@ func TestListLayoutCache(t *testing.T) {
 				cells[row] = append(cells[row], make([]Cell, int(col)-len(cells[row])+1)...)
 			}
 			cells[row][col] = Cell{S: s, R: r}
+			return true
 		})
 		return
 	}
@@ -2617,8 +2659,9 @@ func TestListNilNodes(t *testing.T) {
 		t.Errorf("height too small: %d", h)
 	}
 	var drawn int
-	l.Render(20, func(row, col uint, s tcell.Style, r rune) {
+	l.Render(20, func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 		drawn++
+		return true
 	})
 	if drawn == 0 {
 		t.Errorf("no content drawn at all")
@@ -2654,8 +2697,9 @@ func TestListPreallocatedDrawer(t *testing.T) {
 	l.Add(TextStatic("B"))
 	l.Add(TextStatic("C"))
 	rows := make(map[uint][]rune)
-	l.Render(10, func(row, col uint, s tcell.Style, r rune) {
+	l.Render(10, func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 		rows[row] = append(rows[row], r)
+		return true
 	})
 	if len(rows) < 3 {
 		t.Errorf("expected at least 3 rows of output, got %d", len(rows))

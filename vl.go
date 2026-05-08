@@ -105,7 +105,7 @@ func SpecificSymbol(ascii bool) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-type Drawer = func(row, col uint, st tcell.Style, r rune)
+type Drawer = func(row, col uint, st tcell.Style, r rune) (isVisibleRow bool)
 
 func PrintDrawer(row, col uint, st tcell.Style, dr Drawer, rs []rune) {
 	for i := range rs {
@@ -115,7 +115,7 @@ func PrintDrawer(row, col uint, st tcell.Style, dr Drawer, rs []rune) {
 
 const maxSize uint = 10000
 
-func NilDrawer(_, _ uint, _ tcell.Style, _ rune) {}
+func NilDrawer(_, _ uint, _ tcell.Style, _ rune) (isVisibleRow bool) { return true }
 
 func isNilDrawer(dr Drawer) bool {
 	return reflect.ValueOf(dr).Pointer() == reflect.ValueOf(NilDrawer).Pointer()
@@ -149,18 +149,18 @@ func DrawerLimit(
 	drow, dcol int,
 	rows, cols uint,
 ) Drawer {
-	return func(localRow, localCol uint, s tcell.Style, r rune) {
+	return func(localRow, localCol uint, s tcell.Style, r rune) (isVisibleRow bool) {
 		if rows < localRow { // outside row
-			return
+			return false
 		}
 		if cols < localCol { // outside col
-			return
+			return true
 		}
 		if int(localRow)+drow < 0 {
-			return
+			return false
 		}
 		if int(localCol)+dcol < 0 {
-			return
+			return true
 		}
 		row := localRow + uint(drow)
 		col := localCol + uint(dcol)
@@ -170,7 +170,7 @@ func DrawerLimit(
 		if maxSize <= col {
 			panic(fmt.Errorf("col is too big: %d", col))
 		}
-		dr(row, col, s, r)
+		return dr(row, col, s, r)
 	}
 }
 
@@ -272,8 +272,9 @@ func (screen *Screen) GetContents(width uint, cells *[][]Cell) {
 		}
 	}
 	// var cleaned []bool
-	drawer := func(row, col uint, st tcell.Style, r rune) {
+	drawer := func(row, col uint, st tcell.Style, r rune) (isVisibleRow bool) {
 		(*cells)[row][col] = Cell{S: st, R: r}
+		return true
 	}
 	_ = screen.Render(screen.width, drawer) // ignore height
 }
@@ -588,17 +589,18 @@ func (s *Static) Render(width uint, dr Drawer) (height uint) {
 					}
 				}
 			}
-			s.root.Render(width, func(row, col uint, s tcell.Style, r rune) {
+			s.root.Render(width, func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 				if col == width {
-					return
+					return true
 				}
 				if uint(len((*img))) <= row {
-					return
+					return true
 				}
 				if uint(len((*img)[row])) <= col {
-					return
+					return true
 				}
 				(*img)[row][col] = Cell{S: s, R: r}
+				return true
 			})
 		}
 	}
@@ -657,7 +659,7 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	} else {
 		draw = DrawerLimit(dr,
 			-int(sc.offset), 0,
-			1e10, width,
+			maxSize, width,
 		)
 	}
 
@@ -1753,9 +1755,10 @@ func (v *Viewer) render(width uint) {
 					data[i][k] = Cell{S: TextStyle, R: space}
 				}
 			}
-			dr := func(row, col uint, s tcell.Style, r rune) {
+			dr := func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 				data[row][col] = Cell{S: s, R: r}
 				linePos[row][col] = counter - 1
+				return true
 			}
 			_ = render(width, dr)
 		}
@@ -1854,7 +1857,10 @@ func (img *Image) Render(width uint, dr Drawer) (height uint) {
 	}
 	for row := range img.data {
 		for col := range img.data[row] {
-			dr(uint(row), uint(col), img.data[row][col].S, img.data[row][col].R)
+			isVisibleRow := dr(uint(row), uint(col), img.data[row][col].S, img.data[row][col].R)
+			if col == 0 && !isVisibleRow {
+				break
+			}
 		}
 	}
 	return
@@ -2660,7 +2666,7 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	for i := range l.nodes {
 		draw := DrawerLimit(dr,
 			0, l.nodes[i].from,
-			1e10, width,
+			maxSize, width,
 		)
 		if l.nodes[i].w == nil {
 			continue
@@ -3181,7 +3187,7 @@ func (tr *Tree) Render(width uint, dr Drawer) (height uint) {
 	for i := range tr.Nodes {
 		draw := DrawerLimit(dr,
 			int(height), 2,
-			1e10, width,
+			maxSize, width,
 		)
 		tr.offsetNodes[i].col = 2
 		tr.offsetNodes[i].row = height
@@ -3897,8 +3903,9 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 			}
 			// ignore height of root widget height
 			_ = root.Render(uint(width)-widthOffset, DrawerLimit(
-				func(row, col uint, s tcell.Style, r rune) {
+				func(row, col uint, s tcell.Style, r rune) (isVisibleRow bool) {
 					screen.SetCell(int(col), int(row), s, r)
+					return true
 				},
 				0, 0,
 				uint(height), uint(width),
