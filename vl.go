@@ -1875,8 +1875,6 @@ type Frame struct {
 	offsetHeader Offset
 	offsetRoot   Offset
 	NoBorder     bool
-
-	cleaned []bool
 }
 
 // SetHeight ...
