@@ -1919,147 +1919,95 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	if width < 4 {
 		return 1
 	}
-	/*
-		// calculate height
-		if f.Header != nil {
-			height = f.Header.Render(width-4, NilDrawer)
-		} else {
-			height = 1
-		}
-		if f.root != nil {
-			h := f.root.Render(width-4, NilDrawer)
-			height += h
-		}
-		if f.addlimit {
-			if 0 < f.hmax {
-				height = f.hmax - 1
-			} else {
-				height = 0
-			}
-		}
-	*/
-	{ // default cleaner
-		for i := range f.cleaned {
-			f.cleaned[i] = false
-		}
-	}
-	drawWithClean := func(row, col uint, s tcell.Style, r rune) {
-		if maxSize <= row {
-			panic(fmt.Errorf("row is too big: %d", row))
-		}
-		if maxSize <= col {
-			panic(fmt.Errorf("col is too big: %d", col))
-		}
-		if len(f.cleaned) <= int(row) {
-			f.cleaned = append(f.cleaned, make([]bool, int(row)-len(f.cleaned)+1)...)
-		}
-		for r := uint(0); r <= row; r++ {
-			if f.cleaned[r] {
-				continue
-			}
-			for w := range width {
-				dr(r, w, TextStyle, ' ')
-			}
-			f.cleaned[r] = true
-		}
-		if f.hmax < row && f.addlimit {
-			return
-		}
-		dr(row, col, s, r)
-	}
-	// draw frame
-	drawRow := func(row uint) {
-		if f.NoBorder {
-			return
-		}
-		var i uint
-		for i = range width {
-			if f.focus {
-				drawWithClean(row, i, TextStyle, LineHorizontalFocus)
-			} else {
-				drawWithClean(row, i, TextStyle, LineHorizontalUnfocus)
-			}
-		}
-	}
-	// draw border
-	drawRow(0)
-	defer func() {
-		drawRow(height)
-		if f.NoBorder {
-			return
-		}
-		for r := range height {
-			if f.focus {
-				drawWithClean(r, 0, TextStyle, LineVerticalFocus)
-				drawWithClean(r, width-1, TextStyle, LineVerticalFocus)
-			} else {
-				drawWithClean(r, 0, TextStyle, LineVerticalUnfocus)
-				drawWithClean(r, width-1, TextStyle, LineVerticalUnfocus)
-			}
-		}
-		if f.focus {
-			drawWithClean(0, 0, TextStyle, CornerLeftUpFocus)
-			drawWithClean(0, width-1, TextStyle, CornerRightUpFocus)
-			drawWithClean(height, 0, TextStyle, CornerLeftDownFocus)
-			drawWithClean(height, width-1, TextStyle, CornerRightDownFocus)
-		} else {
-			drawWithClean(0, 0, TextStyle, CornerLeftUpUnfocus)
-			drawWithClean(0, width-1, TextStyle, CornerRightUpUnfocus)
-			drawWithClean(height, 0, TextStyle, CornerLeftDownUnfocus)
-			drawWithClean(height, width-1, TextStyle, CornerRightDownUnfocus)
-		}
-		height++
-	}()
-	// draw text
-	if f.Header != nil {
-		draw := DrawerLimit(
-			drawWithClean,
-			0, 2,
-			maxSize, width,
-		)
-		height = f.Header.Render(width-4, draw)
-		// draw line
-		if !f.NoBorder {
-			wh, _ := f.Header.GetSize()
-			for i := wh; i < width-2; i++ {
-				row := uint(0)
-				if f.focus {
-					draw(row, i, TextStyle, LineHorizontalFocus)
-				} else {
-					draw(row, i, TextStyle, LineHorizontalUnfocus)
-				}
-			}
-		}
-	} else {
-		height = 1
-	}
-	// add limit of height
-	if f.addlimit && height+2 <= f.hmax && f.root != nil {
-		if _, ok := f.root.(VerticalFix); ok {
-			hmax := f.hmax - height - 2
-			f.root.(VerticalFix).SetHeight(hmax)
-		}
-	}
-	// next step
-	f.offsetRoot.row = height + 1
-	f.offsetRoot.col = 2
+	// calculate height
 	f.offsetHeader.row = 0
 	f.offsetHeader.col = 2
-	// draw root widget
-	if f.root != nil {
-		// TODO create empty cell at background
-		h := f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
-			drawWithClean,
-			int(f.offsetRoot.row), int(f.offsetRoot.col),
-			maxSize, width-2*f.offsetRoot.col+1,
-		))
-		height += h + 2
+	var heightHeader uint
+	if f.Header != nil {
+		heightHeader = f.Header.Render(width-2*f.offsetHeader.col, NilDrawer)
 	}
+	f.offsetRoot.row = heightHeader + 1
+	f.offsetRoot.col = 2
+	var heightRoot uint
+	if f.root != nil {
+		heightRoot = f.root.Render(width-2*f.offsetRoot.col, NilDrawer)
+	}
+
+	height = max(heightHeader, 1) // border or header
+	height += 1                   // space line between root and border
+	height += heightRoot
+	if !f.NoBorder {
+		height += 1 // space line between root and border
+		height += 1 // line of border
+	}
+
 	if f.addlimit {
 		if 0 < f.hmax {
 			height = f.hmax - 1
 		} else {
 			height = 0
+		}
+	}
+	// cleaning space for Frame
+	for r := range height {
+		for w := range width {
+			dr(r, w, TextStyle, ' ')
+		}
+	}
+	// add borders
+	if !f.NoBorder {
+		for _, r := range []uint{0, height - 1} {
+			for w := range width {
+				if f.focus {
+					dr(r, w, TextStyle, LineHorizontalFocus)
+				} else {
+					dr(r, w, TextStyle, LineHorizontalUnfocus)
+				}
+			}
+		}
+		for r := range height {
+			if f.focus {
+				dr(r, 0, TextStyle, LineVerticalFocus)
+				dr(r, width-1, TextStyle, LineVerticalFocus)
+			} else {
+				dr(r, 0, TextStyle, LineVerticalUnfocus)
+				dr(r, width-1, TextStyle, LineVerticalUnfocus)
+			}
+		}
+		if f.focus {
+			dr(0, 0, TextStyle, CornerLeftUpFocus)
+			dr(0, width-1, TextStyle, CornerRightUpFocus)
+			dr(height-1, 0, TextStyle, CornerLeftDownFocus)
+			dr(height-1, width-1, TextStyle, CornerRightDownFocus)
+		} else {
+			dr(0, 0, TextStyle, CornerLeftUpUnfocus)
+			dr(0, width-1, TextStyle, CornerRightUpUnfocus)
+			dr(height-1, 0, TextStyle, CornerLeftDownUnfocus)
+			dr(height-1, width-1, TextStyle, CornerRightDownUnfocus)
+		}
+	}
+	// draw header
+	if f.Header != nil {
+		f.Header.Render(width-2*f.offsetHeader.col, DrawerLimit(
+			dr,
+			int(f.offsetHeader.row), int(f.offsetHeader.col),
+			maxSize, width-2*f.offsetHeader.col+1,
+		))
+	}
+	if f.root != nil {
+		// add limit of height
+		if f.addlimit && height+2 <= f.hmax {
+			if _, ok := f.root.(VerticalFix); ok {
+				hmax := f.hmax - height - 2
+				f.root.(VerticalFix).SetHeight(hmax)
+			}
+		}
+		if 2+heightHeader <= height {
+			f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
+				dr,
+				int(f.offsetRoot.row), int(f.offsetRoot.col),
+				height-heightHeader-2, width-2*f.offsetRoot.col+1,
+			))
 		}
 	}
 	return
