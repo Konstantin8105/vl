@@ -581,6 +581,14 @@ func Benchmark(b *testing.B) {
 // BenchmarkTextScroll/render-28               3397            296172 ns/op           48111 B/op       1002 allocs/op
 // BenchmarkTextScroll/moving-28               4251            287509 ns/op           48096 B/op       1002 allocs/op
 // BenchmarkTextScroll/static-28              10000            120654 ns/op              96 B/op          2 allocs/op
+//
+// goos: windows
+// goarch: amd64
+// pkg: github.com/Konstantin8105/vl
+// cpu: AMD Ryzen 7 8745HS w/ Radeon 780M Graphics
+// BenchmarkTextScroll/render-16               8670            127837 ns/op           48099 B/op       1002 allocs/op
+// BenchmarkTextScroll/moving-16              10000            120478 ns/op           48096 B/op       1002 allocs/op
+// BenchmarkTextScroll/static-16              25698             48872 ns/op              96 B/op          2 allocs/op
 func BenchmarkTextScroll(b *testing.B) {
 	var screen Screen
 	screen.Fill(func(rune, tcell.Style) {}) // for avoid perfomance for reset screen
@@ -1565,7 +1573,7 @@ func TestImageSizes(t *testing.T) {
 // TestMiscFunctions tests small uncovered utility functions.
 func TestMiscFunctions(t *testing.T) {
 	t.Run("NilDrawer", func(t *testing.T) {
-		NilDrawer(0, 0, TextStyle, ' ')
+		_ = NilDrawer(0, 0, TextStyle, ' ')
 	})
 
 	t.Run("FillAndSetStyle", func(t *testing.T) {
