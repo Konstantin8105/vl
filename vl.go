@@ -1919,6 +1919,25 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	if width < 4 {
 		return 1
 	}
+	/*
+		// calculate height
+		if f.Header != nil {
+			height = f.Header.Render(width-4, NilDrawer)
+		} else {
+			height = 1
+		}
+		if f.root != nil {
+			h := f.root.Render(width-4, NilDrawer)
+			height += h
+		}
+		if f.addlimit {
+			if 0 < f.hmax {
+				height = f.hmax - 1
+			} else {
+				height = 0
+			}
+		}
+	*/
 	{ // default cleaner
 		for i := range f.cleaned {
 			f.cleaned[i] = false
@@ -2015,12 +2034,10 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		height = 1
 	}
 	// add limit of height
-	if f.addlimit && height+2 <= f.hmax {
-		hmax := f.hmax - height - 2
-		if f.root != nil {
-			if _, ok := f.root.(VerticalFix); ok {
-				f.root.(VerticalFix).SetHeight(hmax)
-			}
+	if f.addlimit && height+2 <= f.hmax && f.root != nil {
+		if _, ok := f.root.(VerticalFix); ok {
+			hmax := f.hmax - height - 2
+			f.root.(VerticalFix).SetHeight(hmax)
 		}
 	}
 	// next step
