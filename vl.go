@@ -1912,7 +1912,7 @@ func (f *Frame) Focus(focus bool) {
 // snippet render.doc
 // Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
 // end render.doc
-func (f *Frame) Render(width uint, drg Drawer) (height uint) {
+func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	defer func() {
 		f.StoreSize(width, height)
 	}()
@@ -1924,7 +1924,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 			f.cleaned[i] = false
 		}
 	}
-	dr := func(row, col uint, s tcell.Style, r rune) {
+	drawWithClean := func(row, col uint, s tcell.Style, r rune) {
 		if maxSize <= row {
 			panic(fmt.Errorf("row is too big: %d", row))
 		}
@@ -1939,14 +1939,14 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 				continue
 			}
 			for w := range width {
-				drg(r, w, TextStyle, ' ')
+				dr(r, w, TextStyle, ' ')
 			}
 			f.cleaned[r] = true
 		}
 		if f.hmax < row && f.addlimit {
 			return
 		}
-		drg(row, col, s, r)
+		dr(row, col, s, r)
 	}
 	// draw frame
 	drawRow := func(row uint) {
@@ -1956,9 +1956,9 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		var i uint
 		for i = range width {
 			if f.focus {
-				dr(row, i, TextStyle, LineHorizontalFocus)
+				drawWithClean(row, i, TextStyle, LineHorizontalFocus)
 			} else {
-				dr(row, i, TextStyle, LineHorizontalUnfocus)
+				drawWithClean(row, i, TextStyle, LineHorizontalUnfocus)
 			}
 		}
 	}
@@ -1971,30 +1971,30 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 		}
 		for r := range height {
 			if f.focus {
-				dr(r, 0, TextStyle, LineVerticalFocus)
-				dr(r, width-1, TextStyle, LineVerticalFocus)
+				drawWithClean(r, 0, TextStyle, LineVerticalFocus)
+				drawWithClean(r, width-1, TextStyle, LineVerticalFocus)
 			} else {
-				dr(r, 0, TextStyle, LineVerticalUnfocus)
-				dr(r, width-1, TextStyle, LineVerticalUnfocus)
+				drawWithClean(r, 0, TextStyle, LineVerticalUnfocus)
+				drawWithClean(r, width-1, TextStyle, LineVerticalUnfocus)
 			}
 		}
 		if f.focus {
-			dr(0, 0, TextStyle, CornerLeftUpFocus)
-			dr(0, width-1, TextStyle, CornerRightUpFocus)
-			dr(height, 0, TextStyle, CornerLeftDownFocus)
-			dr(height, width-1, TextStyle, CornerRightDownFocus)
+			drawWithClean(0, 0, TextStyle, CornerLeftUpFocus)
+			drawWithClean(0, width-1, TextStyle, CornerRightUpFocus)
+			drawWithClean(height, 0, TextStyle, CornerLeftDownFocus)
+			drawWithClean(height, width-1, TextStyle, CornerRightDownFocus)
 		} else {
-			dr(0, 0, TextStyle, CornerLeftUpUnfocus)
-			dr(0, width-1, TextStyle, CornerRightUpUnfocus)
-			dr(height, 0, TextStyle, CornerLeftDownUnfocus)
-			dr(height, width-1, TextStyle, CornerRightDownUnfocus)
+			drawWithClean(0, 0, TextStyle, CornerLeftUpUnfocus)
+			drawWithClean(0, width-1, TextStyle, CornerRightUpUnfocus)
+			drawWithClean(height, 0, TextStyle, CornerLeftDownUnfocus)
+			drawWithClean(height, width-1, TextStyle, CornerRightDownUnfocus)
 		}
 		height++
 	}()
 	// draw text
 	if f.Header != nil {
 		draw := DrawerLimit(
-			dr,
+			drawWithClean,
 			0, 2,
 			maxSize, width,
 		)
@@ -2032,7 +2032,7 @@ func (f *Frame) Render(width uint, drg Drawer) (height uint) {
 	if f.root != nil {
 		// TODO create empty cell at background
 		h := f.root.Render(width-2*f.offsetRoot.col, DrawerLimit(
-			dr,
+			drawWithClean,
 			int(f.offsetRoot.row), int(f.offsetRoot.col),
 			maxSize, width-2*f.offsetRoot.col+1,
 		))
