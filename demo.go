@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var err error
-	input := 5 // 0
+	input := 0
 	switch input {
 	case 0:
 		action := make(chan func(), 10)
@@ -24,7 +24,7 @@ func main() {
 		scroll := new(vl.Scroll)
 		list := new(vl.List)
 		scroll.SetRoot(list)
-		for i := 0; i < 1000; i++ {
+		for i := range 1000 {
 			str := fmt.Sprintf("%d MouseFlags are options to modify the handling", i)
 			list.Add(vl.TextStatic(str))
 		}
@@ -59,8 +59,8 @@ func main() {
 	case 5:
 		action := make(chan func(), 10)
 		fr := new(vl.Frame)
-		// TODO fr.NoBorder = true
-		fr.Header = vl.TextStatic(strings.Repeat("AWSDEQASWED", 10))
+		// fr.NoBorder = true
+		fr.Header = vl.TextStatic(strings.Repeat("AWSDEQASWED", 5))
 		{
 			sc := new(vl.Scroll)
 			list := new(vl.List)

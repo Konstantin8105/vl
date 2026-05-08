@@ -1946,18 +1946,14 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	if f.addlimit {
-		if 0 < f.hmax {
-			height = f.hmax - 1
-		} else {
-			height = 0
+		if f.hmax == 0 {
+			// cannot draw anythink
+			return
 		}
-		if 0 < int(f.hmax)-int(heightHeader)-4 {
+		height = f.hmax
+		if 0 < int(f.hmax)-int(heightHeader)-2 {
 			if _, ok := f.root.(VerticalFix); ok {
-				hmax := f.hmax - heightHeader - 4
-				//TODO if !f.NoBorder {
-				//	hmax += 8
-				//}
-				// TODO height change
+				hmax := f.hmax - heightHeader - 2
 				f.root.(VerticalFix).SetHeight(hmax)
 			}
 		}
@@ -2005,7 +2001,7 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		f.Header.Render(width-2*f.offsetHeader.col, DrawerLimit(
 			dr,
 			int(f.offsetHeader.row), int(f.offsetHeader.col),
-			maxSize, width-2*f.offsetHeader.col+1,
+			min(height-2, maxSize), width-2*f.offsetHeader.col+1,
 		))
 	}
 	if f.root != nil {
