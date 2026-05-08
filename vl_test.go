@@ -549,7 +549,7 @@ func BenchmarkTextScroll(b *testing.B) {
 	scroll := new(Scroll)
 	list := new(List)
 	scroll.SetRoot(list)
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		list.Add(TextStatic(texts[len(texts)-1]))
 	}
 	screen.SetRoot(scroll)
