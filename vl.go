@@ -715,7 +715,7 @@ func (sc *Scroll) fixOffset() {
 		return
 	}
 	maxOffset := uint(sc.height - minViewLines)
-	if 0 < sc.hmax {
+	if sc.addlimit && 0 < sc.hmax {
 		if sc.hmax < sc.height {
 			if sc.height < sc.hmax+sc.offset {
 				sc.offset = sc.height - sc.hmax
@@ -745,6 +745,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 	if !sc.focus {
 		return
 	}
+	defer sc.fixOffset()
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		col, row := ev.Position()
@@ -771,7 +772,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				if 0 < dh {
 					sc.offset = uint(dh * ratio)
 				}
-				sc.fixOffset() // fix offset position
 				break
 			}
 			// unfocus
@@ -799,7 +799,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		case tcell.KeyPgDn:
 			if 0 < sc.hmax {
 				sc.offset += sc.hmax / 2
-				sc.fixOffset() // fix offset position
 			}
 		case tcell.KeyPgUp:
 			if 0 < sc.hmax {
@@ -808,7 +807,6 @@ func (sc *Scroll) Event(ev tcell.Event) {
 				} else {
 					sc.offset -= sc.hmax / 2
 				}
-				sc.fixOffset() // fix offset position
 			}
 		default:
 			sc.root.Event(ev)
@@ -881,66 +879,58 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	if len(l.nodes) == 0 {
 		return
 	}
-	dh := l.getItemHmax()
-	l.nodes[0].from = 0
+	// reset values
+	for i := range l.nodes {
+		l.nodes[i].from = 0
+		l.nodes[i].to = 0
+	}
+	// calculate heights
 	for i := range l.nodes {
 		if l.nodes[i].w == nil {
-			l.nodes[i].from = -1
-			l.nodes[i].to = -1
+			// height zero
 			continue
 		}
 		// initialize sizes of widgets
-		if l.compress && (l.addlimit && 0 < l.hmax) {
-			l.nodes[i].w.Render(width, NilDrawer)
-			_, h := l.nodes[i].w.GetSize()
-			if l.hmax < h {
-				h = l.hmax
+		var h uint
+		if l.addlimit && 0 < l.hmax {
+			if l.compress {
+				h = l.nodes[i].w.Render(width, NilDrawer)
+				h = min(h, l.hmax)
+			} else {
+				h = l.getItemHmax()
 			}
-			l.nodes[i].to = l.nodes[i].from + int(h)
-		} else if !l.addlimit {
-			l.nodes[i].w.Render(width, NilDrawer)
-			_, h := l.nodes[i].w.GetSize()
-			l.nodes[i].to = l.nodes[i].from + int(h)
 		} else {
-			l.nodes[i].to = l.nodes[i].from + int(dh)
+			h = l.nodes[i].w.Render(width, NilDrawer)
 		}
-		// prepare position of next node
-		for pos := i + 1; pos < len(l.nodes); pos++ {
-			if l.nodes[pos].w == nil {
-				continue
-			}
-			l.nodes[pos].from = l.nodes[i].to
-			break
+		l.nodes[i].to = l.nodes[i].from + int(h)
+	}
+	// calculate positions
+	for i := range l.nodes {
+		if i == 0 {
+			continue
 		}
-		// drawing
-		rowFrom := uint(l.nodes[i].from)
-		rowTo := uint(l.nodes[i].to)
-		if 0 < l.nodes[i].to {
-			rowTo--
-		}
-		if isNilDrawer(dr) {
-			// do nothing
+		l.nodes[i].from = l.nodes[i-1].to
+		l.nodes[i].to = l.nodes[i].from + l.nodes[i].to // in [i].to now height
+	}
+	// full height
+	height = uint(l.nodes[len(l.nodes)-1].to)
+	if l.addlimit {
+		height = l.hmax
+	}
+	if isNilDrawer(dr) {
+		// do nothing
+		return
+	}
+	// drawing
+	for i := range l.nodes {
+		if l.nodes[i].w == nil {
 			continue
 		}
 		l.nodes[i].w.Render(width, DrawerLimit(
 			dr,
-			int(rowFrom), 0,
-			(rowTo-rowFrom), width,
+			l.nodes[i].from, 0,
+			uint(l.nodes[i].to-l.nodes[i].from-1), width,
 		))
-	}
-	{
-		last := len(l.nodes) - 1
-		for 0 <= last && l.nodes[last].w == nil {
-			last--
-		}
-		if last < 0 {
-			height = 0
-		} else {
-			height = uint(l.nodes[last].to)
-		}
-	}
-	if l.addlimit {
-		height = l.hmax
 	}
 	return
 }
@@ -1912,6 +1902,48 @@ func (f *Frame) Focus(focus bool) {
 	f.container.Focus(focus)
 }
 
+func (f *Frame) drawBorder(width, height uint, dr Drawer) {
+	// cleaning space for Frame
+	for r := range height {
+		for w := range width {
+			dr(r, w, TextStyle, ' ')
+		}
+	}
+	// add borders
+	if f.NoBorder {
+		return
+	}
+	for _, r := range []uint{0, height - 1} {
+		for w := range width {
+			if f.focus {
+				dr(r, w, TextStyle, LineHorizontalFocus)
+			} else {
+				dr(r, w, TextStyle, LineHorizontalUnfocus)
+			}
+		}
+	}
+	for r := range height {
+		if f.focus {
+			dr(r, 0, TextStyle, LineVerticalFocus)
+			dr(r, width-1, TextStyle, LineVerticalFocus)
+		} else {
+			dr(r, 0, TextStyle, LineVerticalUnfocus)
+			dr(r, width-1, TextStyle, LineVerticalUnfocus)
+		}
+	}
+	if f.focus {
+		dr(0, 0, TextStyle, CornerLeftUpFocus)
+		dr(0, width-1, TextStyle, CornerRightUpFocus)
+		dr(height-1, 0, TextStyle, CornerLeftDownFocus)
+		dr(height-1, width-1, TextStyle, CornerRightDownFocus)
+	} else {
+		dr(0, 0, TextStyle, CornerLeftUpUnfocus)
+		dr(0, width-1, TextStyle, CornerRightUpUnfocus)
+		dr(height-1, 0, TextStyle, CornerLeftDownUnfocus)
+		dr(height-1, width-1, TextStyle, CornerRightDownUnfocus)
+	}
+}
+
 // Render ...
 // snippet render.doc
 // Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
@@ -1960,44 +1992,8 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 			}
 		}
 	}
-	// cleaning space for Frame
-	for r := range height {
-		for w := range width {
-			dr(r, w, TextStyle, ' ')
-		}
-	}
-	// add borders
-	if !f.NoBorder {
-		for _, r := range []uint{0, height - 1} {
-			for w := range width {
-				if f.focus {
-					dr(r, w, TextStyle, LineHorizontalFocus)
-				} else {
-					dr(r, w, TextStyle, LineHorizontalUnfocus)
-				}
-			}
-		}
-		for r := range height {
-			if f.focus {
-				dr(r, 0, TextStyle, LineVerticalFocus)
-				dr(r, width-1, TextStyle, LineVerticalFocus)
-			} else {
-				dr(r, 0, TextStyle, LineVerticalUnfocus)
-				dr(r, width-1, TextStyle, LineVerticalUnfocus)
-			}
-		}
-		if f.focus {
-			dr(0, 0, TextStyle, CornerLeftUpFocus)
-			dr(0, width-1, TextStyle, CornerRightUpFocus)
-			dr(height-1, 0, TextStyle, CornerLeftDownFocus)
-			dr(height-1, width-1, TextStyle, CornerRightDownFocus)
-		} else {
-			dr(0, 0, TextStyle, CornerLeftUpUnfocus)
-			dr(0, width-1, TextStyle, CornerRightUpUnfocus)
-			dr(height-1, 0, TextStyle, CornerLeftDownUnfocus)
-			dr(height-1, width-1, TextStyle, CornerRightDownUnfocus)
-		}
-	}
+	// draw border
+	f.drawBorder(width, height, dr)
 	// draw header
 	if f.Header != nil {
 		f.Header.Render(width-2*f.offsetHeader.col, DrawerLimit(

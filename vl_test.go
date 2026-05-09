@@ -2654,7 +2654,7 @@ func TestListNilNodes(t *testing.T) {
 	if l.nodes[0].from != 0 || l.nodes[0].to <= 0 {
 		t.Errorf("first node: from=%d to=%d", l.nodes[0].from, l.nodes[0].to)
 	}
-	if l.nodes[1].from != -1 || l.nodes[1].to != -1 {
+	if l.nodes[1].from != l.nodes[0].to || l.nodes[1].to != l.nodes[1].from {
 		t.Errorf("nil node 1: from=%d to=%d", l.nodes[1].from, l.nodes[1].to)
 	}
 	if l.nodes[2].from != l.nodes[0].to {
