@@ -623,7 +623,10 @@ const scrollBarWidth uint = 1
 type Scroll struct {
 	ContainerVerticalFix
 	rootable
-	offset uint
+	internal struct {
+		offset uint
+		height uint
+	}
 }
 
 // Focus ...
@@ -649,82 +652,80 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 	if sc.root == nil {
 		return
 	}
-	sc.fixOffset() // fix offset position
-	var draw Drawer
-	if sc.addlimit {
-		draw = DrawerLimit(dr,
-			-int(sc.offset), 0,
-			sc.hmax-1+sc.offset, width,
-		)
-	} else {
-		draw = DrawerLimit(dr,
-			-int(sc.offset), 0,
-			maxSize, width,
-		)
-	}
-
 	if width < 2 {
 		return
 	}
-	if sc.addlimit {
-		if width < scrollBarWidth {
-			panic(fmt.Errorf("too small width %d %d", width, scrollBarWidth))
-		}
-		if maxSize < sc.hmax {
-			panic(fmt.Errorf("too big sc.hmax: %d", sc.hmax))
-		}
-		height = sc.root.Render(width-scrollBarWidth, draw)
-		// calculate location
-		if 2 < sc.hmax {
-			var value float32 // 0 ... 1
-			if sc.hmax < height {
-				value = float32(sc.offset) / float32(height-sc.hmax)
-			} else {
-				value = 1.0
-			}
-			if 1 < value {
-				value = 1.0
-			}
-			if value < 0 {
-				value = 0.0
-			}
-			st := TextStyle
-			for r := uint(0); r < sc.hmax; r++ {
-				dr(r, width-scrollBarWidth, st, ScrollLine)
-			}
-			dr(0, width-scrollBarWidth, st, ScrollUp)
-			dr(sc.hmax-1, width-scrollBarWidth, st, ScrollDown)
-			pos := uint(value * float32(sc.hmax-2))
-			if pos == 0 {
-				pos = 1
-			}
-			if pos == sc.hmax-scrollBarWidth {
-				pos = sc.hmax - 2
-			}
-			dr(pos, width-scrollBarWidth, st, ScrollSquare)
-		}
-	} else {
-		height = sc.root.Render(width, draw)
+
+	sc.fixOffset() // fix offset position
+
+	if !sc.addlimit {
+		height = sc.root.Render(width, DrawerLimit(dr,
+			-int(sc.internal.offset), 0,
+			maxSize, width,
+		))
+		sc.internal.height = height
+		return
 	}
-	return
+
+	if width < scrollBarWidth {
+		panic(fmt.Errorf("too small width %d %d", width, scrollBarWidth))
+	}
+	if maxSize < sc.hmax {
+		panic(fmt.Errorf("too big sc.hmax: %d", sc.hmax))
+	}
+	height = sc.root.Render(width-scrollBarWidth, DrawerLimit(dr,
+		-int(sc.internal.offset), 0,
+		sc.hmax-1+sc.internal.offset, width,
+	))
+	sc.internal.height = height
+	// calculate location
+	if 2 < sc.hmax {
+		var value float32 // 0 ... 1
+		if sc.hmax < sc.internal.height {
+			value = float32(sc.internal.offset) / float32(sc.internal.height-sc.hmax)
+		} else {
+			value = 1.0
+		}
+		if 1 < value {
+			value = 1.0
+		}
+		if value < 0 {
+			value = 0.0
+		}
+		st := TextStyle
+		for r := uint(0); r < sc.hmax; r++ {
+			dr(r, width-scrollBarWidth, st, ScrollLine)
+		}
+		dr(0, width-scrollBarWidth, st, ScrollUp)
+		dr(sc.hmax-1, width-scrollBarWidth, st, ScrollDown)
+		pos := uint(value * float32(sc.hmax-2))
+		if pos == 0 {
+			pos = 1
+		}
+		if pos == sc.hmax-scrollBarWidth {
+			pos = sc.hmax - 2
+		}
+		dr(pos, width-scrollBarWidth, st, ScrollSquare)
+	}
+	return sc.hmax
 }
 
 func (sc *Scroll) fixOffset() {
 	const minViewLines uint = 2 // constant
-	if sc.height < minViewLines {
+	if sc.internal.height < minViewLines {
 		return
 	}
-	maxOffset := uint(sc.height - minViewLines)
+	maxOffset := uint(sc.internal.height - minViewLines)
 	if sc.addlimit && 0 < sc.hmax {
-		if sc.hmax < sc.height {
-			if sc.height < sc.hmax+sc.offset {
-				sc.offset = sc.height - sc.hmax
+		if sc.hmax < sc.internal.height {
+			if sc.internal.height < sc.hmax+sc.internal.offset {
+				sc.internal.offset = sc.internal.height - sc.hmax
 			}
 		} else {
-			sc.offset = 0
+			sc.internal.offset = 0
 		}
-	} else if maxOffset < sc.offset {
-		sc.offset = maxOffset
+	} else if maxOffset < sc.internal.offset {
+		sc.internal.offset = maxOffset
 	}
 }
 
@@ -745,7 +746,10 @@ func (sc *Scroll) Event(ev tcell.Event) {
 	if !sc.focus {
 		return
 	}
+
+	sc.fixOffset()
 	defer sc.fixOffset()
+
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		col, row := ev.Position()
@@ -758,19 +762,19 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		_, _ = col, row
 		switch ev.Buttons() {
 		case tcell.WheelUp:
-			if sc.offset == 0 {
+			if sc.internal.offset == 0 {
 				break
 			}
-			sc.offset--
+			sc.internal.offset--
 		case tcell.WheelDown:
-			sc.offset++
+			sc.internal.offset++
 		default:
 			if 0 < row && 2 < sc.hmax && ev.Buttons() == tcell.Button1 &&
 				col == int(sc.width-scrollBarWidth) && 0 < sc.hmax {
 				ratio := float32(row-1) / float32(sc.hmax-2)
-				dh := float32(sc.height)
+				dh := float32(sc.internal.height)
 				if 0 < dh {
-					sc.offset = uint(dh * ratio)
+					sc.internal.offset = uint(dh * ratio)
 				}
 				break
 			}
@@ -784,7 +788,7 @@ func (sc *Scroll) Event(ev tcell.Event) {
 			if int(sc.width) < col {
 				return
 			}
-			row = row + int(sc.offset)
+			row = row + int(sc.internal.offset)
 			if row < 0 {
 				return
 			}
@@ -798,14 +802,14 @@ func (sc *Scroll) Event(ev tcell.Event) {
 		switch ev.Key() {
 		case tcell.KeyPgDn:
 			if 0 < sc.hmax {
-				sc.offset += sc.hmax / 2
+				sc.internal.offset += sc.hmax / 2
 			}
 		case tcell.KeyPgUp:
 			if 0 < sc.hmax {
-				if sc.offset < sc.hmax/2 {
-					sc.offset = 0
+				if sc.internal.offset < sc.hmax/2 {
+					sc.internal.offset = 0
 				} else {
-					sc.offset -= sc.hmax / 2
+					sc.internal.offset -= sc.hmax / 2
 				}
 			}
 		default:
@@ -879,6 +883,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	if len(l.nodes) == 0 {
 		return
 	}
+
 	// reset values
 	for i := range l.nodes {
 		l.nodes[i].from = 0
@@ -1964,6 +1969,17 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	}
 	f.offsetRoot.row = heightHeader + 1
 	f.offsetRoot.col = 2
+
+	if f.addlimit {
+		if f.root != nil {
+			if 0 < int(f.hmax)-int(heightHeader)-2 {
+				if _, ok := f.root.(VerticalFix); ok {
+					hmax := f.hmax - heightHeader - 2
+					f.root.(VerticalFix).SetHeight(hmax)
+				}
+			}
+		}
+	}
 	var heightRoot uint
 	if f.root != nil {
 		heightRoot = f.root.Render(width-2*f.offsetRoot.col, NilDrawer)
@@ -1978,19 +1994,18 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 		height += 1 // space line between root and border
 		height += 1 // line of border
 	}
-
 	if f.addlimit {
+		height = f.hmax
 		if f.hmax == 0 {
 			// cannot draw anythink
 			return
 		}
-		height = f.hmax
-		if 0 < int(f.hmax)-int(heightHeader)-2 {
-			if _, ok := f.root.(VerticalFix); ok {
-				hmax := f.hmax - heightHeader - 2
-				f.root.(VerticalFix).SetHeight(hmax)
-			}
-		}
+	}
+
+	// draw
+	if isNilDrawer(dr) {
+		// draw nothing
+		return
 	}
 	// draw border
 	f.drawBorder(width, height, dr)

@@ -1820,8 +1820,8 @@ func TestEdgeBehavior(t *testing.T) {
 
 	t.Run("FixOffsetEdge", func(t *testing.T) {
 		var sc Scroll
-		sc.offset = 5
-		sc.height = 1
+		sc.internal.offset = 5
+		sc.internal.height = 1
 		sc.fixOffset()
 	})
 
@@ -1836,7 +1836,7 @@ func TestEdgeBehavior(t *testing.T) {
 		list.Add(TextStatic("A"))
 		sc.SetRoot(&list)
 		sc.SetHeight(3)
-		sc.offset = 10
+		sc.internal.offset = 10
 		sc.fixOffset()
 	})
 

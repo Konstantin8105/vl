@@ -94,6 +94,21 @@ func main() {
 		tabs.Add("BBB", sc)
 		root := tabs
 		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
+	case 7:
+		list := new(vl.List)
+		for i := range 10 {
+			ch := new(vl.CollapsingHeader)
+			ch.SetText(fmt.Sprintf("Name %d", i))
+			ch.SetRoot(vl.TextStatic(strings.Repeat("Body big", 100)))
+			list.Add(ch)
+		}
+		scroll := new(vl.Scroll)
+		scroll.SetRoot(list)
+		tabs := new(vl.Tabs)
+		tabs.Add("Prompts", scroll)
+		root := tabs
+		action := make(chan func(), 10)
+		err = vl.Run(root, action, nil, tcell.KeyCtrlC)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
