@@ -330,30 +330,23 @@ func (screen *Screen) Render(width uint, dr Drawer) (height uint) {
 	// draw default spaces
 	// take a lot of resouses by performance
 	if screen.fill == nil {
-		for col := range width {
-			for row := range screen.hmax {
-				dr(row, col, ScreenStyle, ' ')
+		if dr != nil {
+			for col := range width {
+				for row := range screen.hmax {
+					dr(row, col, ScreenStyle, ' ')
+				}
 			}
 		}
 	} else {
 		screen.fill(' ', ScreenStyle)
 	}
 	// draw root widget
-	draw := DrawerLimit(dr,
-		0, 0,
-		screen.hmax-1, width-1,
-	)
-	if screen.root != nil {
-		_ = screen.root.Render(width, draw) // ignore height
+	if screen.root != nil && dr != nil {
+		_ = screen.root.Render(width, DrawerLimit(dr,
+			0, 0,
+			screen.hmax-1, width-1,
+		)) // ignore height
 	}
-	// draw dialog
-	// if d := screen.dialog.Root; d != nil {
-	// 	_ = d.Render(width, draw)
-	// 	if c, ok := d.(*container); ok {
-	// 		screen.dialog.offsetX = (width - c.width) / 2
-	// 		screen.dialog.offsetY = (screen.hmax - c.height) / 2
-	// 	}
-	// }
 	return screen.hmax
 }
 
@@ -493,7 +486,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	}
 	t.content.SetWidth(width + 1)
 	var cur func(row, col uint) // hide cursor for not-focus inputbox
-	if t.focus && t.addCursor {
+	if t.focus && t.addCursor && dr != nil {
 		cur = func(row, col uint) {
 			if width < col {
 				panic("Text width")
@@ -518,7 +511,7 @@ func (t *Text) Render(width uint, dr Drawer) (height uint) {
 	if t.compress {
 		width = t.content.GetRenderWidth() + 1
 	}
-	if isNilDrawer(dr) {
+	if isNilDrawer(dr) || dr == nil {
 		return
 	}
 
@@ -641,6 +634,39 @@ func (sc *Scroll) Focus(focus bool) {
 	sc.root.Focus(focus)
 }
 
+func (sc *Scroll) drawScrollbar(width uint, dr Drawer) {
+	if sc.hmax < 3 {
+		return
+	}
+	// calculate location
+	var value float32 // 0 ... 1
+	if sc.hmax < sc.internal.height {
+		value = float32(sc.internal.offset) / float32(sc.internal.height-sc.hmax)
+	} else {
+		value = 1.0
+	}
+	if 1 < value {
+		value = 1.0
+	}
+	if value < 0 {
+		value = 0.0
+	}
+	st := TextStyle
+	for r := uint(0); r < sc.hmax; r++ {
+		dr(r, width-scrollBarWidth, st, ScrollLine)
+	}
+	dr(0, width-scrollBarWidth, st, ScrollUp)
+	dr(sc.hmax-1, width-scrollBarWidth, st, ScrollDown)
+	pos := uint(value * float32(sc.hmax-2))
+	if pos == 0 {
+		pos = 1
+	}
+	if pos == sc.hmax-scrollBarWidth {
+		pos = sc.hmax - 2
+	}
+	dr(pos, width-scrollBarWidth, st, ScrollSquare)
+}
+
 // Render ...
 // snippet render.doc
 // Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
@@ -667,46 +693,12 @@ func (sc *Scroll) Render(width uint, dr Drawer) (height uint) {
 		return
 	}
 
-	if width < scrollBarWidth {
-		panic(fmt.Errorf("too small width %d %d", width, scrollBarWidth))
-	}
-	if maxSize < sc.hmax {
-		panic(fmt.Errorf("too big sc.hmax: %d", sc.hmax))
-	}
 	height = sc.root.Render(width-scrollBarWidth, DrawerLimit(dr,
 		-int(sc.internal.offset), 0,
 		sc.hmax-1+sc.internal.offset, width,
 	))
 	sc.internal.height = height
-	// calculate location
-	if 2 < sc.hmax {
-		var value float32 // 0 ... 1
-		if sc.hmax < sc.internal.height {
-			value = float32(sc.internal.offset) / float32(sc.internal.height-sc.hmax)
-		} else {
-			value = 1.0
-		}
-		if 1 < value {
-			value = 1.0
-		}
-		if value < 0 {
-			value = 0.0
-		}
-		st := TextStyle
-		for r := uint(0); r < sc.hmax; r++ {
-			dr(r, width-scrollBarWidth, st, ScrollLine)
-		}
-		dr(0, width-scrollBarWidth, st, ScrollUp)
-		dr(sc.hmax-1, width-scrollBarWidth, st, ScrollDown)
-		pos := uint(value * float32(sc.hmax-2))
-		if pos == 0 {
-			pos = 1
-		}
-		if pos == sc.hmax-scrollBarWidth {
-			pos = sc.hmax - 2
-		}
-		dr(pos, width-scrollBarWidth, st, ScrollSquare)
-	}
+	sc.drawScrollbar(width, dr)
 	return sc.hmax
 }
 
@@ -922,7 +914,7 @@ func (l *List) Render(width uint, dr Drawer) (height uint) {
 	if l.addlimit {
 		height = l.hmax
 	}
-	if isNilDrawer(dr) {
+	if isNilDrawer(dr) || dr == nil {
 		// do nothing
 		return
 	}
@@ -1846,7 +1838,7 @@ func (img *Image) Render(width uint, dr Drawer) (height uint) {
 		img.StoreSize(width, height)
 	}()
 	height = uint(len(img.data))
-	if isNilDrawer(dr) {
+	if isNilDrawer(dr) || dr == nil {
 		// do nothing
 		return
 	}
@@ -2003,7 +1995,7 @@ func (f *Frame) Render(width uint, dr Drawer) (height uint) {
 	}
 
 	// draw
-	if isNilDrawer(dr) {
+	if isNilDrawer(dr) || dr == nil {
 		// draw nothing
 		return
 	}
