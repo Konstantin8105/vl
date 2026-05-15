@@ -1416,28 +1416,17 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	b.Text.style = st
 	// constant
 	const buttonOffset = 2
-	// 	if width < 2*buttonOffset {
-	// 		width = 2 * buttonOffset
-	// 	}
 	b.Text.Render(width-2*buttonOffset, DrawerLimit(
 		dr,
 		0, buttonOffset,
-		maxSize, width-buttonOffset,
+		maxSize, width-2*buttonOffset,
 	))
 	width, height = b.GetSize()
 	width += 2 * buttonOffset
 	for row := 0; row < int(height); row++ {
-		if dr == nil {
-			break
-		}
-		dr(uint(row), 0, *st, '[')
-		dr(uint(row), 1, *st, ' ')
-		dr(uint(row), width-2, *st, ' ')
-		dr(uint(row), width-1, *st, ']')
+		PrintDrawer(uint(row), 0, *st, dr, []rune("[ "))
+		PrintDrawer(uint(row), width-2, *st, dr, []rune(" ]"))
 	}
-	// DEBUG : for w := 0; w <= int(width); w++ {
-	// DEBUG : 	dr(0, uint(w), st, '$')
-	// DEBUG : }
 	return
 }
 
