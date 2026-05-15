@@ -108,6 +108,10 @@ func SpecificSymbol(ascii bool) {
 type Drawer = func(row, col uint, st tcell.Style, r rune) (isVisibleRow bool)
 
 func PrintDrawer(row, col uint, st tcell.Style, dr Drawer, rs []rune) {
+	if isNilDrawer(dr) || dr == nil {
+		// do nothing
+		return
+	}
 	for i := range rs {
 		dr(row, col+uint(i), st, rs[i])
 	}
@@ -169,6 +173,9 @@ func DrawerLimit(
 		}
 		if maxSize <= col {
 			panic(fmt.Errorf("col is too big: %d", col))
+		}
+		if dr == nil {
+			return true
 		}
 		return dr(row, col, s, r)
 	}
@@ -636,6 +643,9 @@ func (sc *Scroll) Focus(focus bool) {
 
 func (sc *Scroll) drawScrollbar(width uint, dr Drawer) {
 	if sc.hmax < 3 {
+		return
+	}
+	if dr == nil {
 		return
 	}
 	// calculate location
@@ -1417,6 +1427,9 @@ func (b *Button) Render(width uint, dr Drawer) (height uint) {
 	width, height = b.GetSize()
 	width += 2 * buttonOffset
 	for row := 0; row < int(height); row++ {
+		if dr == nil {
+			break
+		}
 		dr(uint(row), 0, *st, '[')
 		dr(uint(row), 1, *st, ' ')
 		dr(uint(row), width-2, *st, ' ')
@@ -1593,6 +1606,9 @@ func (v *Viewer) Render(width uint, dr Drawer) (height uint) {
 			break
 		}
 		for col := range v.data[row] {
+			if dr == nil {
+				break
+			}
 			dr(uint(height), uint(col), v.data[row][col].S, v.data[row][col].R)
 		}
 		height++
@@ -1651,6 +1667,9 @@ func (v *Viewer) GetPosition() (position uint) { return v.position }
 // Draw widget inside window with width `width` used Drawer style `dr` and return height of widget.
 // end render.doc
 func (v *Viewer) render(width uint) {
+	if width < 1 {
+		return
+	}
 	// convert to string lines
 	v.str = strings.ReplaceAll(v.str, "\r", "")
 	v.str = strings.ReplaceAll(v.str, string(rune(160)), " ")
@@ -2348,7 +2367,9 @@ func (ch *CheckBox) Render(width uint, dr Drawer) (height uint) {
 		PrintDrawer(0, 0, *st, dr, []rune(ch.pair[1]))
 		lenght = uint(len(ch.pair[1]))
 	}
-	dr(0, lenght, TextStyle, ' ')
+	if dr != nil {
+		dr(0, lenght, TextStyle, ' ')
+	}
 	height = ch.Text.Render(width-lenght-1, DrawerLimit(
 		dr,
 		0, int(lenght+1),
@@ -2592,6 +2613,9 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 	if len(l.nodes) == 0 {
 		return
 	}
+	if width < 1 {
+		return
+	}
 	if l.nodes[len(l.nodes)-1].to != int(width) {
 		if l.compress {
 			for i := range l.nodes {
@@ -2668,17 +2692,15 @@ func (l *ListH) Render(width uint, dr Drawer) (height uint) {
 		}
 	}
 	for i := range l.nodes {
+		if l.nodes[i].w == nil {
+			continue
+		}
 		draw := DrawerLimit(dr,
 			0, l.nodes[i].from,
 			maxSize, width,
 		)
-		if l.nodes[i].w == nil {
-			continue
-		}
 		h := l.nodes[i].w.Render(uint(l.nodes[i].to-l.nodes[i].from), draw)
-		if height < h {
-			height = h
-		}
+		height = max(height, h)
 	}
 	return
 }

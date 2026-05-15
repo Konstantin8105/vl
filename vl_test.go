@@ -988,6 +988,18 @@ func TestWidget(t *testing.T) {
 				filename := filepath.Join(testdata, name)
 				compare.Test(t, filename, buf.Bytes())
 			})
+			t.Run(name+".nil", func(t *testing.T) {
+				_ = tc.w.Render(20, nil)
+			})
+			t.Run(name+".w0", func(t *testing.T) {
+				_ = tc.w.Render(0, NilDrawer)
+			})
+			t.Run(name+".w1", func(t *testing.T) {
+				_ = tc.w.Render(1, NilDrawer)
+			})
+			t.Run(name+".w2", func(t *testing.T) {
+				_ = tc.w.Render(2, NilDrawer)
+			})
 		}
 	}
 }
