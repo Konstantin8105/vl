@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -3799,6 +3800,13 @@ var (
 	simulation bool
 )
 
+func newScreen() (tcell.Screen, error) {
+	if runtime.GOOS == "windows" {
+		return tcell.NewConsoleScreen()
+	}
+	return tcell.NewScreen()
+}
+
 func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
 	defer func() {
 		for i, str := range debugs {
@@ -3815,7 +3823,7 @@ func Run(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tc
 	if simulation {
 		screen = tcell.NewSimulationScreen("")
 	} else {
-		if screen, err = tcell.NewScreen(); err != nil {
+		if screen, err = newScreen(); err != nil {
 			return
 		}
 	}
