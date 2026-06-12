@@ -136,7 +136,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		bdFg, bdBg := styleHex(TextStyle)
 		_ = bdFg
 		_ = bdBg
-		return fmt.Sprintf("<fieldset style=\"border:1px solid #666;margin:0;padding:2px 4px;font-family:monospace;font-size:14px;line-height:1.2;color:%s;background:%s;overflow:auto;min-width:0\">%s<div style=\"min-height:1.2em;overflow:auto\">%s</div></fieldset>",
+		return fmt.Sprintf("<fieldset style=\"border:1px solid #666;margin:0;padding:2px 4px;color:%s;background:%s;overflow:auto;min-width:0\">%s<div style=\"min-height:1.2em;overflow:auto\">%s</div></fieldset>",
 			bgFg, bgBg, headerHTML, content)
 
 	case *List:
@@ -175,14 +175,10 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		id := fmt.Sprintf("b_%d", ctx.btnC)
 		ctx.btnC++
 		ctx.wm[id] = v
-		fg, bg := styleHex(ButtonStyle)
-		if v.focus {
-			_, bg = styleHex(ButtonFocusStyle)
-		}
 		text := esc(v.GetText())
 		text = strings.ReplaceAll(text, "\n", "<br>")
-		return fmt.Sprintf("<button id=\"%s\" style=\"background:%s;color:%s;border:1px solid #888;cursor:pointer;font-family:monospace;font-size:14px;line-height:1.2;padding:0 6px\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'click'})})\">%s</button>",
-			id, bg, fg, id, text)
+		return fmt.Sprintf("<button id=\"%s\" style=\"cursor:pointer;padding:0 6px\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'click'})})\">%s</button>",
+			id, id, text)
 
 	case *CheckBox:
 		id := fmt.Sprintf("c_%d", ctx.chkC)
@@ -198,7 +194,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		}
 		text := esc(v.GetText())
 		text = strings.ReplaceAll(text, "\n", "<br>")
-		return fmt.Sprintf("<label style=\"display:inline-flex;align-items:center;font-family:monospace;font-size:14px;line-height:1.2;cursor:pointer\"><input type=\"checkbox\" id=\"%s\"%s%s style=\"accent-color:#FFFF00;margin:0 4px 0 0\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'change',checked:this.checked})})\"><span>%s</span></label>",
+		return fmt.Sprintf("<label style=\"display:inline-flex;align-items:center;cursor:pointer\"><input type=\"checkbox\" id=\"%s\"%s%s style=\"margin:0 4px 0 0\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'change',checked:this.checked})})\"><span>%s</span></label>",
 			id, checked, disabled, id, text)
 
 	case *RadioGroup:
@@ -222,7 +218,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 			labelText := radioLabel(r)
 			if isSimpleText(r.root) {
 				items = append(items, fmt.Sprintf(
-					`<label style="display:flex;align-items:center;font-family:monospace;font-size:14px;line-height:1.2;cursor:pointer"><input type="radio" name="%s"%s style="accent-color:#FFFF00;margin:0 4px 0 0" onchange="fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s_%s',action:'radio',index:%d})})"><span>%s</span></label>`,
+					`<label style="display:flex;align-items:center;cursor:pointer"><input type="radio" name="%s"%s style="margin:0 4px 0 0" onchange="fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s_%s',action:'radio',index:%d})})"><span>%s</span></label>`,
 					rgID, chk, rgID, rgID, i, esc(labelText)))
 				continue
 			}
@@ -232,7 +228,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 				disp = "block"
 			}
 			items = append(items, fmt.Sprintf(
-				`<div style="display:flex;flex-direction:column"><label style="display:flex;align-items:center;font-family:monospace;font-size:14px;line-height:1.2;cursor:pointer"><input type="radio" name="%s"%s style="accent-color:#FFFF00;margin:0 4px 0 0" onchange="fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s_%s',action:'radio',index:%d})})"><span>%s</span></label><div style="display:%s;margin-left:20px">%s</div></div>`,
+				`<div style="display:flex;flex-direction:column"><label style="display:flex;align-items:center;cursor:pointer"><input type="radio" name="%s"%s style="margin:0 4px 0 0" onchange="fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s_%s',action:'radio',index:%d})})"><span>%s</span></label><div style="display:%s;margin-left:20px">%s</div></div>`,
 				rgID, chk, rgID, rgID, i, esc(labelText), disp, contentHTML))
 		}
 		return fmt.Sprintf("<div style=\"display:flex;flex-direction:column;gap:2px\">%s</div>", strings.Join(items, ""))
@@ -242,7 +238,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		ctx.inpC++
 		ctx.wm[id] = v
 		text := esc(v.GetText())
-		return fmt.Sprintf("<textarea id=\"%s\" style=\"background:#FFFF00;color:#000;border:none;outline:none;resize:none;overflow:hidden;width:100%%;font-family:monospace;font-size:14px;line-height:1.2;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
+		return fmt.Sprintf("<textarea id=\"%s\" style=\"background:#FFFF00;color:#000;border:none;outline:none;resize:none;overflow:hidden;width:100%%;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
 			id, id, text)
 
 	case *CollapsingHeader:
@@ -267,7 +263,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		}
 		summaryText := esc(textContent(&v.cb))
 		content := widgetToHTML(v.root, ctx)
-		return fmt.Sprintf("<div style=\"font-family:monospace;font-size:14px;line-height:1.2\"><div style=\"cursor:pointer;user-select:none\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'toggle'})})\">%s %s</div><div style=\"display:%s;margin-left:16px;border-left:1px solid #666;padding-left:8px;overflow:hidden;max-width:100%%\">%s</div></div>",
+		return fmt.Sprintf("<div style=\"\"><div style=\"cursor:pointer;user-select:none\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'toggle'})})\">%s %s</div><div style=\"display:%s;margin-left:16px;border-left:1px solid #666;padding-left:8px;overflow:hidden;max-width:100%%\">%s</div></div>",
 			chID, arrow, summaryText, disp, content)
 
 	case *Separator:
@@ -277,7 +273,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		return widgetToHTML(v.root, ctx)
 
 	case *Text:
-		return fmt.Sprintf("<div style=\"color:#000;background:#FFF;font-family:monospace;font-size:14px;line-height:1.2;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-all\">%s</div>", esc(v.GetText()))
+		return fmt.Sprintf("<div style=\"color:#000;background:#FFF;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-all\">%s</div>", esc(v.GetText()))
 
 	case *Tree:
 		return treeToHTML(v, ctx)
@@ -411,7 +407,7 @@ func cellsToPre(cells [][]Cell, classPrefix string) string {
 	}
 
 	var buf strings.Builder
-	buf.WriteString("<pre style=\"margin:0;font-family:monospace;font-size:14px;line-height:1.2;white-space:pre-wrap;overflow:hidden;word-wrap:break-word\">")
+	buf.WriteString("<pre style=\"margin:0;white-space:pre-wrap;overflow:hidden;word-wrap:break-word\">")
 	for row := range cells {
 		for col := range cells[row] {
 			fg, bg, _ := cells[row][col].S.Decompose()
@@ -458,7 +454,7 @@ func treeToHTML(v *Tree, ctx *htmlCtx) string {
 	for i := range v.Nodes {
 		children = append(children, treeToHTML(&v.Nodes[i], ctx))
 	}
-	parts := []string{"<ul style=\"list-style:none;padding-left:16px;margin:0;font-family:monospace;font-size:14px;line-height:1.2;overflow:hidden;max-width:100%\">"}
+	parts := []string{"<ul style=\"list-style:none;padding-left:16px;margin:0;overflow:hidden;max-width:100%\">"}
 	if rootHTML != "" {
 		parts = append(parts, fmt.Sprintf("<li>%s", rootHTML))
 	}
@@ -493,7 +489,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 			}
 			opts = append(opts, fmt.Sprintf("<option value=\"%d\"%s>%s</option>", i, sel, esc(name)))
 		}
-		headerHTML = fmt.Sprintf("<select style=\"font-family:monospace;font-size:14px;line-height:1.2\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:parseInt(this.value)})})\">%s</select>",
+		headerHTML = fmt.Sprintf("<select style=\"\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:parseInt(this.value)})})\">%s</select>",
 			tabID, strings.Join(opts, ""))
 	} else {
 		var headers []string
@@ -503,7 +499,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 				active = " background:#FF1493;color:#000"
 			}
 			idx := i
-			headers = append(headers, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;font-family:monospace;font-size:14px;line-height:1.2;padding:0 6px%s\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:%d})})\">%s</button>",
+			headers = append(headers, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px%s\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:%d})})\">%s</button>",
 				active, tabID, idx, esc(name)))
 		}
 		headerHTML = fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px;margin-bottom:2px\">%s</div>", strings.Join(headers, ""))
@@ -514,7 +510,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 		content = widgetToHTML(v.list.roots[pos], ctx)
 	}
 
-	return fmt.Sprintf("<div style=\"font-family:monospace;font-size:14px;line-height:1.2\">%s<div style=\"border:1px solid #666;padding:4px;min-height:1.2em\">%s</div></div>",
+	return fmt.Sprintf("<div style=\"\">%s<div style=\"border:1px solid #666;padding:4px;min-height:1.2em\">%s</div></div>",
 		headerHTML, content)
 }
 
@@ -537,7 +533,7 @@ func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
 	}
 	id := fmt.Sprintf("sel_%d", len(ctx.wm))
 	ctx.wm[id] = v
-	return fmt.Sprintf("<select style=\"font-family:monospace;font-size:14px;line-height:1.2\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
+	return fmt.Sprintf("<select style=\"\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
 		id, strings.Join(opts, ""))
 }
 
@@ -551,12 +547,12 @@ func menuToHTML(v *Menu, ctx *htmlCtx) string {
 		}
 		content := esc(textContent(n.w))
 		idx := i
-		buttons = append(buttons, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;font-family:monospace;font-size:14px;line-height:1.2;padding:0 6px;background:#FFFF00;color:#000\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'menu',index:%d})})\">%s</button>",
+		buttons = append(buttons, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px;background:#FFFF00;color:#000\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'menu',index:%d})})\">%s</button>",
 			menuID, idx, content))
 	}
 	headerBar := fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px\">%s</div>", strings.Join(buttons, ""))
 	inner := widgetToHTML(v.root, ctx)
-	return fmt.Sprintf("<div style=\"font-family:monospace;font-size:14px;line-height:1.2\">%s<div style=\"margin-top:2px\">%s</div></div>",
+	return fmt.Sprintf("<div style=\"\">%s<div style=\"margin-top:2px\">%s</div></div>",
 		headerBar, inner)
 }
 
