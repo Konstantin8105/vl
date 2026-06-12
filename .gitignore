@@ -5,3 +5,4 @@ testdata/*.new
 *.html
 *.exe
 plans/*
+.kilo/*
