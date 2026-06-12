@@ -52,6 +52,7 @@ type WebServer struct {
 	quitKeys  []tcell.Key
 	quit      chan struct{}
 	quitOnce  sync.Once
+	lastHTML  string
 }
 
 func (ws *WebServer) shutdown() {
@@ -112,8 +113,8 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		bgFg, bgBg := styleHex(TextStyle)
 		var headerHTML string
 		if v.Header != nil {
-			headerHTML = fmt.Sprintf("<legend style=\"color:%s;background:%s;padding:0 4px;font:inherit\">%s</legend>",
-				bgFg, bgBg, esc(textContent(v.Header)))
+			headerHTML = fmt.Sprintf("<legend style=\"color:%s;background:%s;padding:0 4px;font:inherit;width:100%%;display:block;box-sizing:border-box\">%s</legend>",
+				bgFg, bgBg, widgetToHTML(v.Header, ctx))
 		}
 		content := widgetToHTML(v.root, ctx)
 		if v.NoBorder {
@@ -501,27 +502,46 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 }
 
 func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
+	if !v.init {
+		v.rg.OnChange = func() {
+			if f := v.OnChange; f != nil {
+				f()
+			}
+		}
+		v.rg.OnChange()
+		v.init = true
+	}
+
 	pos := int(v.GetPos())
 	var opts []string
+	maxLen := 0
 	for i := range v.rg.list.nodes {
 		r, ok := v.rg.list.nodes[i].w.(*radio)
 		if !ok || r == nil {
 			continue
 		}
+		txt := radioLabel(r)
+		if len([]rune(txt)) > maxLen {
+			maxLen = len([]rune(txt))
+		}
 		sel := ""
 		if i == pos {
 			sel = " selected"
 		}
-		opts = append(opts, fmt.Sprintf("<option value=\"%d\"%s>%s</option>", i, sel, esc(radioLabel(r))))
+		opts = append(opts, fmt.Sprintf("<option value=\"%d\"%s>%s</option>", i, sel, esc(txt)))
 	}
 	if len(opts) == 0 {
 		opts = append(opts, "<option value=\"\" disabled>---</option>")
 	}
+	minW := 120
+	if maxLen > 0 {
+		minW = maxLen * 8 + 20
+	}
 	id := fmt.Sprintf("sel_%d", ctx.comboE)
 	ctx.comboE++
 	ctx.wm[id] = v
-	return fmt.Sprintf("<select onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
-		id, strings.Join(opts, ""))
+	return fmt.Sprintf("<select style=\"min-width:%dpx\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
+		minW, id, strings.Join(opts, ""))
 }
 
 func menuToHTML(v *Menu, ctx *htmlCtx) string {
@@ -760,6 +780,10 @@ func (ws *WebServer) pushSSE(html string) {
 	if ws.sse == nil {
 		return
 	}
+	if html == ws.lastHTML {
+		return
+	}
+	ws.lastHTML = html
 	msg := sseOutMsg{Type: "full", HTML: html}
 	data, err := json.Marshal(msg)
 	if err != nil {
@@ -796,6 +820,7 @@ func (ws *WebServer) handleSSE(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	ws.sse = conn
+	ws.lastHTML = ""
 	h := ws.generate()
 	ws.pushSSE(h)
 	ws.mu.Unlock()
@@ -849,18 +874,23 @@ func WebRun(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ..
 	}()
 
 	for {
+		ticker := time.NewTicker(TimeFrameSleep)
 		select {
 		case err := <-errCh:
+			ticker.Stop()
 			ws.srv.Close()
 			return fmt.Errorf("web: %w", err)
 		case <-ws.quit:
+			ticker.Stop()
 			ws.srv.Close()
 			return nil
 		case <-chQuit:
+			ticker.Stop()
 			ws.shutdown()
 			ws.srv.Close()
 			return nil
 		case f := <-action:
+			ticker.Stop()
 			if f != nil {
 				f()
 				ws.mu.Lock()
@@ -868,6 +898,11 @@ func WebRun(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ..
 				ws.pushSSE(h)
 				ws.mu.Unlock()
 			}
+		case <-ticker.C:
+			ws.mu.Lock()
+			h := ws.generate()
+			ws.pushSSE(h)
+			ws.mu.Unlock()
 		}
 	}
 }
