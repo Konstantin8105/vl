@@ -60,23 +60,7 @@ func (ws *WebServer) shutdown() {
 	})
 }
 
-var styleColors = map[tcell.Style]struct {
-	fg, bg string
-}{
-	ScreenStyle:        {"#000000", "#FFFFFF"},
-	TextStyle:          {"#000000", "#FFFFFF"},
-	ButtonStyle:        {"#000000", "#FFFF00"},
-	ButtonFocusStyle:   {"#000000", "#FF1493"},
-	ButtonSelectStyle:  {"#000000", "#00FF00"},
-	InputBoxStyle:      {"#000000", "#FFFF00"},
-	InputBoxFocusStyle: {"#000000", "#FF1493"},
-	CursorStyle:        {"#FFFFFF", "#FF0000"},
-}
-
 func styleHex(s tcell.Style) (fg, bg string) {
-	if c, ok := styleColors[s]; ok {
-		return c.fg, c.bg
-	}
 	fgC, bgC, _ := s.Decompose()
 	return tcellColorHex(fgC), tcellColorHex(bgC)
 }
@@ -105,7 +89,7 @@ type htmlCtx struct {
 	w                    uint
 	wm                   map[string]Widget
 	btnC, chkC           int
-	inpC, rgC, tabC, chC, vcC, menuC int
+	inpC, rgC, tabC, chC, vcC, menuC, comboE, unknownC int
 }
 
 func esc(s string) string {
@@ -295,7 +279,13 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 	case *Stack:
 		return widgetToHTML(v.present(), ctx)
 	}
-	return ""
+	prefix := fmt.Sprintf("u_%d_", ctx.unknownC)
+	ctx.unknownC++
+	if ctx.w == 0 {
+		ctx.w = 80
+	}
+	cells := renderCells(w, ctx.w)
+	return cellsToPre(cells, prefix)
 }
 
 func textContent(w Widget) string {
@@ -527,7 +517,8 @@ func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
 	if len(opts) == 0 {
 		opts = append(opts, "<option value=\"\" disabled>---</option>")
 	}
-	id := fmt.Sprintf("sel_%d", len(ctx.wm))
+	id := fmt.Sprintf("sel_%d", ctx.comboE)
+	ctx.comboE++
 	ctx.wm[id] = v
 	return fmt.Sprintf("<select onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
 		id, strings.Join(opts, ""))
