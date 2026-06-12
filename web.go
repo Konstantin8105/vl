@@ -11,6 +11,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+var WebAddr = ":8080"
+
 type sseConn struct {
 	ch   chan []byte
 	done chan struct{}
@@ -827,7 +829,7 @@ func (ws *WebServer) handleSSE(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func WebRun(addr string, root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) error {
+func WebRun(root Widget, action chan func(), chQuit <-chan struct{}, quitKeys ...tcell.Key) (err error) {
 	if root == nil {
 		return fmt.Errorf("root widget is nil")
 	}
@@ -846,7 +848,7 @@ func WebRun(addr string, root Widget, action chan func(), chQuit <-chan struct{}
 	mux.HandleFunc("/event", ws.handleEvent)
 	mux.HandleFunc("/events", ws.handleSSE)
 
-	ws.srv = &http.Server{Addr: addr, Handler: mux}
+	ws.srv = &http.Server{Addr: WebAddr, Handler: mux}
 
 	errCh := make(chan error, 1)
 	go func() {

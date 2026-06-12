@@ -13,8 +13,9 @@ func main() {
 	demo := vl.Demo()
 	root := demo[0]
 	// start web server on port 8080
+	vl.WebAddr = ":8080"
 	fmt.Fprintln(os.Stdout, "Web demo at http://localhost:8080")
-	err := vl.WebRun(":8080", root, action, nil, tcell.KeyCtrlC)
+	err := vl.WebRun(root, action, nil, tcell.KeyCtrlC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
