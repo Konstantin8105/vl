@@ -897,7 +897,7 @@ var es=new EventSource('/events');
 var focusedId=null;
 var _ss=0,_se=0;
 document.addEventListener('input',function(e){
-  if(e.target.tagName==='TEXTAREA'){_ss=e.target.selectionStart;_se=e.target.selectionEnd}
+  if(e.target.tagName==='TEXTAREA'){_ss=e.target.selectionStart;_se=e.target.selectionEnd;e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px'}
 });
 document.addEventListener('focusin',function(e){
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'){focusedId=e.target.id}
@@ -911,6 +911,7 @@ es.onmessage=function(e){
   var _st=0;
   if(focusedId){var oe=document.getElementById(focusedId);if(oe&&oe.tagName==='TEXTAREA'){_st=oe.scrollTop}}
   document.getElementById('app').innerHTML=m.html;
+  document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
   window.scrollTo(0,sy);
   if(focusedId){
     var el=document.getElementById(focusedId);
