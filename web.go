@@ -339,12 +339,9 @@ func radioLabel(r *radio) string {
 }
 
 func viewerToHTML(v *Viewer, ctx *htmlCtx) string {
-	if ctx.w == 0 {
-		ctx.w = 80
-	}
 	prefix := fmt.Sprintf("v_%d_", ctx.vcC)
 	ctx.vcC++
-	cells := renderCells(v, ctx.w)
+	cells := renderCells(v, 2000)
 	return cellsToPre(cells, prefix)
 }
 
