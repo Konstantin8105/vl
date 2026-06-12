@@ -235,7 +235,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		ctx.inpC++
 		ctx.wm[id] = v
 		text := esc(v.GetText())
-		return fmt.Sprintf("<textarea id=\"%s\" style=\"border:1px solid #888;outline:none;resize:none;overflow:hidden;width:100%%;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
+		return fmt.Sprintf("<textarea id=\"%s\" style=\"border:1px solid #888;outline:none;resize:none;width:100%%;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
 			id, id, text)
 
 	case *CollapsingHeader:
@@ -907,13 +907,14 @@ document.addEventListener('focusout',function(e){
 });
 es.onmessage=function(e){
   var m=JSON.parse(e.data);
-  if(m.css){var s=document.createElement('style');s.textContent=m.css;document.head.appendChild(s)}
   var sy=window.scrollY;
+  var _st=0;
+  if(focusedId){var oe=document.getElementById(focusedId);if(oe&&oe.tagName==='TEXTAREA'){_st=oe.scrollTop}}
   document.getElementById('app').innerHTML=m.html;
   window.scrollTo(0,sy);
   if(focusedId){
     var el=document.getElementById(focusedId);
-    if(el){el.focus();if(el.tagName==='TEXTAREA'){el.selectionStart=_ss;el.selectionEnd=_se}}
+    if(el){el.focus();if(el.tagName==='TEXTAREA'){el.selectionStart=_ss;el.selectionEnd=_se;el.scrollTop=_st}}
   }
 };
 document.onkeydown=function(e){
