@@ -535,23 +535,52 @@ func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
 }
 
 func menuToHTML(v *Menu, ctx *htmlCtx) string {
+	processMenuState(v)
+	isRoot := v.parent == nil
+
 	menuID := fmt.Sprintf("m_%d", ctx.menuC)
 	ctx.menuC++
 	ctx.wm[menuID] = v
-	var buttons []string
-	for i, n := range v.header.nodes {
-		if n.w == nil {
-			continue
+
+	var subContent string
+	for _, sub := range v.subs {
+		if sub != nil && sub.opened {
+			subContent += fmt.Sprintf("<div style=\"border:1px solid #666;padding:4px;margin-top:2px;background:#FFF\">%s</div>", menuToHTML(sub, ctx))
 		}
-		content := esc(textContent(n.w))
-		idx := i
-		buttons = append(buttons, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px;background:#FFFF00;color:#000\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'menu',index:%d})})\">%s</button>",
-			menuID, idx, content))
 	}
-	headerBar := fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px\">%s</div>", strings.Join(buttons, ""))
-	inner := widgetToHTML(v.root, ctx)
-	return fmt.Sprintf("<div>%s<div style=\"margin-top:2px\">%s</div></div>",
-		headerBar, inner)
+
+	if isRoot {
+		var buttons []string
+		for i, n := range v.header.nodes {
+			if n.w == nil {
+				continue
+			}
+			content := esc(textContent(n.w))
+			idx := i
+			buttons = append(buttons, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'menu',index:%d})})\">%s</button>",
+				menuID, idx, content))
+		}
+		headerBar := fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px\">%s</div>", strings.Join(buttons, ""))
+		innerHTML := widgetToHTML(v.root, ctx)
+		return fmt.Sprintf("<div>%s%s<div style=\"margin-top:2px\">%s</div></div>",
+			headerBar, subContent, innerHTML)
+	}
+
+	innerHTML := widgetToHTML(&v.list, ctx)
+	return fmt.Sprintf("<div>%s%s</div>", innerHTML, subContent)
+}
+
+func processMenuState(m *Menu) {
+	if m == nil {
+		return
+	}
+	for _, sub := range m.subs {
+		processMenuState(sub)
+	}
+	if m.readyForOpen {
+		m.readyForOpen = false
+		m.opened = true
+	}
 }
 
 func mapBrowserKey(key string, ctrl, shift, alt bool) *tcell.EventKey {
@@ -694,6 +723,7 @@ func (ws *WebServer) handleEvent(w http.ResponseWriter, r *http.Request) {
 			}
 		case "menu":
 			if m, ok := w.(*Menu); ok {
+				m.resetSubmenu()
 				if msg.Index >= 0 && msg.Index < len(m.header.nodes) {
 					if btn, ok := m.header.nodes[msg.Index].w.(*Button); ok && btn.OnClick != nil {
 						btn.OnClick()
