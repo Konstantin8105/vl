@@ -103,7 +103,7 @@ type htmlCtx struct {
 	w                    uint
 	wm                   map[string]Widget
 	btnC, chkC           int
-	inpC, rgC, tabC, chC, vcC int
+	inpC, rgC, tabC, chC, vcC, menuC int
 }
 
 func esc(s string) string {
@@ -133,9 +133,6 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		if v.NoBorder {
 			return content
 		}
-		bdFg, bdBg := styleHex(TextStyle)
-		_ = bdFg
-		_ = bdBg
 		return fmt.Sprintf("<fieldset style=\"border:1px solid #666;margin:0;padding:2px 4px;color:%s;background:%s;overflow:auto;min-width:0\">%s<div style=\"min-height:1.2em;overflow:auto\">%s</div></fieldset>",
 			bgFg, bgBg, headerHTML, content)
 
@@ -263,7 +260,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		}
 		summaryText := esc(textContent(&v.cb))
 		content := widgetToHTML(v.root, ctx)
-		return fmt.Sprintf("<div style=\"\"><div style=\"cursor:pointer;user-select:none\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'toggle'})})\">%s %s</div><div style=\"display:%s;margin-left:16px;border-left:1px solid #666;padding-left:8px;overflow:hidden;max-width:100%%\">%s</div></div>",
+		return fmt.Sprintf("<div><div style=\"cursor:pointer;user-select:none\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'toggle'})})\">%s %s</div><div style=\"display:%s;margin-left:16px;border-left:1px solid #666;padding-left:8px;overflow:hidden;max-width:100%%\">%s</div></div>",
 			chID, arrow, summaryText, disp, content)
 
 	case *Separator:
@@ -489,7 +486,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 			}
 			opts = append(opts, fmt.Sprintf("<option value=\"%d\"%s>%s</option>", i, sel, esc(name)))
 		}
-		headerHTML = fmt.Sprintf("<select style=\"\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:parseInt(this.value)})})\">%s</select>",
+		headerHTML = fmt.Sprintf("<select onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:parseInt(this.value)})})\">%s</select>",
 			tabID, strings.Join(opts, ""))
 	} else {
 		var headers []string
@@ -510,7 +507,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 		content = widgetToHTML(v.list.roots[pos], ctx)
 	}
 
-	return fmt.Sprintf("<div style=\"\">%s<div style=\"border:1px solid #666;padding:4px;min-height:1.2em\">%s</div></div>",
+	return fmt.Sprintf("<div>%s<div style=\"border:1px solid #666;padding:4px;min-height:1.2em\">%s</div></div>",
 		headerHTML, content)
 }
 
@@ -533,12 +530,13 @@ func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
 	}
 	id := fmt.Sprintf("sel_%d", len(ctx.wm))
 	ctx.wm[id] = v
-	return fmt.Sprintf("<select style=\"\" onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
+	return fmt.Sprintf("<select onchange=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'select',index:parseInt(this.value)})})\">%s</select>",
 		id, strings.Join(opts, ""))
 }
 
 func menuToHTML(v *Menu, ctx *htmlCtx) string {
-	menuID := fmt.Sprintf("m_%d", len(ctx.wm))
+	menuID := fmt.Sprintf("m_%d", ctx.menuC)
+	ctx.menuC++
 	ctx.wm[menuID] = v
 	var buttons []string
 	for i, n := range v.header.nodes {
@@ -552,7 +550,7 @@ func menuToHTML(v *Menu, ctx *htmlCtx) string {
 	}
 	headerBar := fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px\">%s</div>", strings.Join(buttons, ""))
 	inner := widgetToHTML(v.root, ctx)
-	return fmt.Sprintf("<div style=\"\">%s<div style=\"margin-top:2px\">%s</div></div>",
+	return fmt.Sprintf("<div>%s<div style=\"margin-top:2px\">%s</div></div>",
 		headerBar, inner)
 }
 
@@ -681,8 +679,6 @@ func (ws *WebServer) handleEvent(w http.ResponseWriter, r *http.Request) {
 		case "radio":
 			if rg, ok := w.(*RadioGroup); ok {
 				rg.SetPos(uint(msg.Index))
-			} else {
-				findRadioGroupAndSet(ws.root, w, msg.Index)
 			}
 		case "input":
 			if inp, ok := w.(*InputBox); ok {
@@ -695,8 +691,6 @@ func (ws *WebServer) handleEvent(w http.ResponseWriter, r *http.Request) {
 		case "tab":
 			if tabs, ok := w.(*Tabs); ok {
 				tabs.SetPos(uint(msg.Index))
-			} else {
-				findTabsAndSet(ws.root, msg.Index)
 			}
 		case "menu":
 			if m, ok := w.(*Menu); ok {
@@ -740,81 +734,6 @@ func (ws *WebServer) handleEvent(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-}
-
-func findRadioGroupAndSet(root Widget, widget Widget, index int) {
-	var walk func(w Widget) bool
-	walk = func(w Widget) bool {
-		if w == nil {
-			return false
-		}
-		if rg, ok := w.(*RadioGroup); ok {
-			for _, n := range rg.list.nodes {
-				if n.w == widget {
-					rg.SetPos(uint(index))
-					return true
-				}
-			}
-			return false
-		}
-		switch v := w.(type) {
-		case *Screen:
-			return walk(v.root)
-		case *Scroll:
-			return walk(v.root)
-		case *Frame:
-			return walk(v.root) || walk(v.Header)
-		case *List:
-			for _, n := range v.nodes {
-				if walk(n.w) {
-					return true
-				}
-			}
-		case *CollapsingHeader:
-			return walk(v.root)
-		case *Menu:
-			return walk(v.root)
-		case *Tabs:
-			for _, r := range v.list.roots {
-				if walk(r) {
-					return true
-				}
-			}
-		}
-		return false
-	}
-	walk(root)
-}
-
-func findTabsAndSet(root Widget, index int) {
-	var walk func(w Widget) bool
-	walk = func(w Widget) bool {
-		if w == nil {
-			return false
-		}
-		if tabs, ok := w.(*Tabs); ok {
-			tabs.SetPos(uint(index))
-			return true
-		}
-		switch v := w.(type) {
-		case *Screen:
-			return walk(v.root)
-		case *Scroll:
-			return walk(v.root)
-		case *Frame:
-			return walk(v.root)
-		case *List:
-			for _, n := range v.nodes {
-				if walk(n.w) {
-					return true
-				}
-			}
-		case *Menu:
-			return walk(v.root)
-		}
-		return false
-	}
-	walk(root)
 }
 
 func (ws *WebServer) pushSSE(html string) {
