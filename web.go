@@ -235,7 +235,7 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		ctx.inpC++
 		ctx.wm[id] = v
 		text := esc(v.GetText())
-		return fmt.Sprintf("<textarea id=\"%s\" style=\"background:#FFFF00;color:#000;border:none;outline:none;resize:none;overflow:hidden;width:100%%;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
+		return fmt.Sprintf("<textarea id=\"%s\" style=\"border:1px solid #888;outline:none;resize:none;overflow:hidden;width:100%%;padding:0 4px\" oninput=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'input',text:this.value})})\">%s</textarea>",
 			id, id, text)
 
 	case *CollapsingHeader:
@@ -493,7 +493,7 @@ func tabsToHTML(v *Tabs, ctx *htmlCtx) string {
 				active = " background:#FF1493;color:#000"
 			}
 			idx := i
-			headers = append(headers, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px%s\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:%d})})\">%s</button>",
+			headers = append(headers, fmt.Sprintf("<button style=\"border:1px solid #888;cursor:pointer;padding:0 6px;%s\" onclick=\"fetch('/event',{method:'POST',body:JSON.stringify({type:'widget',id:'%s',action:'tab',index:%d})})\">%s</button>",
 				active, tabID, idx, esc(name)))
 		}
 		headerHTML = fmt.Sprintf("<div style=\"display:flex;flex-direction:row;gap:2px;margin-bottom:2px\">%s</div>", strings.Join(headers, ""))
