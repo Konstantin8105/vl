@@ -414,9 +414,9 @@ func cellsToPre(cells [][]Cell, classPrefix string) string {
 			case '"':
 				ch = "&quot;"
 			case ' ':
-				ch = "&nbsp;"
+				ch = " "
 			case 0:
-				ch = "&nbsp;"
+				ch = " "
 			default:
 				ch = string(r)
 			}

@@ -5,6 +5,10 @@ vertical widgets
 
 ![Demo](tty.gif)
 
+## Demo on web
+
+![Demo](web.gif)
+
 ## Recorded by ttygif
 
 ```sh
