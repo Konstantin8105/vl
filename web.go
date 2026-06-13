@@ -67,29 +67,17 @@ func styleHex(s tcell.Style) (fg, bg string) {
 }
 
 func tcellColorHex(c tcell.Color) string {
-	switch c {
-	case tcell.ColorBlack:
-		return "#000000"
-	case tcell.ColorWhite:
+	if c == tcell.ColorDefault {
 		return "#FFFFFF"
-	case tcell.ColorRed:
-		return "#FF0000"
-	case tcell.ColorGreen:
-		return "#00FF00"
-	case tcell.ColorYellow:
-		return "#FFFF00"
-	case tcell.ColorBlue:
-		return "#0000FF"
-	case tcell.ColorDeepPink:
-		return "#FF1493"
 	}
-	return "#FFFFFF"
+	r, g, b := c.RGB()
+	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
 }
 
 type htmlCtx struct {
-	w                    uint
-	wm                   map[string]Widget
-	btnC, chkC           int
+	w                                                  uint
+	wm                                                 map[string]Widget
+	btnC, chkC                                         int
 	inpC, rgC, tabC, chC, vcC, menuC, comboE, unknownC int
 }
 
@@ -134,16 +122,29 @@ func widgetToHTML(w Widget, ctx *htmlCtx) string {
 		return "<div style=\"display:flex;flex-direction:column\">" + strings.Join(parts, "") + "</div>"
 
 	case *ListH:
+		var ws []int
+		if v.Splitter != nil {
+			ws = v.Splitter(ctx.w, len(v.nodes))
+			if len(ws) != len(v.nodes) {
+				ws = nil
+			}
+		}
 		var parts []string
-		for _, n := range v.nodes {
+		for i, n := range v.nodes {
 			if n.w == nil {
 				continue
 			}
 			content := widgetToHTML(n.w, ctx)
-			parts = append(parts, fmt.Sprintf("<div style=\"flex:1;min-width:0;overflow:hidden\">%s</div>", content))
+			style := "flex:1;min-width:0;overflow:hidden"
+			if ws != nil && i < len(ws) && ws[i] > 0 {
+				style = fmt.Sprintf("flex:0 0 %.0fpx;overflow:hidden", float64(ws[i])*8.4)
+			}
+			parts = append(parts, fmt.Sprintf("<div style=\"%s\">%s</div>", style, content))
+		}
+		if ws != nil {
+			return fmt.Sprintf("<div style=\"display:flex;flex-direction:row;flex-wrap:nowrap\">%s</div>", strings.Join(parts, ""))
 		}
 		return fmt.Sprintf("<div style=\"display:flex;flex-direction:row;flex-wrap:nowrap;gap:2px\">%s</div>", strings.Join(parts, ""))
-
 	case *Scroll:
 		if v.root == nil {
 			return ""
@@ -403,23 +404,24 @@ func cellsToPre(cells [][]Cell, classPrefix string) string {
 			cls := addColor(fgHex, bgHex)
 			r := cells[row][col].R
 			var ch string
-			switch {
-			case r == '&':
+			switch r {
+			case '&':
 				ch = "&amp;"
-			case r == '<':
+			case '<':
 				ch = "&lt;"
-			case r == '>':
+			case '>':
 				ch = "&gt;"
-			case r == '"':
+			case '"':
 				ch = "&quot;"
-			case r == ' ':
-				ch = " "
-			case r == 0:
-				ch = " "
+			case ' ':
+				ch = "&nbsp;"
+			case 0:
+				ch = "&nbsp;"
 			default:
 				ch = string(r)
 			}
-			buf.WriteString(fmt.Sprintf("<span class=\"%s\">%s</span>", cls, ch))
+			preColor := fmt.Sprintf("color:%s;background:%s", fgHex, bgHex)
+			buf.WriteString(fmt.Sprintf("<span style=\"%s\" class=\"%s\">%s</span>", preColor, cls, ch))
 		}
 		buf.WriteRune('\n')
 	}
@@ -535,7 +537,7 @@ func comboToHTML(v *ComboBox, ctx *htmlCtx) string {
 	}
 	minW := 120
 	if maxLen > 0 {
-		minW = maxLen * 8 + 20
+		minW = maxLen*8 + 20
 	}
 	id := fmt.Sprintf("sel_%d", ctx.comboE)
 	ctx.comboE++
